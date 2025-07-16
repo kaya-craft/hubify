@@ -1,3 +1,3 @@
 export default defineNuxtRouteMiddleware(() => {
-    return true
+  return true
 })
