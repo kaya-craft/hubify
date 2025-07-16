@@ -1,0 +1,7 @@
+{
+    "app.login.form.title": "Login to Your Account",
+    "app.login.form.description": "Please enter your credentials to access your account.",
+    "app.login.form.email": "Email Address",
+    "app.login.form.password": "Password",
+    "app.login.form.submit": "Login"
+}
