@@ -1,3 +1,12 @@
 {
-    
+  "app.admin.settings.appearance.title": "Apparence",
+  "app.admin.settings.environment.title": "Environnement",
+  "app.admin.settings.general.title": "Général",
+  "app.admin.settings.security.title": "Sécurité",
+  "app.admin.settings.title": "Paramètres",
+  "app.login.form.description": "Veuillez saisir vos informations d'identification pour accéder à votre compte.",
+  "app.login.form.email": "Adresse email",
+  "app.login.form.password": "Mot de passe",
+  "app.login.form.submit": "Se connecter",
+  "app.login.form.title": "Connectez-vous à votre compte"
 }

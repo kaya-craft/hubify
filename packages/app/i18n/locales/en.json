@@ -1,7 +1,18 @@
 {
-    "app.login.form.title": "Login to Your Account",
-    "app.login.form.description": "Please enter your credentials to access your account.",
-    "app.login.form.email": "Email Address",
-    "app.login.form.password": "Password",
-    "app.login.form.submit": "Login"
+  "app.login.form.title": "Login to Your Account",
+  "app.login.form.description": "Please enter your credentials to access your account.",
+  "app.login.form.email": "Email Address",
+  "app.login.form.password": "Password",
+  "app.login.form.submit": "Login",
+  "app.admin.settings.title": "Settings",
+  "app.admin.settings.general.title": "General",
+  "app.admin.settings.appearance.title": "Appearance",
+  "app.admin.settings.environment.title": "Environment",
+  "app.admin.settings.security.title": "Security",
+  "app.admin.settings.appearance.description": "This is the appearance page.",
+  "app.notifications": "Notifications",
+  "app.search.placeholder": "Search...",
+  "app.admin.settings.environment.description": "This is the environment page.",
+  "app.admin.settings.general.description": "This is the general page.",
+  "app.admin.settings.security.description": "This is the security page."
 }
