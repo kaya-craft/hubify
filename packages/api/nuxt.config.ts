@@ -1,13 +1,13 @@
 export default defineNuxtConfig({
-  modules: ['@nuxt/test-utils', "nuxt-auth-utils"],
+  modules: ['@nuxt/test-utils', 'nuxt-auth-utils'],
 
   nitro: {
     experimental: {
-      database: true
-    }
+      database: true,
+    },
   },
 
   auth: {
-    webAuthn: true
-  }  
+    webAuthn: true,
+  },
 })

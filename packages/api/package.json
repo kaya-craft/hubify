@@ -20,7 +20,7 @@
     "nuxt-auth-utils": "0.5.20",
     "vue": "catalog:",
     "vue-router": "catalog:",
-    "zod": "^4.0.5"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@nuxt/test-utils": "catalog:",
