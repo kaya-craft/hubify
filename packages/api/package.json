@@ -1,0 +1,20 @@
+{
+  "name": "@hubify/api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./nuxt.config.ts"
+  },
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "nuxt": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:"
+  }
+}
