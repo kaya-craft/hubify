@@ -1,5 +1,5 @@
 {
-  "name": "@hubify/playground",
+  "name": "playground",
   "private": true,
   "type": "module",
   "scripts": {

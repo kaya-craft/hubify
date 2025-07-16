@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "pnpm --filter playground run dev"
+    "dev": "pnpm --filter playground run dev",
+    "test": "pnpm --filter @hubify/* run test"
   },
   "keywords": [],
   "author": "",
