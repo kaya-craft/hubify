@@ -1,7 +1,42 @@
 {
-    "app.login.form.title": "Login to Your Account",
-    "app.login.form.description": "Please enter your credentials to access your account.",
-    "app.login.form.email": "Email Address",
-    "app.login.form.password": "Password",
-    "app.login.form.submit": "Login"
+  "app.auth.login.meta.title": "Login",
+  "app.auth.login.meta.description": "Login to your account to continue",
+  "app.auth.login.form.title": "Login to Your Account",
+  "app.auth.login.form.description": "Don't have an account?",
+  "app.auth.login.form.register": "Register",
+  "app.auth.login.form.forgotpassword": "Forgot password?",
+  
+  "app.form.email": "Email Address",
+  "app.form.email.placeholder": "Enter your email",
+  "app.form.password": "Password",
+  "app.form.password.placeholder": "Enter yout password",
+
+
+  "app.auth.register.meta.title": "Register your new account",
+  "app.auth.register.meta.description": "Create an account to register",
+  "app.auth.register.form.title": "Create a new account",
+  "app.auth.register.form.register": "Register",
+  "app.auth.register.form.description": "Already have an account?",
+  "app.auth.register.form.login": "Login",
+  
+  "app.register.form.email": "Email Address",
+  "app.register.form.email.placeholder": "Enter your email",
+  "app.register.form.password": "Password",
+  "app.register.form.password.placeholder": "Enter yout password",  
+  
+  "validations.email.invalid": "Invalid email",
+  "validations.password.min": "Must be at least 8 characters",
+  "app.login.form.submit": "Login",
+
+  "app.admin.settings.title": "Settings",
+  "app.admin.settings.general.title": "General",
+  "app.admin.settings.appearance.title": "Appearance",
+  "app.admin.settings.environment.title": "Environment",
+  "app.admin.settings.security.title": "Security",
+  "app.admin.settings.appearance.description": "This is the appearance page.",
+  "app.notifications": "Notifications",
+  "app.search.placeholder": "Search...",
+  "app.admin.settings.environment.description": "This is the environment page.",
+  "app.admin.settings.general.description": "This is the general page.",
+  "app.admin.settings.security.description": "This is the security page."
 }
