@@ -18,14 +18,14 @@ const toast = useToast()
 const fields = [{
   name: 'email',
   type: 'text' as const,
-  label: t('app.login.form.email'),
-  placeholder: t('app.login.form.email.placeholder'),
+  label: t('app.form.email'),
+  placeholder: t('app.form.email.placeholder'),
   required: true
 }, {
   name: 'password',
-  label: t('app.login.form.password'),
+  label: t('app.form.password'),
   type: 'password' as const,
-  placeholder: t('app.login.form.password.placeholder')
+  placeholder: t('app.form.password.placeholder')
 }]
 
 const providers = [{
@@ -61,6 +61,7 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
     :providers="providers"
     :title="$t('app.auth.login.form.title')"
     :description="$t('app.auth.login.form.description')"
+    :submit="{ label: $t('app.login.form.submit') }"
     icon="i-lucide-lock"
     @submit="onSubmit"
   >
@@ -69,7 +70,7 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
       <ULink
         to="/auth/register"
         class="text-primary font-medium"
-      >{{ $t('app.auth.login.form.signup') }}</ULink>.
+      >{{ $t('app.auth.login.form.register') }}</ULink>.
     </template>
 
     <template #password-hint>
@@ -78,12 +79,6 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
         class="text-primary font-medium"
         tabindex="-1"
       >{{ $t('app.auth.login.form.forgotpassword') }}</ULink>
-    </template>
-
-    <template #submit>
-      <UButton block>
-        {{ $t('app.login.form.submit') }}
-      </UButton>
     </template>
   </UAuthForm>
 </template>
