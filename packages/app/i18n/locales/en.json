@@ -1,9 +1,19 @@
 {
-  "app.login.form.title": "Login to Your Account",
-  "app.login.form.description": "Please enter your credentials to access your account.",
+  "app.auth.login.meta.title": "Login",
+  "app.auth.login.meta.description": "Login to your account to continue",
+  "app.auth.login.form.title": "Login to Your Account",
+  "app.auth.login.form.description": "Don't have an account?",
+  "app.auth.login.form.signup": "Signup",
+  "app.auth.login.form.forgotpassword": "Forgot password?",
   "app.login.form.email": "Email Address",
+  "app.login.form.email.placeholder": "Enter your email",
   "app.login.form.password": "Password",
+  "app.login.form.password.placeholder": "Enter yout password",
+  
+  "validations.email.invalid": "Invalid email",
+  "validations.password.min": "Must be at least 8 characters",
   "app.login.form.submit": "Login",
+
   "app.admin.settings.title": "Settings",
   "app.admin.settings.general.title": "General",
   "app.admin.settings.appearance.title": "Appearance",
