@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
 
   const { email, password } = await readValidatedBody(event, z.object({
     email: z.string().email(),
-    password: z.string().min(8),
+    password: z.string().min(8)
   }).parse)
 
   const hashedPassword = await hashPassword(password)
@@ -16,9 +16,9 @@ export default defineEventHandler(async (event) => {
 
   await setUserSession(event, {
     user: {
-      email,
+      email
     },
-    loggedInAt: Date.now(),
+    loggedInAt: Date.now()
   })
 
   return setResponseStatus(event, 201)

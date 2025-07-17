@@ -8,7 +8,7 @@ interface DBUser {
 
 const invalidCredentialsError = createError({
   statusCode: 401,
-  message: 'Invalid credentials',
+  message: 'Invalid credentials'
 })
 
 export default defineEventHandler(async (event) => {
@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
 
   const { email, password } = await readValidatedBody(event, z.object({
     email: z.email(),
-    password: z.string().min(8),
+    password: z.string().min(8)
   }).parse)
 
   const user = await db.sql<{ rows: DBUser[] }>`SELECT * FROM hubify_users WHERE email = ${email}`.then(result => result.rows[0])
@@ -31,9 +31,9 @@ export default defineEventHandler(async (event) => {
 
   await setUserSession(event, {
     user: {
-      email,
+      email
     },
-    loggedInAt: Date.now(),
+    loggedInAt: Date.now()
   })
 
   return setResponseStatus(event, 201)
