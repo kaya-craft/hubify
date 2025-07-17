@@ -22,9 +22,7 @@ const localeRoute = useLocaleRoute()
 /**
  * Current page title.
  */
-const currentPageTitle = computed(() => {
-  return import.meta.client ? document.title : ''
-})
+const currentPageTitle = useTitle()
 
 /**
  * Check if there are notifications.
@@ -109,7 +107,7 @@ const collections = computed<NavigationMenuItem[]>(() => [
 
     <UDashboardPanel>
        <template #header>
-      <UDashboardNavbar :title="currentPageTitle" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar :title="currentPageTitle || ''" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
