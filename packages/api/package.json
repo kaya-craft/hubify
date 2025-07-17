@@ -20,7 +20,8 @@
     "nuxt-auth-utils": "0.5.20",
     "vue": "catalog:",
     "vue-router": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@hubify/restql": "workspace:*"
   },
   "devDependencies": {
     "@nuxt/test-utils": "catalog:",
