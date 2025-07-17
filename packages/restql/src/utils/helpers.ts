@@ -49,7 +49,7 @@ export function addPrimaryKeyCondition<S extends Schema, T extends TableName<S>,
  * Wraps a string in backticks to be used as an identifier in SQL queries.
  */
 export function wrap<T extends string>(value: T) {
-  return `\`${value}\`` as const
+  return value
 }
 
 /**

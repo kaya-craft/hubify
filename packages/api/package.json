@@ -14,14 +14,15 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@hubify/restql": "workspace:*",
+    "@nuxt/kit": "^4.0.0",
     "@simplewebauthn/browser": "^11.0.0",
     "@simplewebauthn/server": "^11.0.0",
     "nuxt": "catalog:",
     "nuxt-auth-utils": "0.5.20",
     "vue": "catalog:",
     "vue-router": "catalog:",
-    "zod": "catalog:",
-    "@hubify/restql": "workspace:*"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@nuxt/test-utils": "catalog:",

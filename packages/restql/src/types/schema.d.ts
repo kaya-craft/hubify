@@ -18,6 +18,8 @@ export interface Schema {
         table: string
         fromKey: string
         toKey: string
+        onDelete?: 'CASCADE' | 'SET NULL' | 'NO ACTION'
+        onUpdate?: 'CASCADE' | 'SET NULL' | 'NO ACTION'
       }
     }
   }

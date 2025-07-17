@@ -1,7 +1,7 @@
 import type { CreateOneRawFn, FindOneRawFn, FindRawFn, RemoveOneRawFn, RemoveRawFn, UpdateOneRawFn, UpdateRawFn } from './queries'
 import type { Schema } from '@/types/schema'
 import { createDatabase } from 'db0'
-import connector from 'db0/connectors/sqlite3'
+import connector from 'db0/connectors/node-sqlite'
 import { defineDriver } from '@/index'
 import { createOneRaw, findOneRaw, findRaw, removeOneRaw, removeRaw, updateOneRaw, updateRaw } from './queries'
 
