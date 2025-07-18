@@ -162,8 +162,6 @@ const collections = computed<NavigationMenuItem[]>(() => [
           <NuxtPage />
         </template>
       </UDashboardPanel>
-
-      <NotificationsSlideover />
     </UDashboardGroup>
   </UApp>
 </template>

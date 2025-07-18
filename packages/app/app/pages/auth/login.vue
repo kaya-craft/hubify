@@ -29,20 +29,6 @@ const fields = [{
   placeholder: t('app.form.password.placeholder')
 }]
 
-const providers = [{
-  label: 'Google',
-  icon: 'i-simple-icons-google',
-  onClick: () => {
-    toast.add({ title: 'Google', description: 'Login with Google' })
-  }
-}, {
-  label: 'GitHub',
-  icon: 'i-simple-icons-github',
-  onClick: () => {
-    toast.add({ title: 'GitHub', description: 'Login with GitHub' })
-  }
-}]
-
 const schema = z.object({
   email: z.email(t('validations.email.invalid')),
   password: z.string().min(8, t('validations.password.min'))
@@ -52,15 +38,12 @@ type Schema = z.output<typeof schema>
 
 const { login } = useAuth()
 
-const localeRoute = useLocaleRoute()
-
 function onLoginSuccess() {
   toast.add({
     color: 'success',
     title: 'User logged in successfully'
   })
-  const admin = localeRoute({ name: 'admin' })
-  navigateTo(admin)
+  return navigateToLocaleRoute('admin')
 }
 
 function onLoginError(err: NuxtError<{ message: string }>) {
@@ -85,7 +68,6 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
   <UAuthForm
     :fields="fields"
     :schema="schema"
-    :providers="providers"
     :title="$t('app.auth.login.form.title')"
     :description="$t('app.auth.login.form.description')"
     :submit="{ label: $t('app.login.form.submit') }"
