@@ -1,5 +1,14 @@
 import { z } from 'zod'
 
+declare module '#auth' {
+  interface AuthProviders {
+    email: {
+      email: string
+      password: string
+    }
+  }
+}
+
 const invalidCredentialsError = createError({
   statusCode: 401,
   message: 'Invalid credentials'
