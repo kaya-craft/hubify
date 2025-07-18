@@ -14,6 +14,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@hubify/restql": "workspace:*",
+    "@nuxt/kit": "^4.0.0",
     "@simplewebauthn/browser": "^11.0.0",
     "@simplewebauthn/server": "^11.0.0",
     "nuxt": "catalog:",

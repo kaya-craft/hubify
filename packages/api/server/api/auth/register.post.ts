@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export default defineEventHandler(async (event) => {
-  const db = useDatabase()
+  const { createOne } = useDb()
 
   const { email, password } = await readValidatedBody(event, z.object({
     email: z.string().email(),
@@ -10,7 +10,10 @@ export default defineEventHandler(async (event) => {
 
   const hashedPassword = await hashPassword(password)
 
-  await db.sql`INSERT INTO hubify_users(email, password) VALUES (${email}, ${hashedPassword})`
+  await createOne('hubify_users', {
+    email,
+    password: hashedPassword
+  })
 
   // @todo: Send a confirmation email to the user before logging them in.
 
