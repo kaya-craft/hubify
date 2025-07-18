@@ -62,8 +62,7 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
   label: 'Log out',
   icon: 'i-lucide-log-out',
   onSelect: () => {
-    // TODO / Replace with actual logout logic when available.
-    // useAuth().logout()
+    useAuth().logout()
   }
 }]]))
 </script>
