@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { NuxtError } from '#app'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import * as z from 'zod'
 
@@ -49,8 +50,34 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-function onSubmit(payload: FormSubmitEvent<Schema>) {
-  console.log('Submitted', payload)
+const { login } = useAuth()
+
+const localeRoute = useLocaleRoute()
+
+function onLoginSuccess() {
+  toast.add({
+    color: 'success',
+    title: 'User logged in successfully'
+  })
+  const admin = localeRoute({ name: 'admin' })
+  navigateTo(admin)
+}
+
+function onLoginError(err: NuxtError<{ message: string }>) {
+  toast.add({
+    color: 'error',
+    title: err.data?.message || err.message
+  })
+}
+
+async function onSubmit(payload: FormSubmitEvent<Schema>) {
+  await login('email', {
+    email: payload.data.email,
+    password: payload.data.password
+  },
+  () => onLoginSuccess(),
+  err => onLoginError(err)
+  )
 }
 </script>
 
