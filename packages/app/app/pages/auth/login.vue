@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { NuxtError } from '#app'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import * as z from 'zod'
 
@@ -28,20 +29,6 @@ const fields = [{
   placeholder: t('app.form.password.placeholder')
 }]
 
-const providers = [{
-  label: 'Google',
-  icon: 'i-simple-icons-google',
-  onClick: () => {
-    toast.add({ title: 'Google', description: 'Login with Google' })
-  }
-}, {
-  label: 'GitHub',
-  icon: 'i-simple-icons-github',
-  onClick: () => {
-    toast.add({ title: 'GitHub', description: 'Login with GitHub' })
-  }
-}]
-
 const schema = z.object({
   email: z.email(t('validations.email.invalid')),
   password: z.string().min(8, t('validations.password.min'))
@@ -49,8 +36,31 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-function onSubmit(payload: FormSubmitEvent<Schema>) {
-  console.log('Submitted', payload)
+const { login } = useAuth()
+
+function onLoginSuccess() {
+  toast.add({
+    color: 'success',
+    title: 'User logged in successfully'
+  })
+  return navigateToLocaleRoute('admin')
+}
+
+function onLoginError(err: NuxtError<{ message: string }>) {
+  toast.add({
+    color: 'error',
+    title: err.data?.message || err.message
+  })
+}
+
+async function onSubmit(payload: FormSubmitEvent<Schema>) {
+  await login('email', {
+    email: payload.data.email,
+    password: payload.data.password
+  },
+  () => onLoginSuccess(),
+  err => onLoginError(err)
+  )
 }
 </script>
 
@@ -58,7 +68,6 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
   <UAuthForm
     :fields="fields"
     :schema="schema"
-    :providers="providers"
     :title="$t('app.auth.login.form.title')"
     :description="$t('app.auth.login.form.description')"
     :submit="{ label: $t('app.login.form.submit') }"
