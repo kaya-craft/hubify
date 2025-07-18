@@ -14,17 +14,22 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@iconify-json/heroicons": "^1.2.2",
     "@iconify-json/lucide": "^1.2.57",
     "@iconify-json/simple-icons": "^1.2.43",
     "@nuxt/ui-pro": "catalog:",
     "@nuxtjs/i18n": "^9.5.6",
+    "@vueuse/core": "^13.5.0",
+    "@vueuse/nuxt": "^13.5.0",
     "nuxt": "catalog:",
     "tailwindcss": "^4.1.11",
     "vue": "catalog:",
-    "vue-router": "catalog:"
+    "vue-router": "catalog:",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@nuxt/test-utils": "catalog:",
+    "@nuxt/ui": "^3.2.0",
     "vitest": "catalog:"
   }
 }
