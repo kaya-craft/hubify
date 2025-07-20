@@ -9,7 +9,7 @@ export const columns = defineTableColumns({
     notNull: true
   },
   password: {
-    type: 'int8',
+    type: 'int4',
     notNull: false
   },
   createdAt: {

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { UnionToTuple } from 'type-fest'
-import type { AllFields, Item, JoinClauses, Normalize, NormalizedColumns, OrderByClauses, WhereClauses, Wrap } from './helpers'
+import type { AllFields, Item, JoinClauses, Normalize, NormalizedColumns, OrderByClauses, SchemaDiff, WhereClauses, Wrap } from './helpers'
 import type { CleanJoin } from '@/types/helpers'
 import type { QueryParams } from '@/types/params'
-import type { FieldName, Schema, TableName } from '@/types/schema'
+import type { FieldName, Schema, Table, TableColumn, TableName, TableRelation } from '@/types/schema'
 import { getAllJoinClauses, getOrderByClauses, getWhereClauses, join, normalizeColumns, normalizeOperationValue, wrap } from './helpers'
 
 /**
@@ -32,6 +32,76 @@ export function remove<T extends TableName<Schema>>(table: T): Remove<T> {
  */
 export function insert<T extends TableName<Schema>>(table: T): Insert<T> {
   return `INSERT INTO ${wrap(table)}`
+}
+
+/**
+ * SQL Create statement for the specified table.
+ */
+export function createTable<const N extends string, const T extends Table>(name: N, definition: T) {
+  return join([
+    `CREATE TABLE IF NOT EXISTS ${name} (`,
+    join(Object.entries(definition.columns).map(([name, column]) => defineTableColumn(name, column, definition.relations?.[name])), ', '),
+    ')'
+  ], '') as CreateTable<N, T>
+}
+
+/**
+ * SQL Column statement for the specified table and columns.
+ */
+function defineTableColumn<N extends string, C extends TableColumn>(name: N, column: C): DefineTableColumn<N, C>
+function defineTableColumn<N extends string, C extends TableColumn, R extends TableRelation>(name: N, column: C, relation?: R): DefineTableColumn<N, C, R>
+function defineTableColumn<N extends string, C extends TableColumn, R extends TableRelation | undefined>(name: N, column: C, relation?: R) {
+  const constraints = [
+    column.primaryKey ? 'PRIMARY KEY' : '',
+    column.unique ? 'UNIQUE' : '',
+    column.notNull ? 'NOT NULL' : '',
+    typeof column.default !== 'undefined' ? `DEFAULT ${column.default}` : '',
+    relation ? `REFERENCES ${relation.table}(${relation.toKey}) ON DELETE ${relation.onDelete || 'NO ACTION'} ON UPDATE ${relation.onUpdate || 'NO ACTION'}` : ''
+  ].filter(Boolean).join(' ')
+
+  return `${name} ${column.type.toUpperCase()} ${constraints}`.trim()
+}
+
+/**
+ * SQL Alter statement for the specified table.
+ */
+export function updateTable<const N extends string, const D extends SchemaDiff['updated'][string]>(tableName: N, diff: D) {
+  return join([
+    ...Object.entries(diff.added || {}).map(([colName, def]) => addTableColumn(tableName, colName, def.column, def.relation)),
+    ...Object.entries(diff.updated || {}).map(([colName, def]) => updateTableColumn(tableName, colName, def.column, def.relation)),
+    ...Object.entries(diff.removed || {}).map(([colName]) => dropTableColumn(tableName, colName))
+  ], '; ') as UpdateTable<N, D>
+}
+
+/**
+ * SQL Add column statement for the specified table.
+ */
+export function addTableColumn<N extends string, C extends string, D extends TableColumn, R extends TableRelation>(table: N, colName: C, definition: D, relation?: R) {
+  return `ALTER TABLE ${wrap(table)} ADD COLUMN ${defineTableColumn(colName, definition, relation)}` as AddTableColumn<N, C, R>
+}
+
+/**
+ * SQL Update column statement for the specified table.
+ */
+export function updateTableColumn<N extends string, C extends string, D extends TableColumn, R extends TableRelation>(table: N, colName: C, definition: D, relation?: R) {
+  return join([
+    dropTableColumn(table, colName),
+    `ALTER TABLE ${wrap(table)} ADD COLUMN ${defineTableColumn(colName, definition, relation)}`
+  ], '; ') as UpdateTableColumn<N, C, D, R>
+}
+
+/**
+ * SQL Drop column statement for the specified table.
+ */
+export function dropTableColumn<N extends string, C extends string>(table: N, colName: C): DropTableColumn<N, C> {
+  return `ALTER TABLE ${wrap(table)} DROP COLUMN ${colName}`
+}
+
+/**
+ * SQL Drop statement for the specified table.
+ */
+export function dropTable<N extends string>(table: N): DropTable<N> {
+  return `DROP TABLE IF EXISTS ${wrap(table)}`
 }
 
 /**
@@ -124,3 +194,28 @@ export type OrderBy<S extends Schema, T extends TableName<S>, C extends QueryPar
   ? `ORDER BY ${CleanJoin<OrderByClauses<S, T, C>>}` : ''
 
 export type Where<S extends Schema, T extends TableName<S>, W extends QueryParams<S, T>['where']> = W extends Record<string, any> ? `WHERE ${WhereClauses<S, T, W>}` : ''
+
+export type DropTable<N extends string> = `DROP TABLE IF EXISTS ${Wrap<N>}`
+
+export type DropTableColumn<N extends string, C extends string> = `ALTER TABLE ${Wrap<N>} DROP COLUMN ${Wrap<C>}`
+
+export type CreateTable<N extends string, T extends Table> = `CREATE TABLE IF NOT EXISTS ${Wrap<N>} (${CleanJoin<UnionToTuple<{
+  [K in keyof T['columns']]: DefineTableColumn<K & string, T['columns'][K], K extends keyof T['relations'] ? T['relations'][K] extends infer R extends TableRelation ? R : undefined : undefined>
+}[keyof T['columns']]>>})`
+
+export type DefineTableColumn<N extends string, C extends TableColumn, R extends TableRelation | undefined = undefined> = `${Wrap<N>} ${Uppercase<C['type']>} ${CleanJoin<[
+  C['primaryKey'] extends true ? 'PRIMARY KEY' : '',
+  C['unique'] extends true ? 'UNIQUE' : '',
+  C['notNull'] extends true ? 'NOT NULL' : '',
+  C['default'] extends string | number | boolean ? `DEFAULT ${C['default']}` : '',
+  R extends TableRelation ? `REFERENCES ${R['table']}(${R['toKey']}) ON DELETE ${R['onDelete'] extends string ? R['onDelete'] : 'NO ACTION'} ON UPDATE ${R['onUpdate'] extends string ? R['onUpdate'] : 'NO ACTION'}` : ''
+], ' '>}`
+
+export type UpdateTable<N extends string, D extends SchemaDiff['updated'][string]> = string
+
+export type UpdateTableColumn<N extends string, C extends string, D extends TableColumn, R extends TableRelation> = CleanJoin<[
+  DropTableColumn<N, C>,
+  `ALTER TABLE ${Wrap<N>} ADD COLUMN ${DefineTableColumn<C, D, R>}`
+], ';'>
+
+export type AddTableColumn<N extends string, C extends string, R extends TableRelation | undefined = undefined> = `ALTER TABLE ${Wrap<N>} ADD COLUMN ${DefineTableColumn<C, TableColumn, R>}`

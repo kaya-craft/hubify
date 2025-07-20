@@ -3,7 +3,7 @@ import type { Trim, UnionToTuple } from 'type-fest'
 import type { JoinableItem } from 'type-fest/source/join'
 import type { CleanJoin, Simplify, UniqueArray } from '@/types/helpers'
 import type { Condition, ConditionTree, QueryParams } from '@/types/params'
-import type { FieldName, PrimaryKey, PrimaryKeyValue, Relation, RelationDefinition, RelationName, RelationTableName, Schema, TableDefinition, TableName } from '@/types/schema'
+import type { FieldName, PrimaryKey, PrimaryKeyValue, Relation, RelationDefinition, RelationName, RelationTableName, Schema, Table, TableColumn, TableDefinition, TableName, TableRelation } from '@/types/schema'
 
 /**
  * SQL Operators.
@@ -217,6 +217,89 @@ export function normalizeOperationValue<V>(value: V) {
   return (typeof value === 'string' ? `'${value}'` : value) as Normalize<V>
 }
 
+/**
+ * Create a diff between two schemas.
+ */
+export function getSchemaDiff(current: Schema, newSchema: Schema) {
+  const diff: SchemaDiff = {
+    added: {},
+    updated: {},
+    removed: {}
+  }
+
+  for (const tableName in newSchema) {
+    if (current[tableName]) {
+      const { columns: columns1, relations: relations1 } = current[tableName]
+      const { columns: columns2, relations: relations2 } = newSchema[tableName]
+
+      for (const name in columns2) {
+        if (name in columns1) {
+          if (columnHasChanged(columns1[name], columns2[name], relations1?.[name], relations2?.[name])) {
+            diff.updated[tableName] ??= {}
+            diff.updated[tableName].updated ??= {}
+            diff.updated[tableName].updated[name] = {
+              column: columns2[name],
+              relation: relations2?.[name]
+            }
+          }
+        }
+        else {
+          diff.updated[tableName] ??= {}
+          diff.updated[tableName].added ??= {}
+          diff.updated[tableName].added[name] = {
+            column: columns2[name],
+            relation: relations2?.[name]
+          }
+        }
+      }
+
+      for (const name in columns1) {
+        if (name in columns2) continue
+        diff.updated[tableName] ??= {}
+        diff.updated[tableName].removed ??= {}
+        diff.updated[tableName].removed[name] = true
+      }
+    }
+    else {
+      diff.added[tableName] = newSchema[tableName]
+    }
+  }
+
+  for (const tableName in current) {
+    if (newSchema[tableName]) continue
+    diff.removed[tableName] = true
+  }
+
+  return diff
+}
+
+/**
+ * CHeck if column definition has changed in any way.
+ */
+function columnHasChanged(column1: TableColumn, column2: TableColumn, relations1?: TableRelation, relations2?: TableRelation) {
+  return (
+    column1.type?.toLowerCase() !== column2.type?.toLowerCase()
+    || Boolean(column1.primaryKey) !== Boolean(column2.primaryKey)
+    || Boolean(column1.unique) !== Boolean(column2.unique)
+    || Boolean(column1.notNull) !== Boolean(column2.notNull)
+    || column1.default?.toString() !== column2.default?.toString()
+    || relations1?.table !== relations2?.table
+    || relations1?.fromKey !== relations2?.fromKey
+    || relations1?.toKey !== relations2?.toKey
+    || relations1?.onDelete !== relations2?.onDelete
+    || relations1?.onUpdate !== relations2?.onUpdate
+  )
+}
+
+export type SchemaDiff = {
+  added: Record<string, Table>
+  removed: Record<string, true>
+  updated: Record<string, {
+    added?: Record<string, { column: TableColumn, relation?: TableRelation }>
+    removed?: Record<string, true>
+    updated?: Record<string, { column: TableColumn, relation?: TableRelation }>
+  }>
+}
 export type NormalizedColumn<S extends Schema, T extends TableName<S>, C extends string>
     = C extends '*' ? `${Wrap<T>}.${C}`
       : C extends `${infer K}.${infer V}` ? K extends keyof S[T]['relations']
