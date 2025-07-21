@@ -4,7 +4,7 @@ export type Props = {
 }
 
 defineExpose({
-  dataTypes: [] as const
+  dataTypes: ['int4'] as const
 })
 
 defineProps<Props>()
