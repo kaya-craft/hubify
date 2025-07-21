@@ -7,7 +7,9 @@ export function defineColumnFields<C extends TableColumns, const F extends Field
 }
 
 type Fields<C extends TableColumns> = {
-  [K in keyof C]?: C[K]['type'] extends keyof FieldByDataTypes ? FieldByDataTypes[C[K]['type']] : never
+  [K in keyof C]?: C[K]['type'] extends keyof FieldByDataTypes ? FieldByDataTypes[C[K]['type']] : {
+    component: null
+  }
 }
 
 type ComponentProps<C extends Component> = C extends new (...args: any) => any
