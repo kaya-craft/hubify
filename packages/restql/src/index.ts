@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Database } from 'db0'
 import type { QueryParams } from './types/params'
-import type { PrimaryKeyValue, Schema, TableName } from './types/schema'
+import type { PrimaryKeyValue, Schema, Table, TableName } from './types/schema'
 import type { Item } from './utils/helpers'
 
 /**
@@ -9,6 +9,13 @@ import type { Item } from './utils/helpers'
  */
 export function defineSchema<const S extends Schema>(schema: S): S {
   return schema
+}
+
+/**
+ * Define a table for the schema.
+ */
+export function defineTable<const T extends Table>(table: T) {
+  return table
 }
 
 /**
@@ -24,6 +31,9 @@ export function defineDriver<R extends DriverOptions, S extends Schema>(create: 
     const createOneRaw = driver.createOneRaw as R['createOneRaw']
     const removeRaw = driver.removeRaw as R['removeRaw']
     const removeOneRaw = driver.removeOneRaw as R['removeOneRaw']
+    const retrieveSchema = driver.retrieveSchema as R['retrieveSchema']
+    const updateSchema = driver.updateSchema as R['updateSchema']
+    const runTransaction = driver.runTransaction as R['runTransaction']
 
     async function exec<T>(query: string) {
       const result = await db.sql<{ rows: T }>`{${query}}`
@@ -63,6 +73,8 @@ export function defineDriver<R extends DriverOptions, S extends Schema>(create: 
       return result
     }
 
+    const transaction = (cb: () => Promise<void>) => runTransaction(db, cb)
+
     const result = {
       find: Object.assign(find, { raw: findRaw }),
       findOne: Object.assign(findOne, { raw: findOneRaw }),
@@ -71,9 +83,12 @@ export function defineDriver<R extends DriverOptions, S extends Schema>(create: 
       createOne: Object.assign(createOne, { raw: createOneRaw }),
       remove: Object.assign(remove, { raw: removeRaw }),
       removeOne: Object.assign(removeOne, { raw: removeOneRaw }),
+      retrieveSchema: () => retrieveSchema(db),
+      updateSchema: (newSchema: Schema) => updateSchema(db, newSchema),
       db,
       schema,
-      setDatabase
+      setDatabase,
+      transaction
     }
 
     return result
@@ -88,6 +103,9 @@ export interface DriverOptions {
   removeRaw: (table: string, params: object) => string
   removeOneRaw: (table: string, primaryKey: any, params: object) => string
   createOneRaw: (table: string, item: object) => string
+  retrieveSchema: (db: Database) => Promise<Schema>
+  updateSchema: (db: Database, newSchema: Schema) => Promise<void>
+  runTransaction: (db: Database, cb: () => Promise<void>) => Promise<void>
 }
 
 export * from './types/helpers.d'

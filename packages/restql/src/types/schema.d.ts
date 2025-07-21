@@ -2,28 +2,37 @@
 import type { EmptyObject } from 'type-fest'
 import type { Simplify } from './helpers'
 
-export interface Schema {
-  [table: string]: {
-    columns: {
-      [column: string]: {
-        type: ColumnTypes
-        primaryKey?: boolean
-        unique?: boolean
-        notNull?: boolean
-        default?: string | number | boolean | null
-      }
-    }
-    relations?: {
-      [relation: string]: {
-        table: string
-        fromKey: string
-        toKey: string
-        onDelete?: 'CASCADE' | 'SET NULL' | 'NO ACTION'
-        onUpdate?: 'CASCADE' | 'SET NULL' | 'NO ACTION'
-      }
-    }
+export interface Schema<C extends ColumnTypes = ColumnTypes> {
+  [table: string]: Table<C>
+}
+
+export type Table<C extends ColumnTypes = ColumnTypes> = {
+  columns: {
+    [column: string]: TableColumn<C>
+  }
+  relations?: {
+    [relation: string]: TableRelation
   }
 }
+
+export type TableColumn<C extends ColumnTypes = ColumnTypes> = {
+  type: C
+  primaryKey?: boolean
+  unique?: boolean
+  notNull?: boolean
+  default?: string | number | boolean | null
+}
+
+export type TableRelation = {
+  table: string
+  fromKey: string
+  toKey: string
+  onDelete?: RelationOnAction
+  onUpdate?: RelationOnAction
+
+}
+
+export type RelationOnAction = 'CASCADE' | 'SET NULL' | 'NO ACTION'
 
 type TableDefinition<S extends Schema, T extends TableName<S>, R extends boolean = true> = {
   [C in ColumnName<S, T>]: ColumnTypeToTsType<S[T]['columns'][C]['type']>
