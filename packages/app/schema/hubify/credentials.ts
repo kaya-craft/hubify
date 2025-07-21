@@ -1,3 +1,3 @@
-import { columns } from '@hubify/api/schema/hubify/credentials.js'
+import { columns } from '@hubify/api/schema/hubify/credentials'
 
 export const fields = defineColumnFields(columns, {})

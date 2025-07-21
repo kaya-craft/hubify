@@ -3,7 +3,7 @@ import { resolve, isAbsolute, extname, join } from 'node:path'
 import { existsSync, readdirSync, writeFileSync } from 'node:fs'
 
 export interface HubifyModuleOptions {
-  folders: string[]
+  schema: string[]
 }
 
 const { resolve: localResolve } = createResolver(import.meta.url)
@@ -14,11 +14,11 @@ export default defineNuxtModule<HubifyModuleOptions>({
     configKey: 'hubify'
   },
   defaults: nuxt => ({
-    folders: [localResolve('../../schema'), join(nuxt.options.rootDir, 'schema')]
+    schema: [localResolve('../../schema'), join(nuxt.options.rootDir, 'schema')]
   }),
   setup(options, nuxt) {
     const logger = useLogger('@hubify/schema')
-    const schemaDirs = getDirectories(options.folders)
+    const schemaDirs = getDirectories(options.schema)
 
     if (schemaDirs.length > 0) {
       logger.info(`Schema directories: ${schemaDirs.join(',')}`)
@@ -35,7 +35,7 @@ export default defineNuxtModule<HubifyModuleOptions>({
 
     nuxt.hook('builder:watch', (event, path) => {
       if (event === 'add' || event === 'addDir' || event === 'unlink' || event === 'unlinkDir') {
-        const schemaDirs = getDirectories(options.folders)
+        const schemaDirs = getDirectories(options.schema)
         const isSchemaFile = schemaDirs.some(dir => path.startsWith(dir))
         if (isSchemaFile) {
           writeFileSync(schemaPath, createSchemaContent(schemaDirs))
@@ -52,9 +52,9 @@ export default defineNuxtModule<HubifyModuleOptions>({
 /**
  * Get schema directories from the Nuxt options.
  */
-export function getDirectories(folders: string[]) {
+export function getDirectories(schema: string[]) {
   const layers = useNuxt().options._layers.map(layer => layer.cwd)
-  return [...new Set(folders.flatMap(dir => isAbsolute(dir) ? dir : layers.map(layer => resolve(layer, dir))).filter(dir => existsSync(dir)))]
+  return [...new Set(schema.flatMap(dir => isAbsolute(dir) ? dir : layers.map(layer => resolve(layer, dir))).filter(dir => existsSync(dir)))]
 }
 
 /**

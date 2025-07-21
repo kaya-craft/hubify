@@ -1,5 +1,5 @@
 import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, useLogger } from 'nuxt/kit'
-import { listDirFiles, getDirectories } from '@hubify/api/modules/schema/index.js'
+import { listDirFiles, getDirectories } from '@hubify/api/modules/schema/index'
 import { join } from 'node:path'
 import { writeFileSync } from 'node:fs'
 
@@ -7,7 +7,7 @@ export interface FieldsModuleOptions {
   fields: string[]
 }
 
-declare module '@hubify/api/modules/schema/index.js' {
+declare module '@hubify/api/modules/schema/index' {
   interface HubifyModuleOptions extends FieldsModuleOptions {}
 }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 export type Props = {
-  cool: number
+  cool?: number
 }
 
 defineExpose({

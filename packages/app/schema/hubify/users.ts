@@ -1,4 +1,4 @@
-import { columns } from '@hubify/api/schema/hubify/users.js'
+import { columns } from '@hubify/api/schema/hubify/users'
 
 export const fields = defineColumnFields(columns, {
   id: {
