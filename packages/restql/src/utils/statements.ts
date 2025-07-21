@@ -211,7 +211,7 @@ export type DefineTableColumn<N extends string, C extends TableColumn, R extends
   R extends TableRelation ? `REFERENCES ${R['table']}(${R['toKey']}) ON DELETE ${R['onDelete'] extends string ? R['onDelete'] : 'NO ACTION'} ON UPDATE ${R['onUpdate'] extends string ? R['onUpdate'] : 'NO ACTION'}` : ''
 ], ' '>}`
 
-export type UpdateTable<N extends string, D extends SchemaDiff['updated'][string]> = string
+export type UpdateTable<_N extends string, _D extends SchemaDiff['updated'][string]> = string
 
 export type UpdateTableColumn<N extends string, C extends string, D extends TableColumn, R extends TableRelation> = CleanJoin<[
   DropTableColumn<N, C>,
