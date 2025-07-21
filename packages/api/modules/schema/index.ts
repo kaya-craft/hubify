@@ -1,48 +1,44 @@
-import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, useLogger } from 'nuxt/kit'
-import { resolve, isAbsolute, extname } from 'node:path'
+import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, useLogger, useNuxt } from 'nuxt/kit'
+import { resolve, isAbsolute, extname, join } from 'node:path'
 import { existsSync, readdirSync, writeFileSync } from 'node:fs'
 
-interface SchemaModuleOptions {
+export interface HubifyModuleOptions {
   folders: string[]
 }
 
 const { resolve: localResolve } = createResolver(import.meta.url)
 
-export default defineNuxtModule<SchemaModuleOptions>({
+export default defineNuxtModule<HubifyModuleOptions>({
   meta: {
     name: '@hubify/schema',
-    configKey: 'schema'
+    configKey: 'hubify'
   },
-  defaults: () => ({
-    folders: [localResolve('../../schema'), './schema']
+  defaults: nuxt => ({
+    folders: [localResolve('../../schema'), join(nuxt.options.rootDir, 'schema')]
   }),
   setup(options, nuxt) {
     const logger = useLogger('@hubify/schema')
-    const folders = Array.isArray(options.folders) ? options.folders : [options.folders]
-    const schemaDirs = getSchemaDirs(folders, nuxt.options.rootDir)
+    const schemaDirs = getDirectories(options.folders)
 
-    if (schemaDirs.length === 0) {
-      logger.warn('No schema directories found. Please check your configuration.')
-      return
+    if (schemaDirs.length > 0) {
+      logger.info(`Schema directories: ${schemaDirs.join(',')}`)
     }
 
     addImportsDir(localResolve('./runtime/utils'))
     addServerImportsDir(localResolve('./runtime/utils'))
 
-    logger.info(`Schema directories: ${schemaDirs.join(', ')}`)
-
     const { dst: schemaPath } = addTemplate({
       filename: 'hubify/schema.ts',
-      getContents: () => createContent(schemaDirs),
+      getContents: () => createSchemaContent(schemaDirs),
       write: true
     })
 
     nuxt.hook('builder:watch', (event, path) => {
       if (event === 'add' || event === 'addDir' || event === 'unlink' || event === 'unlinkDir') {
-        const schemaDirs = getSchemaDirs(folders, nuxt.options.rootDir)
+        const schemaDirs = getDirectories(options.folders)
         const isSchemaFile = schemaDirs.some(dir => path.startsWith(dir))
         if (isSchemaFile) {
-          writeFileSync(schemaPath, createContent(schemaDirs))
+          writeFileSync(schemaPath, createSchemaContent(schemaDirs))
         }
       }
     })
@@ -56,34 +52,35 @@ export default defineNuxtModule<SchemaModuleOptions>({
 /**
  * Get schema directories from the Nuxt options.
  */
-function getSchemaDirs(folders: string[], rootDir: string) {
-  return folders.map(dir => isAbsolute(dir) ? dir : resolve(rootDir, dir)).filter(dir => existsSync(dir))
+export function getDirectories(folders: string[]) {
+  const layers = useNuxt().options._layers.map(layer => layer.cwd)
+  return [...new Set(folders.flatMap(dir => isAbsolute(dir) ? dir : layers.map(layer => resolve(layer, dir))).filter(dir => existsSync(dir)))]
 }
 
 /**
  * Recursively lists all files in a directory and its subdirectories.
  */
-function listDirFiles(dir: string, prepend = '') {
+export function listDirFiles(dir: string, separator: string, extensions: string[], prepend = '') {
   const files: {
     path: string
-    collection: string
+    name: string
   }[] = []
 
   const items = readdirSync(dir, { withFileTypes: true })
 
   for (const item of items) {
     const ext = extname(item.name)
-    const name = item.name.replace(ext, '')
-    const fullPath = resolve(dir, name)
-    const collection = prepend ? `${prepend}_${name}` : name
+    const nameWithoutExt = item.name.replace(ext, '')
+    const fullPath = resolve(dir, nameWithoutExt)
+    const name = prepend ? `${prepend}${separator}${nameWithoutExt}` : nameWithoutExt
 
     if (item.isDirectory()) {
-      files.push(...listDirFiles(fullPath, collection))
+      files.push(...listDirFiles(fullPath, separator, extensions, name))
     }
-    else if (item.isFile() && ['.ts', '.js'].includes(ext)) {
+    else if (item.isFile() && extensions.includes(ext)) {
       files.push({
         path: fullPath,
-        collection: collection
+        name: name
       })
     }
   }
@@ -94,17 +91,17 @@ function listDirFiles(dir: string, prepend = '') {
 /**
  * Generates the content for the schema file by importing all schema files found in the specified directories.
  */
-function createContent(schemaDirs: string[]) {
-  const files = schemaDirs.flatMap(dir => listDirFiles(dir))
-  const collections = [...new Set(files.map(file => file.collection))]
+function createSchemaContent(schemaDirs: string[]) {
+  const files = schemaDirs.flatMap(dir => listDirFiles(dir, '_', ['.ts', '.js']))
+  const collections = [...new Set(files.map(file => file.name))]
   const data = collections.map((collection) => {
-    const collectionFiles = files.filter(f => f.collection === collection)
+    const collectionFiles = files.filter(f => f.name === collection)
     const hasMultipleFiles = collectionFiles.length > 1
 
     if (hasMultipleFiles) {
       return {
-        import: collectionFiles.map((file, index) => `import * as ${file.collection}_${index} from '${file.path}'`).join('\n'),
-        export: `${collection}: Object.assign({}, ${collectionFiles.map((file, index) => `${file.collection}_${index}`).join(', ')})`
+        import: collectionFiles.map((file, index) => `import * as ${file.name}_${index} from '${file.path}'`).join('\n'),
+        export: `${collection}: Object.assign({}, ${collectionFiles.map((file, index) => `${file.name}_${index}`).join(', ')})`
       }
     }
 
@@ -113,8 +110,8 @@ function createContent(schemaDirs: string[]) {
     if (!file) return
 
     return {
-      import: `import * as ${file.collection} from '${file.path}'`,
-      export: file.collection
+      import: `import * as ${file.name} from '${file.path}'`,
+      export: file.name
     }
   }).filter((d): d is { import: string, export: string } => !!d)
 
