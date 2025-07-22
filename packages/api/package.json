@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./nuxt.config.ts"
+    ".": "./nuxt.config.ts",
+    "./modules/*": "./modules/*.ts",
+    "./schema/*": "./schema/*.ts"
   },
   "scripts": {
     "build": "nuxt build",

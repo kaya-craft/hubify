@@ -38,5 +38,7 @@
   "app.search.placeholder": "Search...",
   "app.admin.settings.environment.description": "This is the environment page.",
   "app.admin.settings.general.description": "This is the general page.",
-  "app.admin.settings.security.description": "This is the security page."
+  "app.admin.settings.security.description": "This is the security page.",
+
+  "app.admin.form.submit": "Save"
 }

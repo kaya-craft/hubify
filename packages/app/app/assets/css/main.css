@@ -2,4 +2,4 @@
 @import "@nuxt/ui-pro";
 
 /* Explicitly add classes from this layer */
-@source "../.."; 
+@source "../../..";

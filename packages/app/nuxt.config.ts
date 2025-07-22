@@ -14,5 +14,10 @@ export default defineNuxtConfig({
     typedPages: true
   },
 
+  hubify: {
+    fields: [resolve(__dirname, 'app/components/fields')],
+    schema: [resolve(__dirname, 'schema')]
+  },
+
   i18n: i18nConfig
 })

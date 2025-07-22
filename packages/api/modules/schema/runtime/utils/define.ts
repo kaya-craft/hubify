@@ -1,13 +1,13 @@
-import type { Schema } from '@hubify/restql'
+import type { TableColumn, TableRelation } from '@hubify/restql'
 
-export type TableColumns = Schema[string]['columns']
-
-export type TableRelations = Schema[string]['relations']
-
-export function defineTableColumns<const C extends TableColumns>(columns: C): C {
+export function defineTableColumns<const C extends SchemaColumns>(columns: C): C {
   return columns
 }
 
-export function defineTableRelations<const R extends TableRelations>(relations: R): R {
+export function defineTableRelations<const R extends SchemaRelations>(relations: R): R {
   return relations
 }
+
+export type Schema = typeof import('#hubify/schema').default
+export type SchemaColumns = Record<string, TableColumn>
+export type SchemaRelations = Record<string, TableRelation>
