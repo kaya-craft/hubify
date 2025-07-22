@@ -1,15 +1,17 @@
 <script setup lang="ts">
-export type Props = {
-  salut?: string
-}
+import type { InputProps } from '@nuxt/ui'
+
+interface Props extends /* @vue-ignore */ InputProps {}
+
+const value = defineModel<string>()
 
 defineExpose({
-  dataTypes: ['text'] as const
+  dataTypes: ['text', 'varchar'] as const
 })
 
 defineProps<Props>()
 </script>
 
 <template>
-  <div>input text</div>
+  <UInput v-model="value" />
 </template>
