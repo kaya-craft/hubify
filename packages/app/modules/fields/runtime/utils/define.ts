@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { TableColumns } from '@hubify/api/modules/schema/runtime/utils/define.js'
+import type { SchemaColumns } from '@hubify/api/modules/schema/runtime/utils/define'
 import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
 
-export function defineColumnFields<C extends TableColumns, const F extends Fields<C>>(_columns: C, fields: F): F {
+export function defineColumnFields<C extends SchemaColumns, const F extends Fields<C>>(_columns: C, fields: F): F {
   return fields
 }
 
-type Fields<C extends TableColumns> = {
+type Fields<C extends SchemaColumns> = {
   [K in keyof C]?: C[K]['type'] extends keyof FieldByDataTypes ? FieldByDataTypes[C[K]['type']] : {
     component: null
   }
