@@ -18,7 +18,7 @@
   "typeAcquisition": {
     "include": [
       "@nuxt/ui",
-      "@nuxt/ui-pro"
+      "@nuxt/ui-pro",
     ]
   }
 }

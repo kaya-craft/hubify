@@ -5,9 +5,7 @@ interface Props extends /* @vue-ignore */ InputProps {}
 
 const value = defineModel<string>()
 
-defineExpose({
-  dataTypes: ['text', 'varchar'] as const
-})
+defineFieldDataTypes('text', 'varchar', 'uuid')
 
 defineProps<Props>()
 </script>

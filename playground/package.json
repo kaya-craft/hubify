@@ -12,9 +12,7 @@
   "dependencies": {
     "nuxt": "catalog:",
     "vue": "catalog:",
-    "vue-router": "catalog:"
-  },
-  "devDependencies": {
+    "vue-router": "catalog:",
     "@hubify/app": "workspace:*"
   }
 }

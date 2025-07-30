@@ -1,10 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { SchemaColumns } from '@hubify/api/modules/schema/runtime/utils/define'
+import type { ColumnTypes } from '@hubify/restql'
 import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
 import type { ZodType } from 'zod'
 
 export function defineColumnFields<C extends SchemaColumns, const F extends Fields<C>>(_columns: C, fields: F): F {
   return fields
+}
+
+/**
+ * Define the current field accepted data types.
+ * This is used to define the field data types in the `defineExpose` function.
+ * It is used to provide type information for the field data types in the Vue SFC.
+ */
+export function defineFieldDataTypes(...dataTypes: ColumnTypes[]) {
+  return defineExpose({ dataTypes })
 }
 
 export type Field = false | {
