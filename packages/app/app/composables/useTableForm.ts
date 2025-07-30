@@ -24,10 +24,10 @@ export type TableFormSchema<T extends TableFormTables> = z.ZodObject<{
   [C in TableFormColumns<T>]: z.ZodType<TableFormFieldValue<T, C> | undefined>
 }>
 
-export function useTableForm<T extends TableFormTables>(table: T) {
+export function useTableForm<T extends TableFormTables>(table: T, intialState?: MaybeRef<Partial<TableFormState<T>>>) {
   /**
-     * Columns of the table.
-     */
+   * Columns of the table.
+   */
   const columns = computed(() => {
     return Object.keys(tables[table]?.columns || {}) as TableFormColumns<T>[]
   })
@@ -83,7 +83,7 @@ export function useTableForm<T extends TableFormTables>(table: T) {
       const field = getField(name)
       if (field === false) continue
       const defaultRules = defaultFieldRules(column)
-      const rules = (field !== false ? field.rules?.(defaultRules) : null) ?? defaultRules
+      const rules = field?.rules?.(defaultRules) ?? defaultRules
 
       schema[name] = column.notNull ? rules : rules.optional()
     }
@@ -102,7 +102,12 @@ export function useTableForm<T extends TableFormTables>(table: T) {
       if (!column) continue
       const field = getField(name)
       if (field === false) continue
-      state[name] = column.default ?? undefined
+      if (intialState && name in toValue(intialState)) {
+        state[name] = toValue(intialState)[name as keyof Partial<TableFormState<T>>]
+      }
+      else {
+        state[name] = column.default ?? undefined
+      }
     }
 
     return state as TableFormState<T>

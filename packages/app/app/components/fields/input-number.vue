@@ -6,7 +6,7 @@ interface Props extends /* @vue-ignore */ InputProps {}
 const value = defineModel<number>()
 
 defineExpose({
-  dataTypes: ['int4', 'int8', 'numeric'] as const
+  dataTypes: ['int4', 'int8', 'numeric', 'uuid'] as const
 })
 
 defineProps<Props>()

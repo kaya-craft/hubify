@@ -4,13 +4,13 @@ export default defineEventHandler(async (event) => {
   const { createOne } = useDb()
 
   const { email, password } = await readValidatedBody(event, z.object({
-    email: z.string().email(),
+    email: z.email(),
     password: z.string().min(8)
   }).parse)
 
   const hashedPassword = await hashPassword(password)
 
-  await createOne('hubify_users', {
+  const dbUser = await createOne('hubify_users', {
     email,
     password: hashedPassword
   })
@@ -19,7 +19,10 @@ export default defineEventHandler(async (event) => {
 
   await setUserSession(event, {
     user: {
-      email
+      email,
+      id: dbUser.id,
+      firstname: dbUser.firstname || '',
+      lastname: dbUser.lastname || ''
     },
     loggedInAt: Date.now()
   })

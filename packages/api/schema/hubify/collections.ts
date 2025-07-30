@@ -1,6 +1,6 @@
 export const columns = defineTableColumns({
   id: {
-    type: 'int8',
+    type: 'uuid',
     primaryKey: true
   },
   name: {
