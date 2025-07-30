@@ -2,6 +2,8 @@ declare module '#auth-utils' {
   interface User {
     webauthn?: string
     email?: string
+    firstname?: string
+    lastname?: string
     password?: string
     github?: string
     google?: string

@@ -1,11 +1,12 @@
 <script setup lang="ts" generic="T extends TableFormTables">
 type Props = {
   table: T
+  intialState?: MaybeRef<Partial<TableFormState<T>>>
 }
 
-const { table } = defineProps<Props>()
+const { table, intialState } = defineProps<Props>()
 
-const { columns, state, schema, submit } = useTableForm(table)
+const { columns, state, schema, submit } = useTableForm(table, intialState)
 
 const { t } = useI18n()
 </script>

@@ -7,18 +7,31 @@ defineProps<{
 
 const colorMode = useColorMode()
 
+const { user: userSession } = useUserSession()
+
+/**
+ * Computes the user's name based on their session data.
+ */
+const userName = computed(() => {
+  const { firstname, lastname, email } = userSession.value || {}
+  if (firstname && lastname) return `${firstname} ${lastname}`
+  if (firstname) return firstname
+  if (lastname) return lastname
+  return email || 'User'
+})
+
 /**
  * Current user.
  *
- * TODO / Replace with actual user data when available.
  */
 const user = ref({
-  name: 'Yasser Lahbibi',
+  name: userName.value,
   avatar: {
-    src: 'https://avatars.githubusercontent.com/u/13403295',
-    alt: 'Yasser Lahbibi'
+    alt: userName.value
   }
 })
+
+const localePath = useLocalePath()
 
 /**
  * Navigation items for the user dropdown menu.
@@ -30,7 +43,8 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
 }],
 [{
   label: 'Profile',
-  icon: 'i-lucide-user'
+  icon: 'i-lucide-user',
+  to: localePath('admin-profile')
 }],
 [{
   label: 'Appearance',

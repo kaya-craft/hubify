@@ -1,6 +1,6 @@
 export const columns = defineTableColumns({
   id: {
-    type: 'int4',
+    type: 'uuid',
     primaryKey: true
   },
   email: {
@@ -9,7 +9,15 @@ export const columns = defineTableColumns({
     notNull: true
   },
   password: {
-    type: 'int4',
+    type: 'text',
+    notNull: false
+  },
+  firstname: {
+    type: 'text',
+    notNull: false
+  },
+  lastname: {
+    type: 'text',
     notNull: false
   },
   createdAt: {

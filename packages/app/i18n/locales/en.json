@@ -32,6 +32,8 @@
   "app.admin.settings.general.title": "General",
   "app.admin.settings.appearance.title": "Appearance",
   "app.admin.settings.environment.title": "Environment",
+  "app.admin.profile.title": "Profile",
+  "app.admin.profile.description": "This is the profile page.",
   "app.admin.settings.security.title": "Security",
   "app.admin.settings.appearance.description": "This is the appearance page.",
   "app.notifications": "Notifications",
