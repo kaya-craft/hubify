@@ -1,0 +1,77 @@
+import type { QueryParams, TableName } from '@hubify/restql'
+import type tables from '#hubify/schema'
+import type { NitroFetchRequest, AvailableRouterMethod } from 'nitropack/types'
+import type { FetchOptions } from 'ofetch'
+import type { Item } from '@hubify/restql/utils/helpers'
+
+type InternalApiBody = {
+  [K in TableName<typeof tables> as `/api/${K}`]: {
+    post: {
+      body: Item<typeof tables, K>
+    }
+    put: {
+      body: Partial<Item<typeof tables, K>>
+      params: QueryParams<typeof tables, K>
+    }
+    delete: {
+      params: QueryParams<typeof tables, K>
+    }
+    get: {
+      params: QueryParams<typeof tables, K>
+    }
+  }
+} & {
+  [K in TableName<typeof tables> as `/api/${K}/:id`]: {
+    put: {
+      body: Partial<Item<typeof tables, K>>
+      params: QueryParams<typeof tables, K>
+    }
+    delete: {
+      params: QueryParams<typeof tables, K>
+    }
+    get: {
+      params: QueryParams<typeof tables, K>
+    }
+  }
+}
+
+type GenericEndpoints = {
+  [K in TableName<typeof tables> as `/api/${K}`]: {
+    post: Promise<Item<typeof tables, K>>
+    put: Promise<Item<typeof tables, K>[]>
+    delete: Promise<Item<typeof tables, K>[]>
+    get: Promise<Item<typeof tables, K>[]>
+  }
+} & {
+  [K in TableName<typeof tables> as `/api/${K}/:id`]: {
+    put: Promise<Item<typeof tables, K>>
+    delete: Promise<Item<typeof tables, K>>
+    get: Promise<Item<typeof tables, K>>
+  }
+}
+
+declare module 'nitropack/types' {
+  interface InternalApi extends GenericEndpoints {}
+
+  interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>> extends FetchOptions {
+    method?: Uppercase<M> | M
+    body?: R extends keyof InternalApiBody
+      ? M extends keyof InternalApiBody[R]
+        ? InternalApiBody[R][M] extends infer U
+          ? U extends { body: infer B }
+            ? B
+            : never
+          : unknown
+        : unknown
+      : unknown
+    params?: R extends keyof InternalApiBody
+      ? M extends keyof InternalApiBody[R]
+        ? InternalApiBody[R][M] extends infer U
+          ? U extends { params: infer P }
+            ? P
+            : never
+          : unknown
+        : unknown
+      : unknown
+  }
+}
