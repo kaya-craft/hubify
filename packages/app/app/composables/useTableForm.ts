@@ -82,7 +82,7 @@ export function useTableForm<T extends TableFormTables>(table: T, intialState?: 
       if (!column) continue
       const field = getField(name)
       if (field === false) continue
-      const defaultRules = defaultFieldRules(column)
+      const defaultRules = columnTypeToZod(column)
       const rules = field?.rules?.(defaultRules) ?? defaultRules
 
       schema[name] = column.notNull ? rules : rules.optional()
@@ -130,34 +130,5 @@ export function useTableForm<T extends TableFormTables>(table: T, intialState?: 
     state,
     schema,
     submit
-  }
-}
-
-/**
- * Default field rules based on the column type.
- */
-function defaultFieldRules(column: TableColumn) {
-  switch (column.type) {
-    case 'int8':
-    case 'int4':
-    case 'numeric':
-      return z.number().int()
-    case 'float4':
-      return z.number()
-    case 'text':
-    case 'varchar':
-      return z.string()
-    case 'uuid':
-      return z.uuid()
-    case 'timestamp':
-    case 'timestamptz':
-      return z.iso.datetime()
-    case 'date':
-      return z.date()
-    case 'boolean':
-      return z.boolean()
-    case 'json':
-    default:
-      return z.any() // Fallback for unsupported types
   }
 }
