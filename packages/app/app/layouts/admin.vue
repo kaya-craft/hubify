@@ -65,19 +65,43 @@ const collections = computed<NavigationMenuItem[]>(() => [
     label: 'Users',
     icon: 'i-lucide-users',
     to: localeRoute({ name: 'admin', params: { collection: 'users' } }),
-    exact: true
+    exact: true,
+    children: [{
+      label: t('app.admin.settings.general.title'),
+      to: localeRoute({ name: 'admin-settings-general' }),
+      exact: true
+    }, {
+      label: t('app.admin.settings.appearance.title'),
+      to: localeRoute({ name: 'admin-settings-appearance' })
+    }]
   },
   {
     label: 'Projects',
     icon: 'i-lucide-folder',
     to: localeRoute({ name: 'admin', params: { collection: 'projects' } }),
-    exact: true
+    exact: true,
+    children: [{
+      label: t('app.admin.settings.general.title'),
+      to: localeRoute({ name: 'admin-settings-general' }),
+      exact: true
+    }, {
+      label: t('app.admin.settings.appearance.title'),
+      to: localeRoute({ name: 'admin-settings-appearance' })
+    }]
   },
   {
     label: 'Countries',
     icon: 'i-lucide-map-pin',
     to: localeRoute({ name: 'admin', params: { collection: 'countries' } }),
-    exact: true
+    exact: true,
+    children: [{
+      label: t('app.admin.settings.general.title'),
+      to: localeRoute({ name: 'admin-settings-general' }),
+      exact: true
+    }, {
+      label: t('app.admin.settings.appearance.title'),
+      to: localeRoute({ name: 'admin-settings-appearance' })
+    }]
   }
 ])
 </script>
@@ -105,6 +129,7 @@ const collections = computed<NavigationMenuItem[]>(() => [
             orientation="vertical"
             tooltip
             popover
+            :ui="{ list: 'flex flex-col gap-2' }"
           />
           <div class="flex-1" />
           <UNavigationMenu
