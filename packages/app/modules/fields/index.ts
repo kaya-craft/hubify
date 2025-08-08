@@ -1,4 +1,4 @@
-import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, useLogger } from 'nuxt/kit'
+import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, resolveModule, useLogger } from 'nuxt/kit'
 import { listDirFiles, getDirectories } from '@hubify/api/modules/schema/index'
 import { join } from 'node:path'
 import { writeFileSync } from 'node:fs'
@@ -51,6 +51,12 @@ export default defineNuxtModule<FieldsModuleOptions>({
     nuxt.options.nitro.alias ??= {}
     nuxt.options.nitro.alias['#hubify/fields'] = fieldsPath
     nuxt.options.alias['#hubify/fields'] = fieldsPath
+
+    nuxt.options.typescript.tsConfig.vueCompilerOptions ??= {}
+    nuxt.options.typescript.tsConfig.vueCompilerOptions.plugins ??= []
+    nuxt.options.typescript.tsConfig.vueCompilerOptions.plugins.push(
+      resolveModule('@hubify/vue-language-plugins')
+    )
   }
 })
 

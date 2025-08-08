@@ -1,0 +1,16 @@
+{
+    "name": "@hubify/vue-language-plugins",
+    "version": "0.0.1",
+    "sideEffects": false,
+    "files": [
+        "**/*.js",
+        "**/*.d.ts"
+    ],
+    "dependencies": {
+        "@vue-macros/common": "3.0.0-beta.19",
+        "@vue/language-core": "^3.0.4",
+        "jiti": "^2.5.1",
+        "muggle-string": "^0.4.1",
+        "typescript": "catalog:"
+    }
+}

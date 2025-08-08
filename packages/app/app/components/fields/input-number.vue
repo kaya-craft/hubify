@@ -5,9 +5,7 @@ interface Props extends /* @vue-ignore */ InputProps {}
 
 const value = defineModel<number>()
 
-defineExpose({
-  dataTypes: ['int4', 'int8', 'numeric', 'uuid'] as const
-})
+defineFieldDataTypes('boolean')
 
 defineProps<Props>()
 </script>
