@@ -13,8 +13,8 @@ export function defineColumnFields<C extends SchemaColumns, const F extends Fiel
  * This is used to define the field data types in the `defineExpose` function.
  * It is used to provide type information for the field data types in the Vue SFC.
  */
-export function defineFieldDataTypes(...dataTypes: ColumnTypes[]) {
-  return defineExpose({ dataTypes })
+export function defineFieldDataTypes(..._dataTypes: ColumnTypes[]) {
+  // return defineExpose({ dataTypes })
 }
 
 export type Field = false | {

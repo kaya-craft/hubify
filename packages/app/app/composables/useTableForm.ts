@@ -1,74 +1,117 @@
-import fields from '#hubify/fields'
-import tables from '#hubify/schema'
-import type { Field, Fields } from '@@/modules/fields/runtime/utils/define'
-import type { ColumnTypeToTsType, TableColumn } from '@hubify/restql'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import type { AsyncComponentLoader } from 'vue'
 import type { ZodType } from 'zod'
 import z from 'zod'
-import InputText from '~/components/fields/input-text.vue'
 
-export type TableFormTables = keyof typeof tables & string
-export type TableFormTable<T extends TableFormTables> = typeof tables[T]
-export type TableFormColumns<T extends TableFormTables> = keyof typeof tables[T]['columns'] & string
-export type TableFormColumn<T extends TableFormTables, C extends TableFormColumns<T>> = typeof tables[T]['columns'][C] extends infer U extends TableColumn ? U : never
-export type TableFormFields<T extends TableFormTables> = Fields<TableFormTable<T>['columns']>
-export type TableFormField<T extends TableFormTables, C extends TableFormColumns<T>> = TableFormFields<T>[C] extends infer U extends Field ? U : never
-export type TableFormFieldValue<T extends TableFormTables, C extends TableFormColumns<T>> = ColumnTypeToTsType<TableFormColumn<T, C>['type']>
-
-export type TableFormState<T extends TableFormTables> = {
-  [C in TableFormColumns<T>]: TableFormFieldValue<T, C> | undefined
+export type TableFormState<T extends TableNames> = {
+  [C in TableColumnNames<T>]: TableFieldValue<T, C> | undefined
 } extends infer U extends object ? U : never
 
-export type TableFormSchema<T extends TableFormTables> = z.ZodObject<{
-  [C in TableFormColumns<T>]: z.ZodType<TableFormFieldValue<T, C> | undefined>
+export type TableFormSchema<T extends TableNames> = z.ZodObject<{
+  [C in TableColumnNames<T>]: z.ZodType<TableFieldValue<T, C> | undefined>
 }>
 
-export function useTableForm<T extends TableFormTables>(table: T, intialState?: MaybeRef<Partial<TableFormState<T>>>) {
+export type TableFormSubmitEvent<T extends TableNames> = FormSubmitEvent<z.Infer<TableFormSchema<T>>>
+
+export function useTableForm<T extends TableNames>(table: T, initialState?: MaybeRef<Partial<TableFormState<T>>>) {
   /**
-   * Columns of the table.
+   * Table definition.
    */
-  const columns = computed(() => {
-    return Object.keys(tables[table]?.columns || {}) as TableFormColumns<T>[]
+  const { primaryKey, columnNames, getField, getColumn, getFieldComponent } = useTable(table)
+
+  /**
+   * Toast.
+   */
+  const { add } = useToast()
+
+  /**
+   * Loading state.
+   */
+  const loading = ref(false)
+
+  /**
+   * Primary key value.
+   */
+  const primaryKeyValue = computed(() => {
+    const item = toValue(initialState)
+    if (!item) return
+    const pk = toValue(primaryKey) as keyof TableFormState<T>
+    if (!pk) return
+    return item[pk]
   })
 
   /**
-   * Get the column with the specified name.
+   * Update an existing item to the database.
    */
-  function getColumn<C extends TableFormColumns<T>>(name: C) {
-    if (!tables[table]) throw new Error(`Table "${table}" does not exist.`)
-    if (!(name in tables[table].columns)) throw new Error(`Column "${name}" does not exist in table "${table}".`)
-    const columns = tables[table].columns
-    return columns[name as keyof typeof columns] as TableFormColumn<T, C> | undefined
+  async function save(data: TableFormSubmitEvent<T>['data'], id: string) {
+    try {
+      await $fetch('/api/items/' + table + '/' + id, {
+        method: 'put',
+        body: data
+      })
+
+      add({
+        title: 'Item updated successfully',
+        color: 'success',
+        description: 'The item has been successfully updated.'
+      })
+    }
+    catch (error) {
+      add({
+        title: 'Failed to update item',
+        color: 'error',
+        description: 'There was an error updating the item. ' + String(error)
+      })
+      throw error
+    }
   }
 
   /**
-   * Get the field for the specified column.
+   * Create a new item in the database.
    */
-  function getField<C extends TableFormColumns<T>>(column: C) {
-    const tableFields = tables[table]?.fields as TableFormFields<T> | undefined
-    return tableFields?.[column] as TableFormField<T, C>
-  }
+  async function create(data: TableFormSubmitEvent<T>['data']) {
+    try {
+      await $fetch('/api/items/' + table, {
+        method: 'post',
+        body: data
+      })
 
-  /**
-   * Get the field component for the specified column.
-   */
-  function getFieldComponent<C extends TableFormColumns<T>>(column: C) {
-    const field = getField(column)
+      add({
+        title: 'Item created successfully',
+        color: 'success',
+        description: 'The item has been successfully created.'
+      })
 
-    if (field === false) return
-
-    if (!field?.component) return InputText
-
-    return defineAsyncComponent(fields[field.component as keyof typeof fields] as AsyncComponentLoader)
+      Object.assign(state, createTableState())
+    }
+    catch (error) {
+      add({
+        title: 'Failed to create item',
+        color: 'error',
+        description: 'There was an error creating the item. ' + String(error)
+      })
+      throw error
+    }
   }
 
   /**
    * Submit handler for the form.
    */
-  async function submit(event: FormSubmitEvent<z.Infer<TableFormSchema<T>>>) {
-    // Implement form submission logic here
-    console.log('Form submitted with state:', event)
+  async function submit(event: TableFormSubmitEvent<T>) {
+    try {
+      loading.value = true
+
+      const id = toValue(primaryKeyValue)
+
+      if (typeof id !== 'undefined') {
+        await save(event.data, String(id))
+      }
+      else {
+        await create(event.data)
+      }
+    }
+    finally {
+      loading.value = false
+    }
   }
 
   /**
@@ -77,7 +120,7 @@ export function useTableForm<T extends TableFormTables>(table: T, intialState?: 
   function createTableSchema() {
     const schema: Record<string, ZodType> = {}
 
-    for (const name of toValue(columns)) {
+    for (const name of toValue(columnNames)) {
       const column = getColumn(name)
       if (!column) continue
       const field = getField(name)
@@ -97,13 +140,13 @@ export function useTableForm<T extends TableFormTables>(table: T, intialState?: 
   function createTableState() {
     const state: Record<string, unknown> = {}
 
-    for (const name of toValue(columns)) {
+    for (const name of toValue(columnNames)) {
       const column = getColumn(name)
       if (!column) continue
       const field = getField(name)
       if (field === false) continue
-      if (intialState && name in toValue(intialState)) {
-        state[name] = toValue(intialState)[name as keyof Partial<TableFormState<T>>]
+      if (initialState && name in toValue(initialState)) {
+        state[name] = toValue(initialState)[name as keyof Partial<TableFormState<T>>]
       }
       else {
         state[name] = column.default ?? undefined
@@ -124,7 +167,8 @@ export function useTableForm<T extends TableFormTables>(table: T, intialState?: 
   const schema = createTableSchema()
 
   return {
-    columns,
+    loading,
+    columnNames,
     getField,
     getFieldComponent,
     state,

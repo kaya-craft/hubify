@@ -22,7 +22,7 @@ const { user } = useUserSession()
 
     <FormTable
       table="hubify_users"
-      :intial-state="{
+      :initial-state="{
         email: user?.email,
         firstname: user?.firstname,
         lastname: user?.lastname

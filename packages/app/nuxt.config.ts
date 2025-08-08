@@ -10,10 +10,6 @@ export default defineNuxtConfig({
 
   css: [resolve(__dirname, 'app/assets/css/main.css')],
 
-  experimental: {
-    typedPages: true
-  },
-
   hubify: {
     fields: [resolve(__dirname, 'app/components/fields')],
     schema: [resolve(__dirname, 'schema')]

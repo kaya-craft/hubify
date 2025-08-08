@@ -1,6 +1,6 @@
 export const columns = defineTableColumns({
   id: {
-    type: 'text',
+    type: 'integer',
     primaryKey: true
   },
   publicKey: {
