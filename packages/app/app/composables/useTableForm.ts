@@ -12,11 +12,11 @@ export type TableFormSchema<T extends TableNames> = z.ZodObject<{
 
 export type TableFormSubmitEvent<T extends TableNames> = FormSubmitEvent<z.Infer<TableFormSchema<T>>>
 
-export function useTableForm<T extends TableNames>(table: T, initialState?: MaybeRef<Partial<TableFormState<T>>>) {
+export function useTableForm<T extends TableNames>(collection: T, initialState?: MaybeRef<Partial<TableFormState<T>>>) {
   /**
    * Table definition.
    */
-  const { primaryKey, columnNames, getField, getColumn, getFieldComponent } = useTable(table)
+  const { primaryKey, columnNames, getField, getColumn, getFieldComponent } = useTable(collection)
 
   /**
    * Toast.
@@ -44,7 +44,7 @@ export function useTableForm<T extends TableNames>(table: T, initialState?: Mayb
    */
   async function save(data: TableFormSubmitEvent<T>['data'], id: string) {
     try {
-      await $fetch('/api/items/' + table + '/' + id, {
+      await $fetch('/api/items/' + collection + '/' + id, {
         method: 'put',
         body: data
       })
@@ -54,6 +54,8 @@ export function useTableForm<T extends TableNames>(table: T, initialState?: Mayb
         color: 'success',
         description: 'The item has been successfully updated.'
       })
+
+      callHubifyHook('items:updated', { collection, id })
     }
     catch (error) {
       add({
@@ -70,7 +72,7 @@ export function useTableForm<T extends TableNames>(table: T, initialState?: Mayb
    */
   async function create(data: TableFormSubmitEvent<T>['data']) {
     try {
-      await $fetch('/api/items/' + table, {
+      const id = await $fetch('/api/items/' + collection, {
         method: 'post',
         body: data
       })
@@ -80,6 +82,8 @@ export function useTableForm<T extends TableNames>(table: T, initialState?: Mayb
         color: 'success',
         description: 'The item has been successfully created.'
       })
+
+      callHubifyHook('items:created', { collection, id })
 
       Object.assign(state, createTableState())
     }

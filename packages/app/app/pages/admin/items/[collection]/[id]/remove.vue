@@ -12,8 +12,6 @@ const { add } = useToast()
 
 const localePath = useLocalePath()
 
-const { callHook } = useNuxtApp()
-
 const backRoute = localePath({
   name: 'admin-items-collection',
   params: { collection: collection }
@@ -37,7 +35,7 @@ async function deleteItem() {
       description: 'The item has been successfully deleted.'
     })
 
-    await callHook('collection:updated', collection)
+    callHubifyHook('items:deleted', { collection, id })
 
     close()
   }

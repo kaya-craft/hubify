@@ -14,11 +14,6 @@ const { collection } = defineProps<Props>()
 const { columns } = useTable(collection)
 
 /**
- * Nuxt app.
- */
-const { hook } = useNuxtApp()
-
-/**
  * Fetch data for the collection.
  */
 const { data, status, refresh } = await useFetch(`/api/items/${collection}` as `/api/items/:collection`)
@@ -48,8 +43,8 @@ const actionColumns = [{
 /**
  * Refresh the collection when the collection is updated.
  */
-hook('collection:updated', (collection) => {
-  if (collection === collection) refresh()
+onHubifyHook('items', ({ collection: name }) => {
+  if (name === collection) refresh()
 })
 </script>
 
