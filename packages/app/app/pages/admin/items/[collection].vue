@@ -2,7 +2,7 @@
 import tables from '#hubify/schema'
 
 interface Props {
-  table: TableNames
+  collection: TableNames
 }
 
 definePageMeta({
@@ -10,18 +10,18 @@ definePageMeta({
     return String(to.params.collection) in tables
   },
   props: to => ({
-    table: String(to.params.collection) as TableNames
+    collection: String(to.params.collection) as TableNames
   })
 })
 
-const { table } = defineProps<Props>()
+const { collection } = defineProps<Props>()
 
 useSeoMeta({
-  title: () => table,
+  title: () => collection,
   description: () => ''
 })
 </script>
 
 <template>
-  <NuxtPage :table />
+  <NuxtPage :collection />
 </template>

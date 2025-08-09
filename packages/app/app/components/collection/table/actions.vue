@@ -1,15 +1,17 @@
 <script setup lang="ts" generic="T extends TableNames">
-import schema from '#hubify/schema'
-import { getPrimaryKey } from '@hubify/restql/utils/helpers'
-import type { Item } from '@hubify/restql/utils/helpers'
 import type { DropdownMenuItem } from '@nuxt/ui'
 
 interface Props {
-  table: T
-  item: Item<typeof schema, T>
+  collection: T
+  item: TableItem<T>
 }
 
-const { table, item } = defineProps<Props>()
+const { item, collection } = defineProps<Props>()
+
+/**
+ * Collection definition.
+ */
+const { getPrimaryKeyValue } = useTable(collection)
 
 /**
  * Translation
@@ -30,15 +32,15 @@ const dropdownItems = computed(() => {
       label: t('app.form.actions.edit'),
       to: localeRoute({
         name: 'admin-items-collection-id-edit',
-        params: { collection: table, id: item[getPrimaryKey(schema, table) as keyof typeof item].toString() }
+        params: { collection: collection, id: getPrimaryKeyValue(item) }
       }),
       icon: 'heroicons:pencil-square'
     },
     {
       label: t('app.form.actions.delete'),
       to: localeRoute({
-        name: 'admin-items-collection-id-index-remove',
-        params: { collection: table, id: item[getPrimaryKey(schema, table) as keyof typeof item].toString() }
+        name: 'admin-items-collection-id-remove',
+        params: { collection: collection, id: getPrimaryKeyValue(item) }
       }),
       icon: 'heroicons:trash'
     }

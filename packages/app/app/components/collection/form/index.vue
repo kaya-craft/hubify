@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends TableNames">
 type Props = {
-  table: T
+  collection: T
   initialState?: MaybeRef<Partial<TableFormState<T>>>
 }
 
@@ -8,9 +8,9 @@ const emit = defineEmits<{
   success: [event: TableFormSubmitEvent<T>, stay: boolean]
 }>()
 
-const { table, initialState } = defineProps<Props>()
+const { collection, initialState } = defineProps<Props>()
 
-const { columnNames, state, schema, submit } = useTableForm(table, initialState)
+const { columnNames, state, schema, submit } = useTableForm(collection, initialState)
 
 const { t } = useI18n()
 
@@ -31,11 +31,11 @@ async function onSubmit(event: TableFormSubmitEvent<T>) {
     @submit="onSubmit"
   >
     <template #default="slotProps">
-      <FormField
+      <CollectionFormField
         v-for="column in columnNames"
         :key="column"
         v-model="state[column]"
-        :table
+        :collection
         :column
         :state
         class="col-span-full"

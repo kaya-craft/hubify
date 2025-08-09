@@ -1,15 +1,12 @@
-<script setup lang="ts" generic="T extends TableNames, I extends PrimaryKeyValue<typeof schema, T>">
-import type { PrimaryKeyValue } from '@hubify/restql'
-import type schema from '#hubify/schema'
-
+<script setup lang="ts" generic="T extends TableNames, I extends TablePrimaryKey<T>">
 interface Props {
-  table: T
+  collection: T
   id: I
 }
 
-const { id, table } = defineProps<Props>()
+const { id, collection } = defineProps<Props>()
 
-const { data: item } = await useFetch('/api/items/' + table + '/' + id)
+const { data: item } = await useFetch('/api/items/' + collection + '/' + id)
 
 if (!toValue(item)) {
   throw createError({
@@ -24,7 +21,7 @@ const localePath = useLocalePath()
 
 const backRoute = localePath({
   name: 'admin-items-collection',
-  params: { collection: table }
+  params: { collection: collection }
 })
 
 const router = useRouter()
@@ -48,14 +45,14 @@ function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
           :aria-label="t('app.back')"
         />
         <h2 class="text-lg font-semibold">
-          {{ table }}
+          {{ collection }}
         </h2>
       </div>
     </template>
 
-    <FormTable
+    <CollectionForm
       v-if="item"
-      :table
+      :collection
       :initial-state="item"
       type="update"
       @success="onSuccess"

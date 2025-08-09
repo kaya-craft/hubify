@@ -1,13 +1,10 @@
-<script setup lang="ts" generic="T extends TableNames, I extends PrimaryKeyValue<typeof schema, T>">
-import type { PrimaryKeyValue } from '@hubify/restql'
-import type schema from '#hubify/schema'
-
+<script setup lang="ts" generic="T extends TableNames, I extends TablePrimaryKey<T>">
 interface Props {
-  table: T
+  collection: T
   id: I
 }
 
-const { table, id } = defineProps<Props>()
+const { collection, id } = defineProps<Props>()
 
 const loading = ref(false)
 
@@ -19,7 +16,7 @@ const { callHook } = useNuxtApp()
 
 const backRoute = localePath({
   name: 'admin-items-collection',
-  params: { collection: table }
+  params: { collection: collection }
 })
 
 async function close() {
@@ -30,7 +27,7 @@ async function deleteItem() {
   try {
     loading.value = true
 
-    await $fetch(`/api/items/${table}/${id}` as '/api/items/:collection/:id', {
+    await $fetch(`/api/items/${collection}/${id}` as '/api/items/:collection/:id', {
       method: 'delete'
     })
 
@@ -40,7 +37,7 @@ async function deleteItem() {
       description: 'The item has been successfully deleted.'
     })
 
-    await callHook('collection:updated', table)
+    await callHook('collection:updated', collection)
 
     close()
   }

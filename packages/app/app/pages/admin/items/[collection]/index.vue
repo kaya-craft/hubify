@@ -3,11 +3,11 @@ import type { PrimaryKeyValue } from '@hubify/restql'
 import type schema from '#hubify/schema'
 
 interface Props {
-  table: T
+  collection: T
   id?: I
 }
 
-const { table } = defineProps<Props>()
+const { collection } = defineProps<Props>()
 
 const { t } = useI18n()
 
@@ -19,10 +19,10 @@ const localeRoute = useLocaleRoute()
     <template #header>
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold">
-          {{ table }}
+          {{ collection }}
         </h2>
         <UButton
-          :to="localeRoute({ name: 'admin-items-collection-id-create', params: { collection: table } })"
+          :to="localeRoute({ name: 'admin-items-collection-create', params: { collection } })"
           variant="soft"
           color="secondary"
           leading-icon="heroicons:plus"
@@ -32,13 +32,8 @@ const localeRoute = useLocaleRoute()
       </div>
     </template>
 
-    <Table
-      :table
+    <CollectionTable
+      :collection
     />
   </UCard>
-
-  <NuxtPage
-    :id
-    :table
-  />
 </template>

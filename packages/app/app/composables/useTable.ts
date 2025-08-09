@@ -1,18 +1,8 @@
 import tables from '#hubify/schema'
 import registeredFields from '#hubify/fields'
-import type { TableColumn as _TableColumn, ColumnTypeToTsType, PrimaryKey } from '@hubify/restql'
 import type { AsyncComponentLoader } from 'vue'
 import InputText from '~/components/fields/input-text.vue'
 import { getPrimaryKey } from '@hubify/restql/utils/helpers'
-
-export type TableNames = keyof typeof tables & string
-export type Table<T extends TableNames> = typeof tables[T]
-export type TableColumnNames<T extends TableNames> = keyof typeof tables[T]['columns'] & string
-export type TableColumns<T extends TableNames> = typeof tables[T]['columns']
-export type TableColumn<T extends TableNames, C extends TableColumnNames<T>> = typeof tables[T]['columns'][C] extends infer U extends _TableColumn ? U : never
-export type TableFields<T extends TableNames> = Fields<TableColumns<T>>
-export type TableField<T extends TableNames, C extends TableColumnNames<T>> = TableFields<T>[C] extends infer U extends Field ? U : never
-export type TableFieldValue<T extends TableNames, C extends TableColumnNames<T>> = ColumnTypeToTsType<TableColumn<T, C>['type']>
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
@@ -56,7 +46,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Primary key of the table.
    */
   const primaryKey = computed(() => {
-    return getPrimaryKey(tables, toValue(tableName)) as PrimaryKey<typeof tables, T>
+    return getPrimaryKey(tables, toValue(tableName)) as TablePrimaryKey<T>
   })
 
   /**
@@ -66,6 +56,15 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     const cols = toValue(columns)
     if (!(name in cols)) throw new Error(`Column "${name}" does not exist in table "${table}".`)
     return cols[name] as TableColumn<T, C> | undefined
+  }
+
+  /**
+   * Get the item primary key value.
+   */
+  function getPrimaryKeyValue(item: TableItem<T>) {
+    const key = toValue(primaryKey)
+    if (!key) throw new Error(`Primary key for table "${tableName}" is not defined.`)
+    return item[key as keyof typeof item] as TablePrimaryKeyValue<T>
   }
 
   /**
@@ -99,6 +98,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     getColumn,
     getField,
     getFieldComponent,
-    primaryKey
+    primaryKey,
+    getPrimaryKeyValue
   }
 }

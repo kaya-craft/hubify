@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { SchemaColumns } from '@hubify/api/modules/schema/runtime/utils/define'
-import type { ColumnTypes } from '@hubify/restql'
+import type { ColumnTypes, ColumnTypeToTsType, PrimaryKey } from '@hubify/restql'
 import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
 import type { ZodType } from 'zod'
 
@@ -28,6 +28,12 @@ export type Field = false | {
 export type Fields<C extends SchemaColumns> = {
   [K in keyof C]?: C[K]['type'] extends keyof FieldByDataTypes ? FieldByDataTypes[C[K]['type']] : false
 }
+
+export type TableFields<T extends TableNames> = Fields<TableColumns<T>>
+export type TableField<T extends TableNames, C extends TableColumnNames<T>> = TableFields<T>[C] extends infer U extends Field ? U : never
+export type TableFieldValue<T extends TableNames, C extends TableColumnNames<T>> = ColumnTypeToTsType<TableColumn<T, C>['type']>
+export type TablePrimaryKey<T extends TableNames> = Extract<PrimaryKey<Schema, T>, string | number>
+export type TablePrimaryKeyValue<T extends TableNames> = Extract<TablePrimaryKey<T> extends keyof TableItem<T> ? TableItem<T>[TablePrimaryKey<T>] : never, string | number>
 
 type ComponentProps<C extends Component> = C extends new (...args: any) => any
   ? Omit<InstanceType<C>['$props'], keyof VNodeProps | keyof AllowedComponentProps>
