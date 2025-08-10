@@ -12,5 +12,12 @@ export default defineEventHandler(async (event) => {
 
   const { updateOne } = useDb()
 
-  return updateOne(collection, id, item, params)
+  await updateOne(collection, id, item, params)
+
+  emitMessage(event, {
+    type: 'items:updated',
+    data: { collection, id }
+  })
+
+  return id
 })

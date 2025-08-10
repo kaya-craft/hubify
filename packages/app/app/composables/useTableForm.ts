@@ -54,8 +54,6 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
         color: 'success',
         description: 'The item has been successfully updated.'
       })
-
-      callHubifyHook('items:updated', { collection, id })
     }
     catch (error) {
       add({
@@ -82,8 +80,6 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
         color: 'success',
         description: 'The item has been successfully created.'
       })
-
-      callHubifyHook('items:created', { collection, id })
 
       Object.assign(state, createTableState())
     }
