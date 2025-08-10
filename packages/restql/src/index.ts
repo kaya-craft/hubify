@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Database } from 'db0'
 import type { QueryParams } from './types/params'
 import type { PrimaryKeyValue, Schema, Table, TableName } from './types/schema'

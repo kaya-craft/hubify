@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Join } from 'type-fest'
 
 type RemoveEmpty<T extends unknown[]> = T extends [infer U, ...infer Rest] ? (U extends '' ? RemoveEmpty<Rest> : [U, ...RemoveEmpty<Rest>]) : []
