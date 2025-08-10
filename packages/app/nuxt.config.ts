@@ -4,7 +4,7 @@ import i18nConfig from './i18n/config'
 export default defineNuxtConfig({
   extends: ['@hubify/api'],
 
-  modules: ['@nuxt/test-utils', '@nuxt/ui-pro', '@nuxtjs/i18n', '@vueuse/nuxt'],
+  modules: ['@nuxt/test-utils', '@nuxt/ui-pro', '@nuxtjs/i18n', '@vueuse/nuxt', '@vueuse/nuxt'],
 
   pages: true,
 

@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@hubify/api": "workspace:*",
+    "@hubify/restql": "workspace:*",
+    "@hubify/vue-language-plugins": "workspace:*",
     "@iconify-json/heroicons": "^1.2.2",
     "@iconify-json/lucide": "^1.2.57",
     "@iconify-json/simple-icons": "^1.2.44",
@@ -25,13 +27,12 @@
     "@nuxtjs/i18n": "^10.0.1",
     "@vueuse/core": "^13.5.0",
     "@vueuse/nuxt": "^13.5.0",
+    "@vueuse/router": "^13.6.0",
     "nuxt": "catalog:",
     "tailwindcss": "^4.1.11",
     "vue": "catalog:",
     "vue-router": "catalog:",
-    "zod": "catalog:",
-    "@hubify/restql": "workspace:*",
-    "@hubify/vue-language-plugins": "workspace:*"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@nuxt/test-utils": "catalog:",

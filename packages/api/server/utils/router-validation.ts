@@ -39,7 +39,7 @@ export async function ensureValidQueryParams(
     columns: asEnumArray(columnNames).optional(),
     limit: z.coerce.number().int().optional(),
     offset: z.coerce.number().int().optional(),
-    where: z.object().optional(),
+    where: z.preprocess(value => typeof value === 'string' ? JSON.parse(value) : value, z.any()).optional(),
     groupBy: asEnumArray(columnNames).optional(),
     orderBy: asEnumArray([...columnNames, ...columnNames.map(name => `-${name}` as const)]).optional()
   }).parse)

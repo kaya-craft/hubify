@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
 import type { TableColumn } from '@nuxt/ui'
 import { CollectionTableActions } from '#components'
+import type { QueryParams } from '@hubify/restql'
 
 type Props = {
   collection: T
@@ -14,9 +15,21 @@ const { collection } = defineProps<Props>()
 const { columns } = useTable(collection)
 
 /**
+ * Filter query model.
+ */
+const filter = useRouteQuery<string, QueryParams<Schema, T>['where']>('filter', undefined, {
+  transform: {
+    get: value => value ? JSON.parse(value) : undefined,
+    set: value => JSON.stringify(value)
+  }
+})
+
+/**
  * Fetch data for the collection.
  */
-const { data, status, refresh } = await useFetch(`/api/items/${collection}` as `/api/items/:collection`)
+const { data, status, refresh } = await useFetch(`/api/items/${collection}` as `/api/items/:collection`, {
+  query: { where: filter }
+})
 
 /**
  * List of collection columns.
@@ -49,10 +62,19 @@ onHubifyHook('items', ({ collection: name }) => {
 </script>
 
 <template>
-  <UTable
-    :columns="[...collectionColumns, ...actionColumns]"
-    :data
-    sticky
-    :loading="status === 'pending'"
-  />
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center justify-end gap-4">
+      <CollectionFilter
+        v-model="filter"
+        :collection
+      />
+    </div>
+
+    <UTable
+      :columns="[...collectionColumns, ...actionColumns]"
+      :data
+      sticky
+      :loading="status === 'pending'"
+    />
+  </div>
 </template>
