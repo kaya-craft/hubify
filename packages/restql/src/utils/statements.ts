@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { UnionToTuple } from 'type-fest'
 import type { AllFields, Item, JoinClauses, Normalize, NormalizedColumns, OrderByClauses, SchemaDiff, WhereClauses, Wrap } from './helpers'
 import type { CleanJoin } from '@/types/helpers'
