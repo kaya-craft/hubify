@@ -70,7 +70,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
    */
   async function create(data: TableFormSubmitEvent<T>['data']) {
     try {
-      const id = await $fetch('/api/items/' + collection, {
+      await $fetch('/api/items/' + collection, {
         method: 'post',
         body: data
       })
