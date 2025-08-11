@@ -20,7 +20,7 @@ const value = defineModel<Clause['value']>('value', {
   required: true
 })
 
-const { columnNames } = useTable(collection)
+const { columnNames, columns } = useTable(collection)
 
 const columnItems = computed(() => {
   return toValue(columnNames).map(name => ({
@@ -53,31 +53,36 @@ const operationItems = computed(() => [
 
 <template>
   <div
-    draggable="true"
-    tabindex="0"
-    class="flex items-center gap-2  w-full"
+    class="flex gap-2 items-center w-full"
   >
-    <UIcon name="mdi:drag" />
-    <UDropdownMenu :items="columnItems">
-      <UButton
+    <div class="flex gap-2 items-center rounded bg-gray-200 p-1.5 w-full">
+      <UIcon name="mdi:drag" />
+
+      <USelect
+        v-model="column"
         :label="column || 'Column'"
-        size="sm"
+        size="xs"
         variant="subtle"
         color="neutral"
+        :items="columnItems"
       />
-    </UDropdownMenu>
-    <UDropdownMenu :items="operationItems">
-      <UButton
-        :label="operation || 'Operation'"
-        size="sm"
-        color="neutral"
+
+      <USelect
+        v-model="operation"
+        :items="operationItems"
+        size="xs"
         variant="subtle"
       />
-    </UDropdownMenu>
-    <UInput
-      v-model="value"
-      placeholder="Value"
-      size="sm"
-    />
+
+      <UInput
+        v-model="value"
+        placeholder="Value"
+        class="flex-1"
+        :type="columns[column]?.type === 'integer' ? 'number' : 'text'"
+        size="xs"
+      />
+
+      <slot />
+    </div>
   </div>
 </template>

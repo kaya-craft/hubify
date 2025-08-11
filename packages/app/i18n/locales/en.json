@@ -41,5 +41,9 @@
   "app.admin.form.submit-and-stay": "Save and stay",
   "app.form.actions": "Actions",
   "app.form.actions.edit": "Edit",
-  "app.form.actions.delete": "Delete"
+  "app.form.actions.delete": "Delete",
+  "app.admin.filters.and": "AND",
+  "app.admin.filters.or": "OR",
+  "app.admin.filters.add-clause": "Clause",
+  "app.admin.filters.no-filter": "No filters yet."
 }

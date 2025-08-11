@@ -19,42 +19,45 @@ const emit = defineEmits<{
 
 const { collection } = defineProps<Props>()
 
-function addClause() {
-  children.value = [...children.value, { type: 'clause', column: '', operation: '$eq', value: '' }]
-}
+/**
+ * Translation.
+ */
+const { t } = useI18n()
 
-function onUpdated(clauses: ConditionTreeAsArray[]) {
-  emit('update:model-value', clauses)
-}
+/**
+ * List of items for the dropdown menu to select between AND and OR
+ */
+const items = computed(() => {
+  return [
+    { label: t('app.admin.filters.and'), value: '$and' },
+    { label: t('app.admin.filters.or'), value: '$or' }
+  ]
+})
 </script>
 
 <template>
-  <div
-    draggable="true"
-    tabindex="0"
-    class="flex flex-col gap-2"
-  >
-    <div class="flex items-center gap-2">
-      <UIcon name="mdi:drag" />
-      <USelect
-        v-model="type"
-        :items="[{ label: 'and', value: '$and' }, { label: 'or', value: '$or' }]"
-      />
+  <div class="flex flex-col gap-2 p-2 bg-gray-100 rounded w-full">
+    <div
+      class="flex gap-2 items-center"
+    >
+      <div class="flex gap-2 items-center flex-1">
+        <UIcon name="mdi:drag" />
+
+        <USelect
+          v-model="type"
+          size="xs"
+          variant="subtle"
+          :items="items"
+        />
+      </div>
+
+      <slot />
     </div>
-    <div class="pl-2 flex flex-col gap-2">
-      <CollectionFilterClauses
-        v-model="children"
-        :collection
-        @update:model-value="onUpdated"
-      />
-      <UButton
-        label="Add Clause"
-        size="sm"
-        color="neutral"
-        class="self-start"
-        leading-icon="heroicons:plus"
-        @click="addClause"
-      />
-    </div>
+
+    <CollectionFilterClauses
+      v-model="children"
+      :collection
+      class="pl-3"
+    />
   </div>
 </template>
