@@ -54,8 +54,6 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
         color: 'success',
         description: 'The item has been successfully updated.'
       })
-
-      callHubifyHook('items:updated', { collection, id })
     }
     catch (error) {
       add({
@@ -72,7 +70,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
    */
   async function create(data: TableFormSubmitEvent<T>['data']) {
     try {
-      const id = await $fetch('/api/items/' + collection, {
+      await $fetch('/api/items/' + collection, {
         method: 'post',
         body: data
       })
@@ -82,8 +80,6 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
         color: 'success',
         description: 'The item has been successfully created.'
       })
-
-      callHubifyHook('items:created', { collection, id })
 
       Object.assign(state, createTableState())
     }

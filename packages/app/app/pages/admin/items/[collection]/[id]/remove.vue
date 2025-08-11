@@ -35,8 +35,6 @@ async function deleteItem() {
       description: 'The item has been successfully deleted.'
     })
 
-    callHubifyHook('items:deleted', { collection, id })
-
     close()
   }
   catch (error) {

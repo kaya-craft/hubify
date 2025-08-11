@@ -1,4 +1,4 @@
-import type { TableColumn as _TableColumn, TableRelation } from '@hubify/restql'
+import type { TableColumn as _TableColumn, PrimaryKey, TableRelation } from '@hubify/restql'
 import type { Item } from '@hubify/restql/utils/helpers'
 
 export function defineTableColumns<const C extends SchemaColumns>(columns: C): C {
@@ -18,3 +18,5 @@ export type TableColumnNames<T extends TableNames> = keyof Schema[T]['columns'] 
 export type TableColumns<T extends TableNames> = Schema[T]['columns']
 export type TableColumn<T extends TableNames, C extends TableColumnNames<T>> = Schema[T]['columns'][C] extends infer U extends _TableColumn ? U : never
 export type TableItem<T extends TableNames> = Item<Schema, T>
+export type TablePrimaryKey<T extends TableNames> = Extract<PrimaryKey<Schema, T>, string | number>
+export type TablePrimaryKeyValue<T extends TableNames> = Extract<TablePrimaryKey<T> extends keyof TableItem<T> ? TableItem<T>[TablePrimaryKey<T>] : never, string | number>
