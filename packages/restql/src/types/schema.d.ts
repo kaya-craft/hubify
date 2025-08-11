@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { EmptyObject } from 'type-fest'
 import type { Simplify } from './helpers'
 
@@ -6,7 +7,7 @@ export interface Schema<C extends ColumnTypes = ColumnTypes> {
   [table: string]: Table<C>
 }
 
-export type Table<C extends ColumnTypes = ColumnTypes> = {
+export interface Table<C extends ColumnTypes = ColumnTypes> {
   columns: {
     [column: string]: TableColumn<C>
   }
@@ -15,7 +16,7 @@ export type Table<C extends ColumnTypes = ColumnTypes> = {
   }
 }
 
-export type TableColumn<C extends ColumnTypes = ColumnTypes> = {
+export interface TableColumn<C extends ColumnTypes = ColumnTypes> {
   type: C
   primaryKey?: boolean
   unique?: boolean
@@ -23,7 +24,7 @@ export type TableColumn<C extends ColumnTypes = ColumnTypes> = {
   default?: string | number | boolean | null
 }
 
-export type TableRelation = {
+export interface TableRelation {
   table: string
   fromKey: string
   toKey: string
@@ -80,7 +81,7 @@ export type FieldName<S extends Schema = Schema, F extends TableName<S> = TableN
       : never
   }[RelationName<S, F>]
 
-type ColumnTypes = 'text' | 'float4' | 'boolean' | 'date' | 'json' | 'int4' | 'int8' | 'timestamptz' | 'uuid' | 'varchar' | 'timestamp' | 'numeric'
+type ColumnTypes = 'text' | 'float4' | 'boolean' | 'date' | 'json' | 'integer' | 'int4' | 'int8' | 'timestamptz' | 'uuid' | 'varchar' | 'timestamp' | 'numeric'
 
 type ColumnTypeToTsType<T extends ColumnTypes>
     = T extends 'text' ? string
@@ -94,7 +95,9 @@ type ColumnTypeToTsType<T extends ColumnTypes>
                     : T extends 'uuid' ? string
                       : T extends 'varchar' ? string
                         : T extends 'timestamp' ? Date
-                          : T extends 'numeric' ? number : never
+                          : T extends 'numeric' ? number
+                            : T extends 'integer' ? number
+                              : never
 
 export type PrimaryKey<S extends Schema, T extends TableName<S>> = {
   [K in keyof S[T]['columns']]: S[T]['columns'][K]['primaryKey'] extends true ? K : never

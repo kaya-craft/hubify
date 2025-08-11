@@ -1,6 +1,6 @@
 export const columns = defineTableColumns({
   id: {
-    type: 'uuid',
+    type: 'integer',
     primaryKey: true
   },
   email: {

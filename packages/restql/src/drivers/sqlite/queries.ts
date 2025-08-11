@@ -3,9 +3,9 @@ import type { CleanJoin } from '@/types/helpers'
 import type { ConditionTree } from '@/types/params'
 import type { FieldName, PrimaryKeyValue, Schema, TableName } from '@/types/schema'
 import type { Item, WhereWithPrimaryKey } from '@/utils/helpers'
-import type { From, GroupBy, Insert, Joins, Limit, Offset, OrderBy, Remove, Select, Set, Update, Values, Where } from '@/utils/statements'
+import type { From, GroupBy, Insert, Joins, Limit, Offset, OrderBy, Remove, Returning, Select, Set, Update, Values, Where } from '@/utils/statements'
 import { addPrimaryKeyCondition, join, trim } from '@/utils/helpers'
-import { from, groupBy, insert, joins, limit, offset, orderBy, remove, select, set, update, values, where } from '@/utils/statements'
+import { from, groupBy, insert, joins, limit, offset, orderBy, remove, returning, select, set, update, values, where } from '@/utils/statements'
 
 /**
  * Write a SQL query to find a single record in a table with specified parameters.
@@ -102,7 +102,8 @@ export function createOneRaw<const S extends Schema>(_schema: S) {
   return <T extends TableName<S>, const I extends Partial<Item<S, T>>>(table: T, item: I) => {
     return trim(join([
       insert(table),
-      values(item)
+      values(item),
+      returning('*')
     ], ' ')) as CreateOneRaw<S, T, I>
   }
 }
@@ -165,7 +166,8 @@ export type UpdateOneParams<S extends Schema = Schema, T extends TableName<S> = 
 
 export type CreateOneRaw<S extends Schema, T extends TableName<S>, I extends Partial<Item<S, T>>> = Trim<CleanJoin<[
   Insert<T>,
-  Values<S, T, I>
+  Values<S, T, I>,
+  Returning<['*']>
 ], ' '>>
 
 export type UpdateOneRaw<S extends Schema, T extends TableName<S>, K extends PrimaryKeyValue<S, T>, I extends Partial<Item<S, T>>, P extends UpdateOneParams<S, T>> = Trim<CleanJoin<[

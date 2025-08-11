@@ -45,7 +45,7 @@ export function defineDriver<R extends DriverOptions, S extends Schema>(create: 
     }
 
     const findOne = <T extends TableName<S>, const K extends PrimaryKeyValue<S, T>, const P extends QueryParams<S, T>>(table: T, primaryKey: K, params?: P) => {
-      return exec<Item<S, T, P['columns']> | null>(findOneRaw(table, primaryKey, params || {}))
+      return exec<Item<S, T, P['columns']>[]>(findOneRaw(table, primaryKey, params || {})).then(rows => rows[0])
     }
 
     const update = <T extends TableName<S>, const P extends QueryParams<S, T>>(table: T, item: Partial<Item<S, T, P['columns']>>, params?: P) => {
@@ -57,7 +57,7 @@ export function defineDriver<R extends DriverOptions, S extends Schema>(create: 
     }
 
     const createOne = <T extends TableName<S>>(table: T, item: Partial<Item<S, T>>) => {
-      return exec<Item<S, T>>(createOneRaw(table, item))
+      return exec<Item<S, T>>(createOneRaw(table, item)).then(rows => rows[0])
     }
 
     const remove = <T extends TableName<S>, const P extends QueryParams<S, T>>(table: T, params: P) => {

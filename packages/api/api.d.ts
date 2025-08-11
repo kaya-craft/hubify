@@ -5,7 +5,7 @@ import type { FetchOptions } from 'ofetch'
 import type { Item } from '@hubify/restql/utils/helpers'
 
 type InternalApiBody = {
-  [K in TableName<typeof tables> as `/api/${K}`]: {
+  [K in TableName<typeof tables> as `/api/items/${K}`]: {
     post: {
       body: Item<typeof tables, K>
     }
@@ -21,7 +21,7 @@ type InternalApiBody = {
     }
   }
 } & {
-  [K in TableName<typeof tables> as `/api/${K}/:id`]: {
+  [K in TableName<typeof tables> as `/api/items/${K}/:id`]: {
     put: {
       body: Partial<Item<typeof tables, K>>
       params: QueryParams<typeof tables, K>
@@ -36,14 +36,14 @@ type InternalApiBody = {
 }
 
 type GenericEndpoints = {
-  [K in TableName<typeof tables> as `/api/${K}`]: {
+  [K in TableName<typeof tables> as `/api/items/${K}`]: {
     post: Promise<Item<typeof tables, K>>
     put: Promise<Item<typeof tables, K>[]>
     delete: Promise<Item<typeof tables, K>[]>
     get: Promise<Item<typeof tables, K>[]>
   }
 } & {
-  [K in TableName<typeof tables> as `/api/${K}/:id`]: {
+  [K in TableName<typeof tables> as `/api/items/${K}/:id`]: {
     put: Promise<Item<typeof tables, K>>
     delete: Promise<Item<typeof tables, K>>
     get: Promise<Item<typeof tables, K>>

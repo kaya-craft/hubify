@@ -1,17 +1,15 @@
-<script setup lang="ts" generic="T extends TableFormTables, C extends TableFormColumns<T>">
-import type { TableFormFieldValue, TableFormState } from '@/composables/useTableForm'
-
+<script setup lang="ts" generic="T extends TableNames, C extends TableColumnNames<T>">
 type Props = {
-  table: T
+  collection: T
   column: C
   state?: TableFormState<T>
 }
 
-const value = defineModel<TableFormFieldValue<T, C>>()
+const value = defineModel<TableFieldValue<T, C>>()
 
-const { table, column, state } = defineProps<Props>()
+const { collection, column, state } = defineProps<Props>()
 
-const { getFieldComponent, getField } = useTableForm(table)
+const { getFieldComponent, getField } = useTableForm(collection)
 
 /**
  * Current field.
@@ -39,9 +37,9 @@ defineOptions({ inheritAttrs: false })
   >
     <component
       :is="component"
-      :key="`${table}-${column}`"
+      :key="`${collection}-${column}`"
       v-model="value"
-      :table
+      :collection
       :state
       :column
       v-bind="field?.props"

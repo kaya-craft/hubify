@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { UnionToTuple } from 'type-fest'
 import type { AllFields, Item, JoinClauses, Normalize, NormalizedColumns, OrderByClauses, SchemaDiff, WhereClauses, Wrap } from './helpers'
 import type { CleanJoin } from '@/types/helpers'
@@ -166,6 +167,15 @@ export function orderBy<S extends Schema, T extends TableName<S>, C extends Quer
 export function where<S extends Schema, T extends TableName<S>, W extends QueryParams<S, T>['where']>(schema: S, table: T, where: W): Where<S, T, W> {
   return (where ? `WHERE ${getWhereClauses(schema, table, where)}` : '') as Where<S, T, W>
 }
+
+/**
+ * SQL Returning statement for the specified columns.
+ */
+export function returning<C extends string[]>(...columns: C): `RETURNING ${CleanJoin<C>}` {
+  return `RETURNING ${columns.join(', ')}` as Returning<C>
+}
+
+export type Returning<C extends string[]> = `RETURNING ${CleanJoin<C>}`
 
 export type Insert<T extends TableName<Schema>> = `INSERT INTO ${Wrap<T>}`
 

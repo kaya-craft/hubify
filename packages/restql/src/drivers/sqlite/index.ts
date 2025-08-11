@@ -1,12 +1,12 @@
+import type { Database } from 'db0'
 import type { CreateOneRawFn, FindOneRawFn, FindRawFn, RemoveOneRawFn, RemoveRawFn, UpdateOneRawFn, UpdateRawFn } from './queries'
 import type { ColumnTypes, RelationOnAction, Schema } from '@/types/schema'
-import type { Database } from 'db0'
 import { createDatabase } from 'db0'
 import connector from 'db0/connectors/node-sqlite'
 import { defineDriver } from '@/index'
-import { createOneRaw, findOneRaw, findRaw, removeOneRaw, removeRaw, schemaRaw, updateOneRaw, updateRaw } from './queries'
-import { createTable, dropTable, updateTable } from '@/utils/statements'
 import { getSchemaDiff } from '@/utils/helpers'
+import { createTable, dropTable, updateTable } from '@/utils/statements'
+import { createOneRaw, findOneRaw, findRaw, removeOneRaw, removeRaw, schemaRaw, updateOneRaw, updateRaw } from './queries'
 
 export default defineDriver(<S extends Schema>(schema: S) => ({
   findRaw: findRaw(schema) as FindRawFn<S>,
@@ -90,7 +90,7 @@ export async function runTransaction<T>(db: Database, cb: () => Promise<T>) {
   }
 }
 
-export type SchemaRow = {
+export interface SchemaRow {
   table: string
   column: string
   type: ColumnTypes

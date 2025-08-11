@@ -291,7 +291,7 @@ function columnHasChanged(column1: TableColumn, column2: TableColumn, relations1
   )
 }
 
-export type SchemaDiff = {
+export interface SchemaDiff {
   added: Record<string, Table>
   removed: Record<string, true>
   updated: Record<string, {

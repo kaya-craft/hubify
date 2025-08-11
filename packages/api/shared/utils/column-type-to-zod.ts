@@ -9,6 +9,7 @@ export function columnTypeToZod(column: TableColumn) {
     case 'int8':
     case 'int4':
     case 'numeric':
+    case 'integer':
       return z.coerce.number().int()
     case 'float4':
       return z.coerce.number()

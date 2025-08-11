@@ -1,6 +1,6 @@
 import z from 'zod'
 import tables from '#hubify/schema'
-import type { ColumnName, TableName } from '@hubify/restql'
+import type { ColumnName, TableColumn, TableName } from '@hubify/restql'
 
 /**
  * Validates the router parameters for a collection and returns the collection name.
@@ -53,15 +53,20 @@ export async function ensureValidItem(
   optional = false,
   event = useEvent()
 ) {
-  const columnNames = Object.keys(tables[collection].columns) as ColumnName<typeof tables, typeof collection>[]
+  const columnNames = Object.entries(tables[collection].columns)
+    .filter(([_, col]) => !col.primaryKey)
+    .map(([key]) => key) as ColumnName<typeof tables, typeof collection>[]
 
   const columnSchemas = Object.fromEntries(
-    columnNames.map(name => [name, columnTypeToZod(tables[collection].columns[name])])
+    columnNames.map((name) => {
+      const column = tables[collection].columns[name] as TableColumn
+      const rule = columnTypeToZod(tables[collection].columns[name])
+      if (optional || column.default || !column.notNull) {
+        return [name, rule.optional()]
+      }
+      return [name, rule]
+    })
   )
-
-  if (optional) {
-    return await readValidatedBody(event, z.object(columnSchemas).partial().parse)
-  }
 
   return await readValidatedBody(event, z.object(columnSchemas).parse)
 }
