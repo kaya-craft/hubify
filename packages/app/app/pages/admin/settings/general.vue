@@ -14,5 +14,9 @@ useSeoMeta({
         {{ t('app.admin.settings.general.description') }}
       </p>
     </template>
+
+    <CollectionForm
+      collection="hubify_collections"
+    />
   </UCard>
 </template>
