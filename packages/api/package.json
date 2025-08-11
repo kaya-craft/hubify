@@ -5,7 +5,8 @@
   "exports": {
     ".": "./nuxt.config.ts",
     "./modules/*": "./modules/*.ts",
-    "./schema/*": "./schema/*.ts"
+    "./schema/*": "./schema/*.ts",
+    "./hooks": "./hooks.d.ts"
   },
   "scripts": {
     "build": "nuxt build",
@@ -20,6 +21,7 @@
     "@nuxt/kit": "^4.0.0",
     "@simplewebauthn/browser": "^11.0.0",
     "@simplewebauthn/server": "^11.0.0",
+    "crossws": "^0.4.1",
     "nuxt": "catalog:",
     "nuxt-auth-utils": "0.5.20",
     "vue": "catalog:",

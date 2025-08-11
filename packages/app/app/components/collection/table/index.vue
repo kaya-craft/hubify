@@ -44,7 +44,9 @@ const actionColumns = [{
  * Refresh the collection when the collection is updated.
  */
 onHubifyHook('items', ({ collection: name }) => {
-  if (name === collection) refresh()
+  if (name === collection) {
+    refresh()
+  }
 })
 </script>
 
