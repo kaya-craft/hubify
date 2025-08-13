@@ -6,8 +6,6 @@ export default defineEventHandler(async (event) => {
 
   const params = await ensureValidQueryParams(collection, event)
 
-  console.log(params)
-
   const { find } = useDb()
 
   return find(collection, params)

@@ -1,6 +1,6 @@
 import z from 'zod'
 import tables from '#hubify/schema'
-import type { ColumnName, ConditionTree, TableColumn, TableName } from '@hubify/restql'
+import type { ColumnName, TableColumn, TableName } from '@hubify/restql'
 
 /**
  * Validates the router parameters for a collection and returns the collection name.
@@ -74,7 +74,7 @@ export async function ensureValidItem(
 /**
  * Special validation for the `where` clause in query parameters.
  */
-function whereValidation<T extends TableName<Schema>>(
+export function whereValidation<T extends TableName<Schema>>(
   collection: T
 ) {
   const columns = Object.keys(tables[collection].columns)
@@ -93,8 +93,8 @@ function whereValidation<T extends TableName<Schema>>(
   const rule = z.object(obj).transform(asNonEmptyObject)
 
   Object.assign(obj, {
-    $and: z.array(rule).transform(arr => arr.length === 0 ? null : arr).optional(),
-    $or: z.array(rule).transform(arr => arr.length === 0 ? null : arr).optional()
+    $and: z.array(rule).transform(asNonEmptyArray).optional(),
+    $or: z.array(rule).transform(asNonEmptyArray).optional()
   })
 
   return rule
@@ -119,5 +119,13 @@ function asObject<T extends z.core.SomeType>(type: T) {
  */
 function asNonEmptyObject(value: Record<string, unknown>) {
   const newValue = Object.fromEntries(Object.entries(value).filter(([_, value]) => isNotEmpty(value)))
-  return Object.keys(newValue).length > 0 ? newValue : null
+  return Object.keys(newValue).length > 0 ? newValue : undefined
+}
+
+/**
+ * Helper function to ensure arrays are not empty.
+ */
+function asNonEmptyArray(value: unknown[]) {
+  const newValue = value.filter(isNotEmpty)
+  return newValue.length > 0 ? newValue : undefined
 }

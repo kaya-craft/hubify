@@ -1,7 +1,6 @@
 <script setup lang="ts" generic="T extends TableNames">
 import type { TableColumn } from '@nuxt/ui'
 import { CollectionTableActions } from '#components'
-import type { QueryParams } from '@hubify/restql'
 
 type Props = {
   collection: T
@@ -15,20 +14,15 @@ const { collection } = defineProps<Props>()
 const { columns } = useTable(collection)
 
 /**
- * Filter query model.
+ * Where query.
  */
-const filter = useRouteQuery<string, QueryParams<Schema, T>['where']>('filter', undefined, {
-  transform: {
-    get: value => value ? JSON.parse(value) : undefined,
-    set: value => JSON.stringify(value)
-  }
-})
+const { where, validatedWhere } = useQueryWhere(collection)
 
 /**
  * Fetch data for the collection.
  */
 const { data, status, refresh } = await useFetch(`/api/items/${collection}` as `/api/items/:collection`, {
-  query: { where: filter }
+  query: { where: validatedWhere }
 })
 
 /**
@@ -67,7 +61,7 @@ onHubifyHook('items', ({ collection: name }) => {
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-end gap-4">
       <CollectionFilter
-        v-model="filter"
+        v-model="where"
         :collection
       />
     </div>

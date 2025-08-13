@@ -1,75 +1,79 @@
 <script setup lang="ts" generic="T extends TableNames">
-import type { ConditionTree } from '@hubify/restql'
-
-export type Clause = {
-  type: 'clause'
-  column: string
-  operation: string
-  value: unknown
-}
-
-export type ConditionTreeAsArray = {
-  type: '$and' | '$or'
-  children: ConditionTreeAsArray[]
-} | Clause
+import type { ConditionTree, Operator } from '@hubify/restql'
 
 type Props = {
   collection: T
 }
 
+type Clause = {
+  type: 'clause'
+  column?: TableColumnNames<T>
+  operator?: Operator
+  value?: unknown
+}
+
+type ConditionTreeAsArray = {
+  type: '$and' | '$or'
+  children?: ConditionTreeAsArray[]
+} | Clause
+
 const filter = defineModel<ConditionTree<Schema, T>, string, ConditionTreeAsArray[], ConditionTreeAsArray[]>({
-  default: () => ({ }),
-  get: clausesObjectToArray,
-  set: clausesArrayToObject
+  default: () => ({}),
+  get: value => clausesObjectToArray(value),
+  set: value => ({ $and: clausesArrayToObject(value) })
 })
 
 const { collection } = defineProps<Props>()
 
+const { primaryKey } = useTable(collection)
+
 /**
  * Turns an array of clauses into an object suitable for RESTQL queries.
  */
-function clausesArrayToObject(clauses: ConditionTreeAsArray[]): ConditionTree<Schema, T> | undefined {
-  if (clauses.length === 0) return
-
+function clausesArrayToObject(clauses: ConditionTreeAsArray[]): ConditionTree<Schema, T>[] {
   return clauses.reduce((acc, clause) => {
     if (clause.type === '$and' || clause.type === '$or') {
-      Object.assign(acc, {
-        [clause.type]: clause.children.map(child => clausesArrayToObject([child])).filter(isNonNullish)
-      })
+      return acc.concat({
+        [clause.type]: clausesArrayToObject(clause.children ?? []).filter(isNonNullish)
+      } as ConditionTree<Schema, T>)
     }
     else if (clause.type === 'clause') {
-      Object.assign(acc, {
-        [clause.column]: { [clause.operation]: clause.value }
-      })
+      return acc.concat({
+        [clause.column ?? toValue(primaryKey)]: { [clause.operator ?? '$eq']: clause.value ?? null }
+      } as ConditionTree<Schema, T>)
     }
 
     return acc
-  }, {} as ConditionTree<Schema, T>)
+  }, [] as ConditionTree<Schema, T>[])
 }
 
 /**
  * Converts a condition tree object into an array of clauses.
  */
-function clausesObjectToArray(clauses: ConditionTree<Schema, T>): ConditionTreeAsArray[] {
-  return Object.entries(clauses).flatMap(([key, value]) => {
-    if (key === '$and' || key === '$or') {
-      return { type: key, children: value.flatMap(clausesObjectToArray) }
+function clausesObjectToArray(clauses: ConditionTree<Schema, T>, root = true): ConditionTreeAsArray[] {
+  return Object.entries(clauses).flatMap(([key, value], _, array) => {
+    if (root && array.length === 1 && key === '$and') {
+      return value.flatMap(value => clausesObjectToArray(value, false))
     }
 
-    return Object.entries(value).flatMap(([operation, value]) => {
-      if (operation === '$and' || operation === '$or') {
+    if (key === '$and' || key === '$or') {
+      return { type: key, children: value.flatMap(value => clausesObjectToArray(value, false)) }
+    }
+
+    return Object.entries(value).flatMap(([operator, value]) => {
+      if (operator === '$and' || operator === '$or') {
         if (Array.isArray(value)) {
-          return { type: operation, children: value.flatMap(clausesObjectToArray) }
+          return { type: operator, children: value.flatMap(value => clausesObjectToArray(value, false)) }
         }
-        throw new Error(`Expected array for operation ${operation}, but got ${typeof value}`)
+        throw new Error(`Expected array for operator ${operator}, but got ${typeof value}`)
       }
 
       return {
         type: 'clause',
         column: key,
-        operation,
+        operator,
         value
-      }
+      } as Clause
     })
   })
 }
@@ -78,6 +82,15 @@ function clausesObjectToArray(clauses: ConditionTree<Schema, T>): ConditionTreeA
  * Translation.
  */
 const { t } = useI18n()
+
+/**
+ * Add a new filter clause.
+ */
+function add(type: 'clause' | '$and' | '$or') {
+  filter.value = filter.value.concat({
+    type
+  })
+}
 </script>
 
 <template>
@@ -105,7 +118,7 @@ const { t } = useI18n()
             size="xs"
             color="primary"
             icon="heroicons:plus"
-            @click="filter = filter.concat({ type: 'clause', column: '', operation: '$eq', value: '' })"
+            @click="add('clause')"
           />
 
           <UButton
@@ -113,7 +126,7 @@ const { t } = useI18n()
             size="xs"
             color="info"
             icon="heroicons:plus"
-            @click="filter = filter.concat({ type: '$and', children: [] })"
+            @click="add('$and')"
           />
 
           <UButton
@@ -121,7 +134,7 @@ const { t } = useI18n()
             size="xs"
             color="neutral"
             icon="heroicons:plus"
-            @click="filter = filter.concat({ type: '$or', children: [] })"
+            @click="add('$or')"
           />
         </div>
       </div>
