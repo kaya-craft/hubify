@@ -1,7 +1,7 @@
-import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, resolveModule, useLogger } from 'nuxt/kit'
-import { listDirFiles, getDirectories } from '@hubify/api/modules/schema/index'
-import { join } from 'node:path'
+import { getDirectories, listDirFiles } from '@hubify/api/modules/schema/index'
 import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, resolveModule, useLogger } from 'nuxt/kit'
 
 export interface FieldsModuleOptions {
   fields: string[]
