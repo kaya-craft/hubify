@@ -41,5 +41,4 @@ export const fields = defineColumnFields(columns, {
   },
   createdAt: false,
   updatedAt: false
-
 })
