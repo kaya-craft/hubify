@@ -1,23 +1,23 @@
 <script setup lang="ts" generic="T extends TableNames">
 import type { ConditionTree, Operator } from '@hubify/restql'
 
-type Props = {
-  collection: T
-}
-
-type Clause = {
+export type Clause<T extends TableNames> = {
   type: 'clause'
   column?: TableColumnNames<T>
   operator?: Operator
   value?: unknown
 }
 
-type ConditionTreeAsArray = {
+export type ConditionTreeAsArray<T extends TableNames> = {
   type: '$and' | '$or'
-  children?: ConditionTreeAsArray[]
-} | Clause
+  children?: ConditionTreeAsArray<T>[]
+} | Clause<T>
 
-const filter = defineModel<ConditionTree<Schema, T>, string, ConditionTreeAsArray[], ConditionTreeAsArray[]>({
+type Props = {
+  collection: T
+}
+
+const filter = defineModel<ConditionTree<Schema, T>, string, ConditionTreeAsArray<T>[], ConditionTreeAsArray<T>[]>({
   default: () => ({}),
   get: value => clausesObjectToArray(value),
   set: value => ({ $and: clausesArrayToObject(value) })
@@ -30,7 +30,7 @@ const { primaryKey } = useTable(collection)
 /**
  * Turns an array of clauses into an object suitable for RESTQL queries.
  */
-function clausesArrayToObject(clauses: ConditionTreeAsArray[]): ConditionTree<Schema, T>[] {
+function clausesArrayToObject(clauses: ConditionTreeAsArray<T>[]): ConditionTree<Schema, T>[] {
   return clauses.reduce((acc, clause) => {
     if (clause.type === '$and' || clause.type === '$or') {
       return acc.concat({
@@ -50,7 +50,7 @@ function clausesArrayToObject(clauses: ConditionTreeAsArray[]): ConditionTree<Sc
 /**
  * Converts a condition tree object into an array of clauses.
  */
-function clausesObjectToArray(clauses: ConditionTree<Schema, T>, root = true): ConditionTreeAsArray[] {
+function clausesObjectToArray(clauses: ConditionTree<Schema, T>, root = true): ConditionTreeAsArray<T>[] {
   return Object.entries(clauses).flatMap(([key, value], _, array) => {
     if (root && array.length === 1 && key === '$and') {
       return value.flatMap(value => clausesObjectToArray(value, false))
@@ -69,11 +69,12 @@ function clausesObjectToArray(clauses: ConditionTree<Schema, T>, root = true): C
       }
 
       return {
+
         type: 'clause',
         column: key,
         operator,
         value
-      } as Clause
+      } as Clause<T>
     })
   })
 }

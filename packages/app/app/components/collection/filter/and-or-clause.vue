@@ -3,18 +3,15 @@ import type { ConditionTreeAsArray } from './index.vue'
 
 type Props = {
   collection: T
+  level?: number
 }
 
-const children = defineModel<ConditionTreeAsArray[]>('children', {
-  required: true
-})
-
-const type = defineModel<'$and' | '$or'>('type', {
+const clause = defineModel<ConditionTreeAsArray<T> & { type: '$and' | '$or' }>({
   required: true
 })
 
 const emit = defineEmits<{
-  'update:model-value': [ConditionTreeAsArray[]]
+  'update:modelValue': [value: ConditionTreeAsArray<T> & { type: '$and' | '$or' }]
 }>()
 
 const { collection } = defineProps<Props>()
@@ -27,12 +24,17 @@ const { t } = useI18n()
 /**
  * List of items for the dropdown menu to select between AND and OR
  */
-const items = computed(() => {
-  return [
-    { label: t('app.admin.filters.and'), value: '$and' },
-    { label: t('app.admin.filters.or'), value: '$or' }
-  ]
-})
+const items = computed(() => [
+  { label: t('app.admin.filters.and'), value: '$and' },
+  { label: t('app.admin.filters.or'), value: '$or' }
+])
+
+/**
+ * Update the model value when the clause changes.
+ */
+function updateModelValue() {
+  emit('update:modelValue', { ...toValue(clause) })
+}
 </script>
 
 <template>
@@ -41,13 +43,17 @@ const items = computed(() => {
       class="flex gap-2 items-center"
     >
       <div class="flex gap-2 items-center flex-1">
-        <UIcon name="mdi:drag" />
+        <UIcon
+          name="mdi:drag"
+          class="drag-handle cursor-move"
+        />
 
         <USelect
-          v-model="type"
+          v-model="clause.type"
           size="xs"
           variant="subtle"
           :items="items"
+          @update:model-value="updateModelValue"
         />
       </div>
 
@@ -55,9 +61,11 @@ const items = computed(() => {
     </div>
 
     <CollectionFilterClauses
-      v-model="children"
+      v-model="clause.children"
       :collection
       class="pl-3"
+      :level
+      @update:model-value="updateModelValue"
     />
   </div>
 </template>

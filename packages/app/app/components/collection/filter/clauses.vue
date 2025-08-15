@@ -1,89 +1,76 @@
 <script setup lang="ts" generic="T extends TableNames">
-import type { ConditionTreeAsArray } from './index.vue'
+import type { Clause, ConditionTreeAsArray } from './index.vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 
 type Props = {
   collection: T
+  level?: number
 }
 
-const clauses = defineModel<ConditionTreeAsArray[]>({
-  required: true
+const clauses = defineModel<ConditionTreeAsArray<T>[]>({
+  default: () => []
 })
 
 const emit = defineEmits<{
-  'update:model-value': [ConditionTreeAsArray[]]
+  'update:modelValue': [value: ConditionTreeAsArray<T>[]]
 }>()
 
-function updateChildren(index: number, clause: ConditionTreeAsArray) {
-  clauses.value.splice(index, 1, clause)
-  emit('update:model-value', clauses.value)
-}
-
-function updateColumn(index: number, column: string) {
-  const clause = clauses.value[index]
-  clause.column = column
-  emit('update:model-value', clauses.value)
-}
-
-function updateOperation(index: number, operation: string) {
-  const clause = clauses.value[index]
-  clause.operation = operation
-  emit('update:model-value', clauses.value)
-}
-
-function updateValue(index: number, value: unknown) {
-  const clause = clauses.value[index]
-  clause.value = value
-  emit('update:model-value', clauses.value)
-}
+const { level = 0 } = defineProps<Props>()
 
 /**
- * Remove clause at the specified index.
+ * Reference to the template element.
  */
-function removeClause(index: number) {
-  clauses.value.splice(index, 1)
-  emit('update:model-value', clauses.value)
-}
-
-/**
- * Translation.
- */
-const { t } = useI18n()
-
-defineProps<Props>()
-
 const el = useTemplateRef('el')
 
 useSortable(el, clauses, {
-  group: {
-    pull: true,
-    put: true
+  group: 'clauses',
+  onStart(event) {
+    if (!isNumber(event.oldIndex)) return
+    const clause = JSON.parse(JSON.stringify(toValue(clauses).at(event.oldIndex)))
+    Object.assign(event.from, { clause })
   },
-  animation: 250,
-  forceFallback: true
-
+  onRemove: event => remove(event.oldIndex),
+  // @ts-expect-error - not typed
+  onAdd: event => add(event.from.clause, event.newIndex)
 })
+
+/**
+ * Remove a clause at the specified index.
+ */
+function remove(index?: number) {
+  clauses.value = toValue(clauses).filter((_, i) => i !== index)
+}
+
+/**
+ * Function add clause at
+ */
+function add(clause: Clause<T>, index?: number) {
+  clauses.value.splice(index ?? clauses.value.length, 0, clause)
+}
+
+/**
+ * Update the model value when the clause changes.
+ */
+function updateModelValue() {
+  emit('update:modelValue', [...toValue(clauses)])
+}
 </script>
 
 <template>
   <div
     ref="el"
-    class="flex flex-col gap-2"
+    class="flex flex-col gap-2 py-4"
   >
     <div
-      v-for="(clause, index) in clauses"
-      :key="index"
+      v-for="(_, index) of clauses"
+      :key="level + '-' + index"
       class="flex items-center gap-2"
     >
       <CollectionFilterClause
-        v-if="clause.type === 'clause'"
-        v-model:column="clause.column"
-        v-model:operation="clause.operation"
-        v-model:value="clause.value"
-        :collection="collection"
-        @update:column="updateColumn(index, $event)"
-        @update:operation="updateOperation(index, $event)"
-        @update:value="updateValue(index, $event)"
+        v-if="clauses[index]?.type === 'clause'"
+        v-model="clauses[index]"
+        :collection
+        @update:model-value="updateModelValue"
       >
         <UButton
           icon="heroicons:x-mark"
@@ -92,17 +79,16 @@ useSortable(el, clauses, {
           :ui="{ base: 'rounded-full' }"
           square
           variant="ghost"
-          @click="removeClause(index)"
+          @click="remove(index)"
         />
       </CollectionFilterClause>
 
       <CollectionFilterAndOrClause
-        v-else
-        v-model:children="clause.children"
-        v-model:type="clause.type"
-        :collection="collection"
-        @update:children="updateChildren(index, clause)"
-        @update:type="updateChildren(index, clause)"
+        v-else-if="clauses[index]"
+        v-model="clauses[index]"
+        :collection
+        :level="level + 1"
+        @update:model-value="updateModelValue"
       >
         <UButton
           icon="heroicons:x-mark"
@@ -111,7 +97,7 @@ useSortable(el, clauses, {
           :ui="{ base: 'rounded-full' }"
           square
           variant="ghost"
-          @click="removeClause(index)"
+          @click="remove(index)"
         />
       </CollectionFilterAndOrClause>
     </div>

@@ -15,12 +15,18 @@ export const OPERATORS = {
   $gte: (value: unknown) => `>= ${value}`,
   $lt: (value: unknown) => `< ${value}`,
   $lte: (value: unknown) => `<= ${value}`,
-  $like: (value: unknown) => `LIKE ${normalizeOperationValue(value)}`,
-  $nlike: (value: unknown) => `NOT LIKE ${normalizeOperationValue(value)}`,
+  $contains: (value: unknown) => `LIKE %${normalizeOperationValue(value)}%`,
+  $ncontains: (value: unknown) => `NOT LIKE %${normalizeOperationValue(value)}%`,
+  $startsWith: (value: unknown) => `LIKE ${normalizeOperationValue(value)}%`,
+  $nstartsWith: (value: unknown) => `NOT LIKE ${normalizeOperationValue(value)}%`,
+  $endsWith: (value: unknown) => `LIKE %${normalizeOperationValue(value)}`,
+  $nendsWith: (value: unknown) => `NOT LIKE %${normalizeOperationValue(value)}`,
   $in: (value: unknown[]) => `IN (${join(value.map(normalizeOperationValue), ', ')})`,
   $nin: (value: unknown[]) => `NOT IN (${join(value.map(normalizeOperationValue), ', ')})`,
   $between: (value: unknown[]) => `BETWEEN ${value[0]} AND ${value[1]}`,
-  $nbetween: (value: unknown[]) => `NOT BETWEEN ${value[0]} AND ${value[1]}`
+  $nbetween: (value: unknown[]) => `NOT BETWEEN ${value[0]} AND ${value[1]}`,
+  $null: () => 'IS NULL',
+  $nnull: () => 'IS NOT NULL'
 }
 
 /**
@@ -350,13 +356,19 @@ export type OperatorToSQL<O extends keyof typeof OPERATORS, V>
           : O extends '$gte' ? `>= ${Normalize<V>}`
             : O extends '$lt' ? `< ${Normalize<V>}`
               : O extends '$lte' ? `<= ${Normalize<V>}`
-                : O extends '$like' ? `LIKE ${Normalize<V>}`
-                  : O extends '$nlike' ? `NOT LIKE ${Normalize<V>}`
-                    : O extends '$in' ? V extends any[] ? `IN (${CleanJoin<NormalizeArray<V>>})` : never
-                      : O extends '$nin' ? V extends any[] ? `NOT IN (${CleanJoin<NormalizeArray<V>>})` : never
-                        : O extends '$between' ? V extends any[] ? `BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
-                          : O extends '$nbetween' ? V extends any[] ? `NOT BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
-                            : never
+                : O extends '$contains' ? `LIKE %${Normalize<V>}%`
+                  : O extends '$ncontains' ? `NOT LIKE %${Normalize<V>}%`
+                    : O extends '$startsWith' ? `LIKE ${Normalize<V>}%`
+                      : O extends '$nstartsWith' ? `NOT LIKE ${Normalize<V>}%`
+                        : O extends '$endsWith' ? `LIKE %${Normalize<V>}`
+                          : O extends '$nendsWith' ? `NOT LIKE %${Normalize<V>}`
+                            : O extends '$null' ? 'IS NULL'
+                              : O extends '$nnull' ? 'IS NOT NULL'
+                                : O extends '$in' ? V extends any[] ? `IN (${CleanJoin<NormalizeArray<V>>})` : never
+                                  : O extends '$nin' ? V extends any[] ? `NOT IN (${CleanJoin<NormalizeArray<V>>})` : never
+                                    : O extends '$between' ? V extends any[] ? `BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
+                                      : O extends '$nbetween' ? V extends any[] ? `NOT BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
+                                        : never
 
 export type WhereColumnClause<F extends string, C extends Condition>
     = CleanJoin<UnionToTuple<{
