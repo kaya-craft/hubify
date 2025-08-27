@@ -11,9 +11,7 @@ const color = defineModel<string>()
 /**
  * Expose the data types supported by this color picker.
  */
-defineExpose({
-  dataTypes: ['text', 'varchar'] as const
-})
+defineFieldDataTypes('text', 'varchar')
 
 /**
  * Props for the color picker component.

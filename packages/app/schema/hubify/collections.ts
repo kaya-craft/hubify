@@ -27,7 +27,7 @@ export const fields = defineColumnFields(columns, {
     }
   },
   icon: {
-    component: 'input-text',
+    component: 'icon-selector',
     label: 'Icon',
     class: 'col-span-6',
     props: {
