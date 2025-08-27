@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { UInputMenu } from '#components'
+import type { InputMenuProps } from '@nuxt/ui'
+
+interface Props extends /* @vue-ignore */ InputMenuProps {}
 
 export interface APIv2SearchResponse {
   icons: string[]
@@ -12,6 +14,11 @@ export interface APIv2SearchResponse {
  * Expose the data types supported by the icon selector.
  */
 defineFieldDataTypes('text', 'varchar')
+
+/**
+ * Props for the icon selector component.
+ */
+defineProps<Props>()
 
 /**
  * Selected icon
@@ -62,7 +69,7 @@ const iconItems = computed(() => searchResults.value?.icons || [])
       :loading="pending"
       :icon="value"
       placeholder="Search icons..."
-      name="search icon input"
+      name="Input-Search-Icon"
     >
       <template #item="{ item }">
         <div class="w-full">
@@ -75,6 +82,10 @@ const iconItems = computed(() => searchResults.value?.icons || [])
           </div>
           <USeparator color="neutral" />
         </div>
+      </template>
+
+      <template #empty>
+        <span>No icons found</span>
       </template>
     </UInputMenu>
   </div>
