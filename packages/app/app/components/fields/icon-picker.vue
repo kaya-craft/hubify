@@ -78,7 +78,6 @@ const { t } = useI18n()
       item: 'justify-center w-min shrink',
       empty: [!query ? 'hidden' : '']
     }"
-    @click.prevent
   >
     <template #item="{ item }">
       <UIcon
