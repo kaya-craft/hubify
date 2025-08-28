@@ -11,9 +11,7 @@ const color = defineModel<string>()
 /**
  * Expose the data types supported by this color picker.
  */
-defineExpose({
-  dataTypes: ['text', 'varchar'] as const
-})
+defineFieldDataTypes('text', 'varchar')
 
 /**
  * Props for the color picker component.
@@ -49,7 +47,7 @@ const defaultColors = [
           variant="outline"
           color="neutral"
           size="lg"
-          class="w-12 relative"
+          class="w-24 relative"
           :style="chip"
         />
         <template #content>
@@ -92,6 +90,7 @@ const defaultColors = [
         v-model="color"
         placeholder="#FFFFFF"
         :ui="{ trailing: 'pe-1' }"
+        class="w-full"
       >
         <template
           #trailing

@@ -14,6 +14,7 @@ export const fields = defineColumnFields(columns, {
       type: 'text'
     }
   },
+
   projectName: {
     component: 'input-text',
     label: 'Project Name',

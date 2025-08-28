@@ -5,9 +5,7 @@ interface Props extends /* @vue-ignore */ SwitchProps {}
 
 const value = defineModel<boolean>()
 
-defineExpose({
-  dataTypes: ['boolean'] as const
-})
+defineFieldDataTypes('boolean')
 
 defineProps<Props>()
 </script>
