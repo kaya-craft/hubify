@@ -50,7 +50,7 @@ const itemsToDisplay = computed(() => searchResults.value?.slice(page.value, pag
 /**
  * Fetch search results from the API
  */
-const { data: searchResults, pending } = await useFetch('/api/iconify/search', {
+const { data: searchResults, pending } = useFetch('/api/iconify/search', {
   query: {
     query: debouncedQuery,
     limit: 999
@@ -72,6 +72,7 @@ const { data: searchResults, pending } = await useFetch('/api/iconify/search', {
     :placeholder="$t('app.icon-selector.placeholder')"
     name="Input-Search-Icon"
     :ui="{ group: 'p-1 isolate grid grid-cols-8' }"
+    @click.prevent
   >
     <template #item="{ item }">
       <UIcon
