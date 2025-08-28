@@ -31,7 +31,6 @@ export const fields = defineColumnFields(columns, {
     label: 'Icon',
     class: 'col-span-6',
     props: {
-      placeholder: 'Icon',
       type: 'text'
     }
   },

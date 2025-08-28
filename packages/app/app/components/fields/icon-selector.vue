@@ -36,39 +36,62 @@ const searchQuery = ref('')
 const debouncedQuery = refDebounced(searchQuery, 300)
 
 /**
+ * Pagination state
+ */
+const page = ref(1)
+const numberPerPage = 32
+const total = ref(0)
+
+/**
+ * Items to display based on selected page
+ */
+const itemsToDisplay = computed(() => searchResults.value?.slice(page.value, page.value + numberPerPage))
+
+/**
  * Fetch search results from the API
  */
 const { data: searchResults, pending } = await useFetch('/api/iconify/search', {
-  query: { query: debouncedQuery },
-  transform: (data: APIv2SearchResponse) => data.icons || []
+  query: {
+    query: debouncedQuery,
+    limit: 999
+  },
+  transform: (data: APIv2SearchResponse) => (data.icons) || [],
+  onResponse({ response }) {
+    total.value = Number(response._data?.total || 0)
+  }
 })
 </script>
 
 <template>
-  <UInputMenu
+  <USelectMenu
     v-model="value"
     v-model:search-term="searchQuery"
-    :items="searchResults"
+    :items="itemsToDisplay"
     :loading="pending"
     :icon="value"
     :placeholder="$t('app.icon-selector.placeholder')"
     name="Input-Search-Icon"
+    :ui="{ group: 'p-1 isolate grid grid-cols-8' }"
   >
     <template #item="{ item }">
-      <div class="w-full">
-        <div class="grid grid-flow-col gap-2 my-2 justify-start items-center">
-          <UIcon
-            :name="item"
-            size="24"
-          />
-          <span class="text-xs">{{ item }}</span>
-        </div>
-        <USeparator color="neutral" />
-      </div>
+      <UIcon
+        :name="item"
+        size="24"
+      />
     </template>
 
     <template #empty>
       <span>{{ $t('app.icon-selector.empty') }}</span>
     </template>
-  </UInputMenu>
+
+    <template #content-bottom>
+      <UPagination
+        v-if="total > numberPerPage"
+        v-model:page="page"
+        :total
+        :items-per-page="32"
+        :ui="{ list: 'flex items-center gap-1 p-1 justify-center' }"
+      />
+    </template>
+  </USelectMenu>
 </template>
