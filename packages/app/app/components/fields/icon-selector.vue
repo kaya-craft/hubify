@@ -45,32 +45,30 @@ const { data: searchResults, pending } = await useFetch('/api/iconify/search', {
 </script>
 
 <template>
-  <div class="w-48">
-    <UInputMenu
-      v-model="value"
-      v-model:search-term="searchQuery"
-      :items="searchResults"
-      :loading="pending"
-      :icon="value"
-      placeholder="Search icons..."
-      name="Input-Search-Icon"
-    >
-      <template #item="{ item }">
-        <div class="w-full">
-          <div class="grid grid-flow-col gap-2 my-2 justify-start items-center">
-            <UIcon
-              :name="item"
-              size="24"
-            />
-            <span class="text-xs">{{ item }}</span>
-          </div>
-          <USeparator color="neutral" />
+  <UInputMenu
+    v-model="value"
+    v-model:search-term="searchQuery"
+    :items="searchResults"
+    :loading="pending"
+    :icon="value"
+    :placeholder="$t('app.icon-selector.placeholder')"
+    name="Input-Search-Icon"
+  >
+    <template #item="{ item }">
+      <div class="w-full">
+        <div class="grid grid-flow-col gap-2 my-2 justify-start items-center">
+          <UIcon
+            :name="item"
+            size="24"
+          />
+          <span class="text-xs">{{ item }}</span>
         </div>
-      </template>
+        <USeparator color="neutral" />
+      </div>
+    </template>
 
-      <template #empty>
-        <span>No icons found</span>
-      </template>
-    </UInputMenu>
-  </div>
+    <template #empty>
+      <span>{{ $t('app.icon-selector.empty') }}</span>
+    </template>
+  </UInputMenu>
 </template>

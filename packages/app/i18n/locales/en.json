@@ -41,5 +41,7 @@
   "app.admin.form.submit-and-stay": "Save and stay",
   "app.form.actions": "Actions",
   "app.form.actions.edit": "Edit",
-  "app.form.actions.delete": "Delete"
+  "app.form.actions.delete": "Delete",
+  "app.icon-selector.placeholder": "Search icons...",
+  "app.icon-selector.empty": "No icons found"
 }
