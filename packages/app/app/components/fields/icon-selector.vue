@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { InputMenuProps } from '@nuxt/ui'
 
-interface Props extends /* @vue-ignore */ InputMenuProps {}
+interface Props extends /* @vue-ignore */ InputMenuProps {
+  limit?: number
+}
 
 export interface APIv2SearchResponse {
   icons: string[]
@@ -16,14 +18,14 @@ export interface APIv2SearchResponse {
 defineFieldDataTypes('text', 'varchar')
 
 /**
- * Props for the icon selector component.
- */
-defineProps<Props>()
-
-/**
  * Selected icon
  */
-const value = ref('')
+const value = defineModel<string>()
+
+/**
+ * Props for the icon selector component.
+ */
+const { limit = 32 } = defineProps<Props>()
 
 /**
  * Search query
@@ -33,45 +35,49 @@ const searchQuery = ref('')
 /**
  * Debounced search to avoid too many API calls
  */
-const debouncedQuery = refDebounced(searchQuery, 300)
+const query = refDebounced(searchQuery, 300)
 
 /**
  * Pagination state
  */
 const page = ref(1)
-const numberPerPage = 32
-const total = ref(0)
-
-/**
- * Items to display based on selected page
- */
-const itemsToDisplay = computed(() => searchResults.value?.slice(page.value, page.value + numberPerPage))
 
 /**
  * Fetch search results from the API
  */
-const { data: searchResults, pending } = useFetch('/api/iconify/search', {
+const { data, pending } = useFetch<APIv2SearchResponse>('/api/iconify/search', {
   query: {
-    query: debouncedQuery,
+    query,
     limit: 999
-  },
-  transform: (data: APIv2SearchResponse) => (data.icons) || [],
-  onResponse({ response }) {
-    total.value = Number(response._data?.total || 0)
   }
 })
+
+/**
+ * Items to display based on selected page
+ */
+const items = computed(() => {
+  return toValue(data)?.icons.slice(toValue(page), toValue(page) + limit)
+})
+
+/**
+ * Translation.
+ */
+const { t } = useI18n()
 </script>
 
 <template>
   <USelectMenu
     v-model="value"
     v-model:search-term="searchQuery"
-    :items="itemsToDisplay"
+    :items="items"
     :loading="pending"
     :icon="value"
-    :placeholder="$t('app.icon-selector.placeholder')"
-    name="Input-Search-Icon"
-    :ui="{ group: 'p-1 isolate grid grid-cols-8' }"
+    :placeholder="t('app.icon-selector.placeholder')"
+    :ui="{
+      group: 'p-1 isolate flex flex-wrap justify-center gap-2',
+      item: 'justify-center w-min shrink',
+      empty: [!query ? 'hidden' : '']
+    }"
     @click.prevent
   >
     <template #item="{ item }">
@@ -82,15 +88,18 @@ const { data: searchResults, pending } = useFetch('/api/iconify/search', {
     </template>
 
     <template #empty>
-      <span>{{ $t('app.icon-selector.empty') }}</span>
+      <span>{{ t('app.icon-selector.empty') }}</span>
     </template>
 
     <template #content-bottom>
       <UPagination
-        v-if="total > numberPerPage"
+        v-if="data && data.total > limit"
         v-model:page="page"
-        :total
-        :items-per-page="32"
+        :total="data.total"
+        :items-per-page="limit"
+        size="sm"
+        variant="ghost"
+        class="my-2"
         :ui="{ list: 'flex items-center gap-1 p-1 justify-center' }"
       />
     </template>
