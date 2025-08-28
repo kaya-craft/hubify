@@ -43,5 +43,6 @@
   "app.form.actions.edit": "Edit",
   "app.form.actions.delete": "Delete",
   "app.icon-selector.placeholder": "Search icons...",
-  "app.icon-selector.empty": "No icons found"
+  "app.icon-selector.empty": "No icons found",
+  "app.admin.settings.collections.title": "Collections"
 }

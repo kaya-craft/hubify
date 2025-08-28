@@ -37,16 +37,16 @@ type InternalApiBody = {
 
 type GenericEndpoints = {
   [K in TableName<typeof tables> as `/api/items/${K}`]: {
-    post: Promise<Item<typeof tables, K>>
-    put: Promise<Item<typeof tables, K>[]>
-    delete: Promise<Item<typeof tables, K>[]>
-    get: Promise<Item<typeof tables, K>[]>
+    post: Awaited<Item<typeof tables, K>>
+    put: Awaited<Item<typeof tables, K>[]>
+    delete: Awaited<Item<typeof tables, K>[]>
+    get: Awaited<Item<typeof tables, K>[]>
   }
 } & {
   [K in TableName<typeof tables> as `/api/items/${K}/:id`]: {
-    put: Promise<Item<typeof tables, K>>
-    delete: Promise<Item<typeof tables, K>>
-    get: Promise<Item<typeof tables, K>>
+    put: Awaited<Item<typeof tables, K>>
+    delete: Awaited<Item<typeof tables, K>>
+    get: Awaited<Item<typeof tables, K>>
   }
 }
 

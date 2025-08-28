@@ -24,7 +24,7 @@ export function columnTypeToZod(column: TableColumn) {
     case 'date':
       return z.date()
     case 'boolean':
-      return z.boolean()
+      return z.coerce.boolean()
     case 'json':
     default:
       return z.any() // Fallback for unsupported types
