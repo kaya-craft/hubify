@@ -69,7 +69,6 @@ function clausesObjectToArray(clauses: ConditionTree<Schema, T>, root = true): C
       }
 
       return {
-
         type: 'clause',
         column: key,
         operator,

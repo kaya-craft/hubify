@@ -1,6 +1,8 @@
 import z from 'zod'
 import tables from '#hubify/schema'
 import type { ColumnName, TableColumn, TableName } from '@hubify/restql'
+import { asEnumArray, asObject, whereValidation } from '@@/shared/lib/validation'
+import { columnTypeToZod } from '@@/shared/lib/column-types'
 
 /**
  * Validates the router parameters for a collection and returns the collection name.
@@ -33,16 +35,30 @@ export async function ensureValidQueryParams(
   collection: TableName<typeof tables>,
   event = useEvent()
 ) {
-  const columnNames = Object.keys(tables[collection].columns) as ColumnName<typeof tables, typeof collection>[]
+  try {
+    const columnNames = Object.keys(tables[collection].columns) as ColumnName<typeof tables, typeof collection>[]
 
-  return await getValidatedQuery(event, z.object({
-    columns: asEnumArray(columnNames).optional(),
-    limit: z.coerce.number().int().optional(),
-    offset: z.coerce.number().int().optional(),
-    where: asObject(whereValidation(collection)).optional(),
-    groupBy: asEnumArray(columnNames).optional(),
-    orderBy: asEnumArray([...columnNames, ...columnNames.map(name => `-${name}` as const)]).optional()
-  }).parse)
+    return await getValidatedQuery(event, z.object({
+      columns: asEnumArray(columnNames).optional(),
+      limit: z.coerce.number().int().optional(),
+      offset: z.coerce.number().int().optional(),
+      where: asObject(whereValidation(collection)).optional(),
+      groupBy: asEnumArray(columnNames).optional(),
+      orderBy: asEnumArray([...columnNames, ...columnNames.map(name => `-${name}` as const)]).optional()
+    }).parse)
+  }
+  catch (error) {
+    if (error instanceof z.ZodRealError) {
+      const issues = JSON.parse(error.message) as { message: string }[]
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Invalid query parameters',
+        message: issues.map(({ message }) => message).join('\n')
+      })
+    }
+
+    throw error
+  }
 }
 
 /**
@@ -69,63 +85,4 @@ export async function ensureValidItem(
   )
 
   return await readValidatedBody(event, z.object(columnSchemas).parse)
-}
-
-/**
- * Special validation for the `where` clause in query parameters.
- */
-export function whereValidation<T extends TableName<Schema>>(
-  collection: T
-) {
-  const columns = Object.keys(tables[collection].columns)
-  const operators = ['$eq', '$neq', '$gt', '$lt', '$gte', '$lte', '$like', '$nlike', '$in', '$nin'] as const
-
-  const obj = columns.reduce((acc, column) => {
-    acc[column] = z.object({
-      ...operators.reduce((opAcc, operator) => {
-        opAcc[operator] = z.any().optional()
-        return opAcc
-      }, {} as Record<typeof operators[number], z.ZodTypeAny>)
-    }).transform(asNonEmptyObject).optional()
-    return acc
-  }, {} as Record<string, z.ZodTypeAny>)
-
-  const rule = z.object(obj).transform(asNonEmptyObject)
-
-  Object.assign(obj, {
-    $and: z.array(rule).transform(asNonEmptyArray).optional(),
-    $or: z.array(rule).transform(asNonEmptyArray).optional()
-  })
-
-  return rule
-}
-
-/**
- * Helper function to convert an array to a Zod schema that validates as an array of enums.
- */
-function asEnumArray<T extends string>(arr: T[]) {
-  return z.preprocess(value => typeof value === 'string' ? value.split(',') : value, z.array(z.enum(arr)))
-}
-
-/**
- * Helper function to convert a stringified object to an object.
- */
-function asObject<T extends z.core.SomeType>(type: T) {
-  return z.preprocess(value => typeof value === 'string' ? JSON.parse(value) : value, type)
-}
-
-/**
- * Helper function to ensure objects are not empty.
- */
-function asNonEmptyObject(value: Record<string, unknown>) {
-  const newValue = Object.fromEntries(Object.entries(value).filter(([_, value]) => isNotEmpty(value)))
-  return Object.keys(newValue).length > 0 ? newValue : undefined
-}
-
-/**
- * Helper function to ensure arrays are not empty.
- */
-function asNonEmptyArray(value: unknown[]) {
-  const newValue = value.filter(isNotEmpty)
-  return newValue.length > 0 ? newValue : undefined
 }

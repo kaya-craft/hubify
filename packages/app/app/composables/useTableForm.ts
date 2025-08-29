@@ -1,6 +1,7 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { ZodType } from 'zod'
 import z from 'zod'
+import { columnTypeToZod } from '@hubify/api/lib/column-types'
 
 export type TableFormState<T extends TableNames> = {
   [C in TableColumnNames<T>]: TableFieldValue<T, C> | undefined

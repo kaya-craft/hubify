@@ -1,5 +1,5 @@
 import type { QueryParams } from '@hubify/restql'
-import { whereValidation } from '../../../api/server/utils/router-validation'
+import { whereValidation } from '@hubify/api/lib/validation'
 
 export type Where<T extends TableNames> = QueryParams<Schema, T>['where']
 

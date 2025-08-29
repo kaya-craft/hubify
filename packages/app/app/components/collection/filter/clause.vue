@@ -56,7 +56,6 @@ const operatorItems = computed(() => {
     case 'checkbox':
       return toValue(operators).filter(op => ['$eq', '$neq'].includes(op.value))
     case 'json':
-    case 'text':
       return toValue(operators).filter(op => ['$eq', '$neq', '$like', '$nlike'].includes(op.value))
     default:
       return toValue(operators)
@@ -144,7 +143,6 @@ function updateModelValue() {
         name="mdi:drag"
         class="drag-handle cursor-move"
       />
-
       <USelect
         v-model="clause.column"
         :label="clause.column || t('app.admin.filters.column')"
@@ -157,7 +155,6 @@ function updateModelValue() {
         }"
         @update:model-value="updateModelValue"
       />
-
       <USelect
         v-model="clause.operator"
         :items="operatorItems"
