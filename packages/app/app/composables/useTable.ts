@@ -72,21 +72,27 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Get the field for the specified column.
    */
   function getColumnOption<C extends TableColumnNames<T>>(column: C) {
-    return toValue(fields)?.[column] as unknown as TableColumnOption<T, C>
+    return toValue(fields)?.[column] as TableColumnOption<T, C>
   }
 
   /**
    * Get the field for the specified column.
    */
   function getField<C extends TableColumnNames<T>>(column: C) {
-    return getColumnOption(column)?.field || false
+    const columnOptions = getColumnOption(column)
+    if (columnOptions === false) return
+
+    return columnOptions.field
   }
 
   /**
    * Get the display for the specified column.
    */
   function getDisplay<C extends TableColumnNames<T>>(column: C) {
-    return getColumnOption(column)?.display || false
+    const columnOptions = getColumnOption(column)
+    if (columnOptions === false) return
+
+    return columnOptions.display
   }
 
   /**

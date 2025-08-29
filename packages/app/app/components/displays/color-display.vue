@@ -1,21 +1,20 @@
 <script lang="ts" setup>
 interface Props {
-  value: string
+  value?: string
 }
 
 /**
  * Color props
  */
-const { value: color } = defineProps<Props>()
+const { value } = defineProps<Props>()
 
 defineFieldDataTypes('text', 'varchar')
 </script>
 
 <template>
   <UBadge
-    variant="subtle"
-    size="lg"
+    variant="soft"
     class="size-6 rounded-full"
-    :style="{ backgroundColor: color }"
+    :style="{ backgroundColor: value }"
   />
 </template>

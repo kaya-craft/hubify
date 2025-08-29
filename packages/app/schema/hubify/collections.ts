@@ -2,8 +2,16 @@ import { columns } from '@hubify/api/schema/hubify/collections'
 
 export const fields = defineColumnOptions(columns, {
   id: false,
-  createdAt: false,
-  updatedAt: false,
+  createdAt: {
+    display: {
+      component: 'date-display'
+    }
+  },
+  updatedAt: {
+    display: {
+      component: 'date-display'
+    }
+  },
   color: {
     field: {
       component: 'color-picker',
@@ -11,7 +19,7 @@ export const fields = defineColumnOptions(columns, {
       class: 'col-span-6'
     },
     display: {
-      component: 'color-chip'
+      component: 'color-display'
     }
   },
   description: {
@@ -33,6 +41,9 @@ export const fields = defineColumnOptions(columns, {
       props: {
         description: 'If true, the collection will not be displayed in the UI.'
       }
+    },
+    display: {
+      component: 'checkbox-display'
     }
   },
   icon: {
@@ -40,6 +51,9 @@ export const fields = defineColumnOptions(columns, {
       component: 'icon-picker',
       label: 'Icon',
       class: 'col-span-6'
+    },
+    display: {
+      component: 'icon-display'
     }
   },
   name: {
@@ -51,6 +65,9 @@ export const fields = defineColumnOptions(columns, {
         placeholder: 'Name',
         type: 'text'
       }
+    },
+    display: {
+      class: 'text-red-600'
     }
   },
   singleton: {
@@ -61,6 +78,9 @@ export const fields = defineColumnOptions(columns, {
       props: {
         description: 'If true, only one instance of this collection can exist.'
       }
+    },
+    display: {
+      component: 'checkbox-display'
     }
   }
 })

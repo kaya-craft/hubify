@@ -3,11 +3,11 @@ import type { ZodType } from 'zod'
 import z from 'zod'
 
 export type TableFormState<T extends TableNames> = {
-  [C in TableColumnNames<T>]: TableFieldValue<T, C> | undefined
+  [C in TableColumnNames<T>]: TableColumnOptionValue<T, C> | undefined
 } extends infer U extends object ? U : never
 
 export type TableFormSchema<T extends TableNames> = z.ZodObject<{
-  [C in TableColumnNames<T>]: z.ZodType<TableFieldValue<T, C> | undefined>
+  [C in TableColumnNames<T>]: z.ZodType<TableColumnOptionValue<T, C> | undefined>
 }>
 
 export type TableFormSubmitEvent<T extends TableNames> = FormSubmitEvent<z.Infer<TableFormSchema<T>>>

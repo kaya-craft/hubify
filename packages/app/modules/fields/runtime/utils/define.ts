@@ -4,10 +4,6 @@ import type { ColumnTypes, ColumnTypeToTsType } from '@hubify/restql'
 import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
 import type { ZodType } from 'zod'
 
-export function defineColumnFields<C extends SchemaColumns, const F extends Fields<C>>(_columns: C, fields: F): F {
-  return fields
-}
-
 export function defineColumnOptions<C extends SchemaColumns, const O extends ColumnOptions<C>>(_columns: C, options: O): O {
   return options
 }
@@ -30,13 +26,13 @@ export type Field = false | {
 }
 
 export type Display = false | {
-  component: string
+  component?: string
   props?: Record<string, any>
   class?: string
   label?: string
 }
 
-export type ColumnOption = {
+export type ColumnOption = false | {
   field?: Field
   display?: Display
 }
@@ -45,17 +41,10 @@ export type ColumnOptions<C extends SchemaColumns> = {
   [K in keyof C]?: C[K]['type'] extends keyof ColumnOptionByDataTypes ? ColumnOptionByDataTypes[C[K]['type']] : false
 }
 
-export type Fields<C extends SchemaColumns> = {
-  [K in keyof C]?: C[K]['type'] extends keyof FieldByDataTypes ? FieldByDataTypes[C[K]['type']] : false
-}
-
 export type TableColumnOptions<T extends TableNames> = ColumnOptions<TableColumns<T>>
-export type TableFields<T extends TableNames> = Fields<TableColumns<T>>
 
 export type TableColumnOption<T extends TableNames, C extends TableColumnNames<T>> = TableColumnOptions<T>[C] extends infer U extends ColumnOption ? U : never
-export type TableField<T extends TableNames, C extends TableColumnNames<T>> = TableFields<T>[C] extends infer U extends Field ? U : never
 
-export type TableFieldValue<T extends TableNames, C extends TableColumnNames<T>> = ColumnTypeToTsType<TableColumn<T, C>['type']>
 export type TableColumnOptionValue<T extends TableNames, C extends TableColumnNames<T>> = ColumnTypeToTsType<TableColumn<T, C>['type']>
 
 type ComponentProps<C extends Component> = C extends new (...args: any) => any

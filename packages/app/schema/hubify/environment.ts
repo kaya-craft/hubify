@@ -1,7 +1,7 @@
 import { columns } from '@hubify/api/schema/hubify/environment'
 import type { ZodString } from 'zod'
 
-export const fields = defineColumnFields(columns, {
+export const fields = defineColumnOptions(columns, {
   id: false,
   created_at: false,
   updated_at: false,
