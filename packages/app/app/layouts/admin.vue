@@ -40,6 +40,10 @@ const settings = computed<NavigationMenuItem[]>(() =>
     icon: 'i-lucide-settings',
     type: 'trigger',
     children: [{
+      label: t('app.admin.settings.collections.title'),
+      to: localeRoute({ name: 'admin-items-collection', params: { collection: 'hubify_collections' } }),
+      exact: true
+    }, {
       label: t('app.admin.settings.general.title'),
       to: localeRoute({ name: 'admin-settings-general' }),
       exact: true
@@ -57,53 +61,8 @@ const settings = computed<NavigationMenuItem[]>(() =>
 
 /**
  * List of collections.
- *
- * TODO: replace with actual collections when available.
  */
-const collections = computed<NavigationMenuItem[]>(() => [
-  {
-    label: 'Users',
-    icon: 'i-lucide-users',
-    to: localeRoute({ name: 'admin', params: { collection: 'users' } }),
-    exact: true,
-    children: [{
-      label: t('app.admin.settings.general.title'),
-      to: localeRoute({ name: 'admin-settings-general' }),
-      exact: true
-    }, {
-      label: t('app.admin.settings.appearance.title'),
-      to: localeRoute({ name: 'admin-settings-appearance' })
-    }]
-  },
-  {
-    label: 'Projects',
-    icon: 'i-lucide-folder',
-    to: localeRoute({ name: 'admin', params: { collection: 'projects' } }),
-    exact: true,
-    children: [{
-      label: t('app.admin.settings.general.title'),
-      to: localeRoute({ name: 'admin-settings-general' }),
-      exact: true
-    }, {
-      label: t('app.admin.settings.appearance.title'),
-      to: localeRoute({ name: 'admin-settings-appearance' })
-    }]
-  },
-  {
-    label: 'Countries',
-    icon: 'i-lucide-map-pin',
-    to: localeRoute({ name: 'admin', params: { collection: 'countries' } }),
-    exact: true,
-    children: [{
-      label: t('app.admin.settings.general.title'),
-      to: localeRoute({ name: 'admin-settings-general' }),
-      exact: true
-    }, {
-      label: t('app.admin.settings.appearance.title'),
-      to: localeRoute({ name: 'admin-settings-appearance' })
-    }]
-  }
-])
+const { collections } = useCollections()
 </script>
 
 <template>
