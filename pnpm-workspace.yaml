@@ -8,9 +8,9 @@ catalog:
   '@nuxt/test-utils': 3.19.2
   '@nuxt/ui-pro': ^3.2.0
   '@unhead/vue': ^2.0.12
-  eslint: ^9.31.0
+  eslint: ^9.32.0
   nuxt: ^4.0.1
-  typescript: ^5.8.3
+  typescript: ^5.9.2
   vitest: ^3.2.4
   vue: ^3.5.17
   vue-router: ^4.5.1

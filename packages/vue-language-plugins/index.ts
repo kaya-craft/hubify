@@ -41,12 +41,10 @@ function transformDefineOptions({
 
     replace(
       codes,
-      /(?<=export\sdefault \(await import\((\S+)\)\)\.defineComponent\(\{([\s\S]*)setup\(\) \{\n)\}/,
-      'return {} as typeof __VLS_exposed\n}'
+      /(?<=^(?:export\sdefault|const\s__VLS_component\s=)\s\(await\simport\([\S\s]+\)\).defineComponent\(\{)/m,
+      '\nsetup: () => (__VLS_exposed),'
     )
   }
-
-  // codes.push('function ' + DEFINE_NAME + '(...types: import(\'@hubify/restql\').ColumnTypes[]) {};\n')
 }
 
 function getDefineDataTypes(ts: typeof TS, sfc: Sfc) {
@@ -108,6 +106,7 @@ const plugin: VueLanguagePlugin = (ctx, options = {}) => {
 
   return {
     version: 2.1,
+    order: Infinity,
     resolveEmbeddedCode(fileName, sfc, embeddedFile) {
       if (!filter(fileName) || !sfc.scriptSetup?.ast) return
 

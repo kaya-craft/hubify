@@ -32,5 +32,16 @@
   "app.register.form.email": "Adresse email",
   "app.register.form.email.placeholder": "Entrez votre e-mail",
   "app.register.form.password": "Mot de passe",
-  "app.register.form.password.placeholder": "Entrez le mot de passe Yout"
+  "app.register.form.password.placeholder": "Entrez le mot de passe Yout",
+  "app.admin.form.submit": "Sauvegarder",
+  "app.admin.form.submit-and-stay": "Économisez et restez",
+  "app.admin.items.create": "Créer",
+  "app.admin.profile.description": "Ceci est la page de profil.",
+  "app.admin.profile.title": "Profil",
+  "app.back": "Dos",
+  "app.form.actions": "Actes",
+  "app.form.actions.delete": "Supprimer",
+  "app.form.actions.edit": "Modifier",
+  "app.icon-selector.empty": "Aucune icône trouvée",
+  "app.icon-selector.placeholder": "Rechercher des icônes ..."
 }

@@ -35,10 +35,10 @@
     "tailwindcss": "^4.1.11",
     "vue": "catalog:",
     "vue-router": "catalog:",
-    "vuedraggable": "^4.1.0",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@iconify-json/mdi": "^1.2.3",
     "@nuxt/test-utils": "catalog:",
     "@types/sortablejs": "^1.15.8",
     "unplugin-vue-router": "^0.14.0",
