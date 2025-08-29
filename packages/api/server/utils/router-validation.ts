@@ -1,8 +1,8 @@
 import z from 'zod'
 import tables from '#hubify/schema'
 import type { ColumnName, TableColumn, TableName } from '@hubify/restql'
-import { asEnumArray, asObject, whereValidation } from '@@/shared/lib/validation'
-import { columnTypeToZod } from '@@/shared/lib/column-types'
+import { asEnumArray, asObject, whereValidation } from '@hubify/api/lib/validation'
+import { columnTypeToZod } from '@hubify/api/lib/column-types'
 
 /**
  * Validates the router parameters for a collection and returns the collection name.
