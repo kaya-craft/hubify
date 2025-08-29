@@ -5,6 +5,7 @@ import { addImportsDir, addServerImportsDir, addTemplate, createResolver, define
 
 export interface FieldsModuleOptions {
   fields: string[]
+  displays: string[]
 }
 
 declare module '@hubify/api/modules/schema/index' {
@@ -19,14 +20,20 @@ export default defineNuxtModule<FieldsModuleOptions>({
     configKey: 'hubify'
   },
   defaults: nuxt => ({
-    fields: [join(nuxt.options.dir.app, 'components', 'fields')]
+    fields: [join(nuxt.options.dir.app, 'components', 'fields')],
+    displays: [join(nuxt.options.dir.app, 'components', 'displays')]
   }),
   setup(options, nuxt) {
     const logger = useLogger('@hubify/fields')
     const fieldsDirs = getDirectories(options.fields)
+    const displaysDirs = getDirectories(options.displays)
 
     if (fieldsDirs.length > 0) {
       logger.info(`Fields directories: ${fieldsDirs.join(', ')}`)
+    }
+
+    if (displaysDirs.length > 0) {
+      logger.info(`Displays directories: ${displaysDirs.join(', ')}`)
     }
 
     addImportsDir(localResolve('./runtime/utils'))
@@ -38,19 +45,31 @@ export default defineNuxtModule<FieldsModuleOptions>({
       write: true
     })
 
+    const { dst: displaysPath } = addTemplate({
+      filename: 'hubify/displays.ts',
+      getContents: () => createFieldsContent(displaysDirs),
+      write: true
+    })
+
     nuxt.hook('builder:watch', (event, path) => {
       if (event === 'add' || event === 'addDir' || event === 'unlink' || event === 'unlinkDir') {
-        const dirs = getDirectories(options.fields)
-        const isFieldsFile = dirs.some(dir => path.startsWith(dir))
+        const isFieldsFile = fieldsDirs.some(dir => path.startsWith(dir))
+        const isDisplaysFile = displaysDirs.some(dir => path.startsWith(dir))
         if (isFieldsFile) {
           writeFileSync(fieldsPath, createFieldsContent(fieldsDirs))
+        }
+        if (isDisplaysFile) {
+          writeFileSync(displaysPath, createFieldsContent(displaysDirs))
         }
       }
     })
 
     nuxt.options.nitro.alias ??= {}
     nuxt.options.nitro.alias['#hubify/fields'] = fieldsPath
+    nuxt.options.nitro.alias['#hubify/displays'] = displaysPath
+
     nuxt.options.alias['#hubify/fields'] = fieldsPath
+    nuxt.options.alias['#hubify/displays'] = displaysPath
 
     nuxt.options.typescript.tsConfig.vueCompilerOptions ??= {}
     nuxt.options.typescript.tsConfig.vueCompilerOptions.plugins ??= []

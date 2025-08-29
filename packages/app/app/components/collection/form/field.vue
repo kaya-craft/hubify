@@ -5,7 +5,7 @@ type Props = {
   state?: TableFormState<T>
 }
 
-const value = defineModel<TableFieldValue<T, C>>()
+const value = defineModel<TableColumnOptionValue<T, C>>()
 
 const { collection, column, state } = defineProps<Props>()
 

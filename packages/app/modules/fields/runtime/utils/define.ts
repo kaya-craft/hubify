@@ -8,6 +8,10 @@ export function defineColumnFields<C extends SchemaColumns, const F extends Fiel
   return fields
 }
 
+export function defineColumnOptions<C extends SchemaColumns, const O extends ColumnOptions<C>>(_columns: C, options: O): O {
+  return options
+}
+
 /**
  * Define the current field accepted data types.
  * This is used to define the field data types in the `defineExpose` function.
@@ -25,19 +29,40 @@ export type Field = false | {
   rules?: (defaultRules: ZodType<any>) => ZodType<any>
 }
 
+export type Display = false | {
+  component: string
+  props?: Record<string, any>
+  class?: string
+  label?: string
+}
+
+export type ColumnOption = {
+  field?: Field
+  display?: Display
+}
+
+export type ColumnOptions<C extends SchemaColumns> = {
+  [K in keyof C]?: C[K]['type'] extends keyof ColumnOptionByDataTypes ? ColumnOptionByDataTypes[C[K]['type']] : false
+}
+
 export type Fields<C extends SchemaColumns> = {
   [K in keyof C]?: C[K]['type'] extends keyof FieldByDataTypes ? FieldByDataTypes[C[K]['type']] : false
 }
 
+export type TableColumnOptions<T extends TableNames> = ColumnOptions<TableColumns<T>>
 export type TableFields<T extends TableNames> = Fields<TableColumns<T>>
+
+export type TableColumnOption<T extends TableNames, C extends TableColumnNames<T>> = TableColumnOptions<T>[C] extends infer U extends ColumnOption ? U : never
 export type TableField<T extends TableNames, C extends TableColumnNames<T>> = TableFields<T>[C] extends infer U extends Field ? U : never
+
 export type TableFieldValue<T extends TableNames, C extends TableColumnNames<T>> = ColumnTypeToTsType<TableColumn<T, C>['type']>
+export type TableColumnOptionValue<T extends TableNames, C extends TableColumnNames<T>> = ColumnTypeToTsType<TableColumn<T, C>['type']>
 
 type ComponentProps<C extends Component> = C extends new (...args: any) => any
   ? Omit<InstanceType<C>['$props'], keyof VNodeProps | keyof AllowedComponentProps>
   : never
 
-type ComponentDataTypes<C extends Component> = C extends new (...args: any) => any
+export type ComponentDataTypes<C extends Component> = C extends new (...args: any) => any
   ? InstanceType<C>['dataTypes'] extends readonly (infer T)[]
     ? T
     : never
@@ -47,9 +72,28 @@ type FieldComponents = {
   [K in keyof typeof import('#hubify/fields').default]: typeof import('#hubify/fields').default[K] extends () => Promise<infer C extends Component> ? C : never
 }
 
+type DisplayComponents = {
+  [K in keyof typeof import('#hubify/displays').default]: typeof import('#hubify/displays').default[K] extends () => Promise<infer C extends Component> ? C : never
+}
+
 type FieldComponentDataTypes = {
   [K in keyof FieldComponents]: ComponentDataTypes<FieldComponents[K]>
 }[keyof FieldComponents]
+
+type DisplayComponentDataTypes = {
+  [K in keyof DisplayComponents]: ComponentDataTypes<DisplayComponents[K]>
+}[keyof DisplayComponents]
+
+type DisplayByDataTypes = {
+  [K in DisplayComponentDataTypes]: {
+    [P in keyof DisplayComponents]: K extends ComponentDataTypes<DisplayComponents[P]> ? false | {
+      component: P
+      props?: Simplify<ComponentProps<DisplayComponents[P]>>
+      class?: string
+      label?: string
+    } : never
+  }[keyof DisplayComponents]
+}
 
 type FieldByDataTypes = {
   [K in FieldComponentDataTypes]: {
@@ -61,6 +105,13 @@ type FieldByDataTypes = {
       rules?: (defaultRules: ZodType<any>) => ZodType<any>
     } : never
   }[keyof FieldComponents]
+}
+
+type ColumnOptionByDataTypes = {
+  [K in FieldComponentDataTypes | DisplayComponentDataTypes]: {
+    field?: K extends FieldComponentDataTypes ? FieldByDataTypes[K] : never
+    display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] : never
+  }
 }
 
 type Simplify<T> = { [K in keyof T]: T[K] } & {}

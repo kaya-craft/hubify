@@ -1,51 +1,66 @@
 import { columns } from '@hubify/api/schema/hubify/collections'
 
-export const fields = defineColumnFields(columns, {
+export const fields = defineColumnOptions(columns, {
   id: false,
   createdAt: false,
   updatedAt: false,
   color: {
-    component: 'color-picker',
-    label: 'Color',
-    class: 'col-span-6'
+    field: {
+      component: 'color-picker',
+      label: 'Color',
+      class: 'col-span-6'
+    },
+    display: {
+      component: 'color-chip'
+    }
   },
   description: {
-    component: 'input-text',
-    label: 'Description',
-    class: 'col-span-6',
-    props: {
-      placeholder: 'Description',
-      type: 'text'
+    field: {
+      component: 'input-text',
+      label: 'Description',
+      class: 'col-span-6',
+      props: {
+        placeholder: 'Description',
+        type: 'text'
+      }
     }
   },
   hidden: {
-    component: 'switch',
-    label: 'Hidden',
-    class: 'col-span-6',
-    props: {
-      description: 'If true, the collection will not be displayed in the UI.'
+    field: {
+      component: 'switch',
+      label: 'Hidden',
+      class: 'col-span-6',
+      props: {
+        description: 'If true, the collection will not be displayed in the UI.'
+      }
     }
   },
   icon: {
-    component: 'icon-picker',
-    label: 'Icon',
-    class: 'col-span-6'
+    field: {
+      component: 'icon-picker',
+      label: 'Icon',
+      class: 'col-span-6'
+    }
   },
   name: {
-    component: 'input-text',
-    label: 'Name',
-    class: 'col-span-6',
-    props: {
-      placeholder: 'Name',
-      type: 'text'
+    field: {
+      component: 'input-text',
+      label: 'Name',
+      class: 'col-span-6',
+      props: {
+        placeholder: 'Name',
+        type: 'text'
+      }
     }
   },
   singleton: {
-    component: 'switch',
-    label: 'Singleton',
-    class: 'col-span-6',
-    props: {
-      description: 'If true, only one instance of this collection can exist.'
+    field: {
+      component: 'switch',
+      label: 'Singleton',
+      class: 'col-span-6',
+      props: {
+        description: 'If true, only one instance of this collection can exist.'
+      }
     }
   }
 })

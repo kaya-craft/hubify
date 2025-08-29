@@ -30,6 +30,7 @@ export default defineNuxtConfig({
 
   hubify: {
     fields: [resolve(__dirname, 'app/components/fields')],
+    displays: [resolve(__dirname, 'app/components/displays')],
     schema: [resolve(__dirname, 'schema')]
   },
 

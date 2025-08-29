@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends TableNames">
-import type { TableColumn } from '@nuxt/ui'
 import { CollectionTableActions } from '#components'
+import type { TableColumn } from '@nuxt/ui'
 
 type Props = {
   collection: T
@@ -11,7 +11,7 @@ const { collection } = defineProps<Props>()
 /**
  * Collection definition.
  */
-const { columns } = useTable(collection)
+const { columns, getDisplayComponent } = useTable(collection)
 
 /**
  * Fetch data for the collection.
@@ -25,7 +25,14 @@ const collectionColumns = computed(() => {
   return Object.entries(toValue(columns)).map(([name, column]) => ({
     id: name,
     accessorKey: name,
-    header: column.label ?? name
+    header: column.label ?? name,
+    cell: ({ row }) => {
+      const value = row.original[name as keyof typeof row.original]
+      const component = getDisplayComponent(name as TableColumnNames<T>, value as string)
+      return h(component, {
+        value
+      })
+    }
   }) satisfies TableColumn<TableItem<T>>)
 })
 

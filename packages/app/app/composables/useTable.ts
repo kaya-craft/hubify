@@ -1,8 +1,9 @@
-import tables from '#hubify/schema'
+import registeredDisplays from '#hubify/displays'
 import registeredFields from '#hubify/fields'
+import tables from '#hubify/schema'
+import { getPrimaryKey } from '@hubify/restql/utils/helpers'
 import type { AsyncComponentLoader } from 'vue'
 import InputText from '~/components/fields/input-text.vue'
-import { getPrimaryKey } from '@hubify/restql/utils/helpers'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
@@ -39,7 +40,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Table fields.
    */
   const fields = computed(() => {
-    return toValue(table)?.fields as TableFields<T> | undefined
+    return toValue(table)?.fields as TableColumnOptions<T> | undefined
   })
 
   /**
@@ -50,8 +51,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   })
 
   /**
-       * Get the column with the specified name.
-       */
+   * Get the column with the specified name.
+  */
   function getColumn<C extends TableColumnNames<T>>(name: C) {
     const cols = toValue(columns)
     if (!(name in cols)) throw new Error(`Column "${name}" does not exist in table "${table}".`)
@@ -68,23 +69,50 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   }
 
   /**
-       * Get the field for the specified column.
-       */
-  function getField<C extends TableColumnNames<T>>(column: C) {
-    return toValue(fields)?.[column] as TableField<T, C>
+   * Get the field for the specified column.
+   */
+  function getColumnOption<C extends TableColumnNames<T>>(column: C) {
+    return toValue(fields)?.[column] as unknown as TableColumnOption<T, C>
   }
 
   /**
-       * Get the field component for the specified column.
-       */
+   * Get the field for the specified column.
+   */
+  function getField<C extends TableColumnNames<T>>(column: C) {
+    return getColumnOption(column)?.field || false
+  }
+
+  /**
+   * Get the display for the specified column.
+   */
+  function getDisplay<C extends TableColumnNames<T>>(column: C) {
+    return getColumnOption(column)?.display || false
+  }
+
+  /**
+   * Get the field component for the specified column.
+   */
   function getFieldComponent<C extends TableColumnNames<T>>(column: C) {
-    const field = getField(column)
+    const option = getColumnOption(column)
 
-    if (field === false) return
+    if (!option || !option.field) return
 
-    if (!field?.component) return InputText
+    if (!option.field?.component) return InputText
 
-    const component = registeredFields[field.component as keyof typeof registeredFields]
+    const component = registeredFields[option.field.component as keyof typeof registeredFields]
+
+    return defineAsyncComponent(component as AsyncComponentLoader)
+  }
+
+  /**
+   * Get the display component for the specified column.
+   */
+  function getDisplayComponent<C extends TableColumnNames<T>>(column: C, fallbackValue: string) {
+    const option = getColumnOption(column)
+
+    if (!option || !option.display || !option.display.component) return h('p', { class: 'text-sm' }, fallbackValue ?? '')
+
+    const component = registeredDisplays[option.display.component as keyof typeof registeredDisplays]
 
     return defineAsyncComponent(component as AsyncComponentLoader)
   }
@@ -97,6 +125,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     columns,
     getColumn,
     getField,
+    getDisplay,
+    getDisplayComponent,
     getFieldComponent,
     primaryKey,
     getPrimaryKeyValue
