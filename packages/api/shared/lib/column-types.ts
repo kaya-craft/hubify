@@ -1,4 +1,4 @@
-import type { TableColumn } from '@hubify/restql'
+import type { TableColumn, Operator } from '@hubify/restql'
 import { OPERATORS } from '@hubify/restql/utils/helpers'
 import z from 'zod'
 
@@ -35,8 +35,8 @@ export function columnTypeToZod(column: TableColumn) {
 /**
  * Operators that can be applied to different column types.
  */
-export function columnTypeToOperators(column: TableColumn): (keyof typeof OPERATORS)[] {
-  const values = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
+export function columnTypeToOperators(column: TableColumn): Operator[] {
+  const values = Object.keys(OPERATORS) as Operator[]
 
   switch (column.type) {
     case 'int8':

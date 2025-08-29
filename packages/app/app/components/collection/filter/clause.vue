@@ -49,7 +49,7 @@ const column = computed(() => {
  */
 const operatorItems = computed(() => {
   const type = toValue(column)
-  if (!type) return
+  if (!type) return []
   return columnTypeToOperators(type).map(op => ({
     label: t(`app.admin.filters.${op}`),
     value: op
