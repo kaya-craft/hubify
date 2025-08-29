@@ -1,4 +1,5 @@
 import type { TableColumn } from '@hubify/restql'
+import { OPERATORS } from '@hubify/restql/utils/helpers'
 import z from 'zod'
 
 /**
@@ -28,5 +29,35 @@ export function columnTypeToZod(column: TableColumn) {
     case 'json':
     default:
       return z.any() // Fallback for unsupported types
+  }
+}
+
+/**
+ * Operators that can be applied to different column types.
+ */
+export function columnTypeToOperators(column: TableColumn): (keyof typeof OPERATORS)[] {
+  const values = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
+
+  switch (column.type) {
+    case 'int8':
+    case 'int4':
+    case 'numeric':
+    case 'integer':
+    case 'float4':
+      return ['$eq', '$neq', '$in', '$nin', '$lt', '$lte', '$gt', '$gte', '$nbetween', '$between', '$null', '$nnull']
+    case 'text':
+    case 'varchar':
+      return ['$eq', '$neq', '$in', '$nin', '$startsWith', '$nstartsWith', '$endsWith', '$nendsWith', '$contains', '$ncontains', '$null', '$nnull']
+    case 'uuid':
+      return ['$eq', '$neq', '$in', '$nin', '$null', '$nnull']
+    case 'timestamp':
+    case 'timestamptz':
+    case 'date':
+      return ['$eq', '$neq', '$in', '$nin', '$lt', '$lte', '$gt', '$gte', '$nbetween', '$between', '$null', '$nnull']
+    case 'boolean':
+      return ['$eq', '$neq', '$null', '$nnull']
+    case 'json':
+    default:
+      return values
   }
 }

@@ -1,8 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Clause } from './index.vue'
-import { OPERATORS } from '@hubify/restql/utils/helpers'
-import type { Operator } from '@hubify/restql'
+import { columnTypeToOperators } from '@hubify/api/lib/column-types'
 
 type Props = {
   collection: T
@@ -39,36 +38,29 @@ const columnItems = computed(() => {
 const { t } = useI18n()
 
 /**
- * All available operators.
+ * Current column def.
  */
-const operators = computed(() => {
-  return Object.keys(OPERATORS).map(op => ({
-    label: t(`app.admin.filters.${op}`),
-    value: op as Operator
-  }))
+const column = computed(() => {
+  return clause.value.column && getColumn(clause.value.column)
 })
 
 /**
  * List of items for the dropdown menu to select an operation.
  */
 const operatorItems = computed(() => {
-  switch (toValue(inputType)) {
-    case 'checkbox':
-      return toValue(operators).filter(op => ['$eq', '$neq'].includes(op.value))
-    case 'json':
-      return toValue(operators).filter(op => ['$eq', '$neq', '$like', '$nlike'].includes(op.value))
-    default:
-      return toValue(operators)
-  }
+  const type = toValue(column)
+  if (!type) return
+  return columnTypeToOperators(type).map(op => ({
+    label: t(`app.admin.filters.${op}`),
+    value: op
+  })) satisfies DropdownMenuItem[]
 })
 
 /**
  * Get input type based on column type.
  */
 const inputType = computed(() => {
-  const type = clause.value.column && getColumn(clause.value.column)?.type
-
-  switch (type) {
+  switch (toValue(column)?.type) {
     case 'integer':
     case 'float4':
     case 'numeric':
@@ -138,7 +130,7 @@ function updateModelValue() {
     ref="element"
     class="flex gap-2 items-center w-full"
   >
-    <div class="flex gap-2 items-center rounded bg-gray-200 p-1.5 w-full">
+    <div class="flex gap-2 items-center rounded bg-gray-200 p-1.5 w-full dark:bg-gray-700">
       <UIcon
         name="mdi:drag"
         class="drag-handle cursor-move"
@@ -187,7 +179,7 @@ function updateModelValue() {
       </template>
       <template v-else-if="isClauseNumber(clause)">
         <UInputNumber
-          v-model="clause.value"
+          v-model.number="clause.value"
           size="xs"
           class="flex-1"
           @update:model-value="updateModelValue"

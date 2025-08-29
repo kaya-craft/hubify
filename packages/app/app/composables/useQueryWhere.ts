@@ -21,7 +21,8 @@ export function useQueryWhere<T extends TableNames>(table: T) {
   const validatedWhere = ref<Where<T>>()
 
   watchEffect(() => {
-    const newValue = whereValidation(table).safeParse(where.value).data as Where<T> | undefined
+    const newValue = whereValidation(table).safeParse(where.value)?.data as Where<T> | undefined
+
     if (JSON.stringify(newValue) !== JSON.stringify(validatedWhere.value)) {
       validatedWhere.value = newValue
     }

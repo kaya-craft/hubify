@@ -1,7 +1,7 @@
 import type { TableName } from '@hubify/restql'
 import z from 'zod'
 import tables from '#hubify/schema'
-import { OPERATORS } from '@hubify/restql/utils/helpers'
+import { columnTypeToOperators } from './column-types'
 
 /**
  * Special validation for the `where` clause in query parameters.
@@ -9,11 +9,11 @@ import { OPERATORS } from '@hubify/restql/utils/helpers'
 export function whereValidation<T extends TableName<Schema>>(
   collection: T
 ) {
-  const columns = Object.keys(tables[collection].columns)
-  const operators = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
+  const columns = Object.entries(tables[collection].columns)
 
-  const obj = columns.reduce((acc, column) => {
-    acc[column] = z.object({
+  const obj = columns.reduce((acc, [column, def]) => {
+    const operators = columnTypeToOperators(def)
+    acc[column] = z.strictObject({
       ...operators.reduce((opAcc, operator) => {
         opAcc[operator] = z.any().optional()
         return opAcc
@@ -22,11 +22,15 @@ export function whereValidation<T extends TableName<Schema>>(
     return acc
   }, {} as Record<string, z.ZodTypeAny>)
 
-  const rule = z.object(obj).strict().transform(asNonEmptyObject)
+  const rule = z.strictObject(obj).transform(asNonEmptyObject)
 
   Object.assign(obj, {
-    $and: z.array(rule).transform(asNonEmptyArray).optional(),
-    $or: z.array(rule).transform(asNonEmptyArray).optional()
+    get $and() {
+      return z.array(rule).transform(asNonEmptyArray).optional()
+    },
+    get $or() {
+      return z.array(rule).transform(asNonEmptyArray).optional()
+    }
   })
 
   return rule

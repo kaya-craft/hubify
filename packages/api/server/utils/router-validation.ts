@@ -35,30 +35,16 @@ export async function ensureValidQueryParams(
   collection: TableName<typeof tables>,
   event = useEvent()
 ) {
-  try {
-    const columnNames = Object.keys(tables[collection].columns) as ColumnName<typeof tables, typeof collection>[]
+  const columnNames = Object.keys(tables[collection].columns) as ColumnName<typeof tables, typeof collection>[]
 
-    return await getValidatedQuery(event, z.object({
-      columns: asEnumArray(columnNames).optional(),
-      limit: z.coerce.number().int().optional(),
-      offset: z.coerce.number().int().optional(),
-      where: asObject(whereValidation(collection)).optional(),
-      groupBy: asEnumArray(columnNames).optional(),
-      orderBy: asEnumArray([...columnNames, ...columnNames.map(name => `-${name}` as const)]).optional()
-    }).parse)
-  }
-  catch (error) {
-    if (error instanceof z.ZodRealError) {
-      const issues = JSON.parse(error.message) as { message: string }[]
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Invalid query parameters',
-        message: issues.map(({ message }) => message).join('\n')
-      })
-    }
-
-    throw error
-  }
+  return await getValidatedQuery(event, z.object({
+    columns: asEnumArray(columnNames).optional(),
+    limit: z.coerce.number().int().optional(),
+    offset: z.coerce.number().int().optional(),
+    where: asObject(whereValidation(collection)).optional(),
+    groupBy: asEnumArray(columnNames).optional(),
+    orderBy: asEnumArray([...columnNames, ...columnNames.map(name => `-${name}` as const)]).optional()
+  }).parse)
 }
 
 /**
