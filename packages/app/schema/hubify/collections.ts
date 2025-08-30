@@ -1,30 +1,30 @@
 import { columns } from '@hubify/api/schema/hubify/collections'
 
-export const fields = defineColumnOptions(columns, {
+export const fields = defineFieldOptions(columns, {
   id: false,
   createdAt: {
     display: {
-      component: 'date-display'
+      component: 'date'
     }
   },
   updatedAt: {
     display: {
-      component: 'date-display'
+      component: 'date'
     }
   },
   color: {
-    field: {
+    input: {
       component: 'color-picker',
       label: 'Color',
       class: 'col-span-6'
     },
     display: {
-      component: 'color-display'
+      component: 'color'
     }
   },
   description: {
-    field: {
-      component: 'input-text',
+    input: {
+      component: 'text',
       label: 'Description',
       class: 'col-span-6',
       props: {
@@ -34,7 +34,7 @@ export const fields = defineColumnOptions(columns, {
     }
   },
   hidden: {
-    field: {
+    input: {
       component: 'switch',
       label: 'Hidden',
       class: 'col-span-6',
@@ -43,22 +43,22 @@ export const fields = defineColumnOptions(columns, {
       }
     },
     display: {
-      component: 'checkbox-display'
+      component: 'checkbox'
     }
   },
   icon: {
-    field: {
+    input: {
       component: 'icon-picker',
       label: 'Icon',
       class: 'col-span-6'
     },
     display: {
-      component: 'icon-display'
+      component: 'icon'
     }
   },
   name: {
-    field: {
-      component: 'input-text',
+    input: {
+      component: 'text',
       label: 'Name',
       class: 'col-span-6',
       props: {
@@ -71,7 +71,7 @@ export const fields = defineColumnOptions(columns, {
     }
   },
   singleton: {
-    field: {
+    input: {
       component: 'switch',
       label: 'Singleton',
       class: 'col-span-6',
@@ -80,7 +80,7 @@ export const fields = defineColumnOptions(columns, {
       }
     },
     display: {
-      component: 'checkbox-display'
+      component: 'checkbox'
     }
   }
 })

@@ -31,7 +31,7 @@ async function onSubmit(event: TableFormSubmitEvent<T>) {
     @submit="onSubmit"
   >
     <template #default="slotProps">
-      <CollectionFormField
+      <CollectionFormInput
         v-for="column in columnNames"
         :key="column"
         v-model="state[column]"

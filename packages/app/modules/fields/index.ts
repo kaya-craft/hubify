@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, resolveModule, useLogger } from 'nuxt/kit'
 
 export interface FieldsModuleOptions {
-  fields: string[]
+  inputs: string[]
   displays: string[]
 }
 
@@ -20,16 +20,16 @@ export default defineNuxtModule<FieldsModuleOptions>({
     configKey: 'hubify'
   },
   defaults: nuxt => ({
-    fields: [join(nuxt.options.dir.app, 'components', 'fields')],
+    inputs: [join(nuxt.options.dir.app, 'components', 'inputs')],
     displays: [join(nuxt.options.dir.app, 'components', 'displays')]
   }),
   setup(options, nuxt) {
     const logger = useLogger('@hubify/fields')
-    const fieldsDirs = getDirectories(options.fields)
+    const inputsDirs = getDirectories(options.inputs)
     const displaysDirs = getDirectories(options.displays)
 
-    if (fieldsDirs.length > 0) {
-      logger.info(`Fields directories: ${fieldsDirs.join(', ')}`)
+    if (inputsDirs.length > 0) {
+      logger.info(`Inputs directories: ${inputsDirs.join(', ')}`)
     }
 
     if (displaysDirs.length > 0) {
@@ -39,9 +39,9 @@ export default defineNuxtModule<FieldsModuleOptions>({
     addImportsDir(localResolve('./runtime/utils'))
     addServerImportsDir(localResolve('./runtime/utils'))
 
-    const { dst: fieldsPath } = addTemplate({
-      filename: 'hubify/fields.ts',
-      getContents: () => createFieldsContent(fieldsDirs),
+    const { dst: inputsPath } = addTemplate({
+      filename: 'hubify/inputs.ts',
+      getContents: () => createFieldsContent(inputsDirs),
       write: true
     })
 
@@ -53,10 +53,10 @@ export default defineNuxtModule<FieldsModuleOptions>({
 
     nuxt.hook('builder:watch', (event, path) => {
       if (event === 'add' || event === 'addDir' || event === 'unlink' || event === 'unlinkDir') {
-        const isFieldsFile = fieldsDirs.some(dir => path.startsWith(dir))
+        const isInputsFile = inputsDirs.some(dir => path.startsWith(dir))
         const isDisplaysFile = displaysDirs.some(dir => path.startsWith(dir))
-        if (isFieldsFile) {
-          writeFileSync(fieldsPath, createFieldsContent(fieldsDirs))
+        if (isInputsFile) {
+          writeFileSync(inputsPath, createFieldsContent(inputsDirs))
         }
         if (isDisplaysFile) {
           writeFileSync(displaysPath, createFieldsContent(displaysDirs))
@@ -65,10 +65,10 @@ export default defineNuxtModule<FieldsModuleOptions>({
     })
 
     nuxt.options.nitro.alias ??= {}
-    nuxt.options.nitro.alias['#hubify/fields'] = fieldsPath
+    nuxt.options.nitro.alias['#hubify/inputs'] = inputsPath
     nuxt.options.nitro.alias['#hubify/displays'] = displaysPath
 
-    nuxt.options.alias['#hubify/fields'] = fieldsPath
+    nuxt.options.alias['#hubify/inputs'] = inputsPath
     nuxt.options.alias['#hubify/displays'] = displaysPath
 
     nuxt.options.typescript.tsConfig.vueCompilerOptions ??= {}

@@ -1,9 +1,9 @@
 import registeredDisplays from '#hubify/displays'
-import registeredFields from '#hubify/fields'
+import registeredInputs from '#hubify/inputs'
 import tables from '#hubify/schema'
 import { getPrimaryKey } from '@hubify/restql/utils/helpers'
 import type { AsyncComponentLoader } from 'vue'
-import InputText from '~/components/fields/input-text.vue'
+import InputText from '~/components/inputs/text.vue'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
@@ -39,7 +39,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   /**
    * Table fields.
    */
-  const fields = computed(() => {
+  const tableFields = computed(() => {
     return toValue(table)?.fields as TableColumnOptions<T> | undefined
   })
 
@@ -72,17 +72,17 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Get the field for the specified column.
    */
   function getColumnOption<C extends TableColumnNames<T>>(column: C) {
-    return toValue(fields)?.[column] as TableColumnOption<T, C>
+    return toValue(tableFields)?.[column] as TableColumnOption<T, C>
   }
 
   /**
-   * Get the field for the specified column.
+   * Get the input for the specified column.
    */
-  function getField<C extends TableColumnNames<T>>(column: C) {
+  function getInput<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
     if (columnOptions === false) return
 
-    return columnOptions.field
+    return columnOptions.input
   }
 
   /**
@@ -96,16 +96,16 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   }
 
   /**
-   * Get the field component for the specified column.
+   * Get the input component for the specified column.
    */
-  function getFieldComponent<C extends TableColumnNames<T>>(column: C) {
+  function getInputComponent<C extends TableColumnNames<T>>(column: C) {
     const option = getColumnOption(column)
 
-    if (!option || !option.field) return
+    if (!option || !option.input) return
 
-    if (!option.field?.component) return InputText
+    if (!option.input?.component) return InputText
 
-    const component = registeredFields[option.field.component as keyof typeof registeredFields]
+    const component = registeredInputs[option.input.component as keyof typeof registeredInputs]
 
     return defineAsyncComponent(component as AsyncComponentLoader)
   }
@@ -127,13 +127,16 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     name: tableName,
     table,
     columnNames,
-    fields,
+    tableFields,
     columns,
     getColumn,
-    getField,
+
+    getInput,
+    getInputComponent,
+
     getDisplay,
     getDisplayComponent,
-    getFieldComponent,
+
     primaryKey,
     getPrimaryKeyValue
   }

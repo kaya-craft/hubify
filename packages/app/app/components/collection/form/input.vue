@@ -9,20 +9,20 @@ const value = defineModel<TableColumnOptionValue<T, C>>()
 
 const { collection, column, state } = defineProps<Props>()
 
-const { getFieldComponent, getField } = useTableForm(collection)
+const { getInputComponent, getInput } = useTableForm(collection)
 
 /**
- * Current field.
+ * Current input.
  */
-const field = computed(() => {
-  return getField(column)
+const input = computed(() => {
+  return getInput(column)
 })
 
 /**
- * Component for the current field.
+ * Component for the current input.
  */
 const component = computed(() => {
-  return getFieldComponent(column)
+  return getInputComponent(column)
 })
 
 defineOptions({ inheritAttrs: false })
@@ -30,10 +30,10 @@ defineOptions({ inheritAttrs: false })
 
 <template>
   <UFormField
-    v-if="field !== false"
-    :label="field?.label || column"
+    v-if="input !== false"
+    :label="input?.label || column"
     :name="column"
-    :class="[$attrs.class?.toString(), field?.class]"
+    :class="[$attrs.class?.toString(), input?.class]"
   >
     <component
       :is="component"
@@ -42,7 +42,7 @@ defineOptions({ inheritAttrs: false })
       :collection
       :state
       :column
-      v-bind="field?.props"
+      v-bind="input?.props"
       class="w-full"
     />
   </UFormField>
