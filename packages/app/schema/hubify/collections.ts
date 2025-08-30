@@ -1,13 +1,20 @@
 import { columns } from '@hubify/api/schema/hubify/collections'
 
 export const fields = defineFieldOptions(columns, {
-  id: false,
+  id: {
+    input: false,
+    display: {
+      class: 'text-red-600'
+    }
+  },
   createdAt: {
+    input: false,
     display: {
       component: 'date'
     }
   },
   updatedAt: {
+    input: false,
     display: {
       component: 'date'
     }
@@ -67,7 +74,7 @@ export const fields = defineFieldOptions(columns, {
       }
     },
     display: {
-      class: 'text-red-600'
+      class: 'text-lg text-blue-900'
     }
   },
   singleton: {

@@ -23,7 +23,7 @@ export function defineFieldDataTypes(..._dataTypes: ColumnTypes[]) {
   // return defineExpose({ dataTypes })
 }
 
-export type Input = false | {
+export type Input = {
   component: string
   props?: Record<string, any>
   class?: string
@@ -31,7 +31,7 @@ export type Input = false | {
   rules?: (defaultRules: ZodType<any>) => ZodType<any>
 }
 
-export type Display = false | {
+export type Display = {
   component?: string
   props?: Record<string, any>
   class?: string
@@ -39,12 +39,17 @@ export type Display = false | {
 }
 
 export type FieldOption = false | {
-  input?: Input
-  display?: Display
+  input?: Input | false
+  display?: Display | true | false
 }
 
 export type FieldOptions<C extends SchemaColumns> = {
-  [K in keyof C]?: C[K]['type'] extends keyof FieldOptionByDataTypes ? FieldOptionByDataTypes[C[K]['type']] : false
+  [K in keyof C]?: C[K]['type'] extends keyof FieldOptionByDataTypes
+    ? FieldOptionByDataTypes[C[K]['type']] | false
+    : false | {
+      input?: false
+      display?: Display | true | false
+    }
 }
 
 export type TableFieldOptions<T extends TableNames> = FieldOptions<TableColumns<T>>
@@ -82,7 +87,7 @@ type DisplayComponentDataTypes = {
 type DisplayByDataTypes = {
   [K in DisplayComponentDataTypes]: {
     [P in keyof DisplayComponents]: K extends ComponentDataTypes<DisplayComponents[P]> ? false | {
-      component: P
+      component?: P
       props?: Simplify<ComponentProps<DisplayComponents[P]>>
       class?: string
       label?: string
@@ -103,9 +108,9 @@ type InputByDataTypes = {
 }
 
 type FieldOptionByDataTypes = {
-  [K in InputComponentDataTypes | DisplayComponentDataTypes]: {
-    input?: K extends InputComponentDataTypes ? InputByDataTypes[K] : never
-    display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] : never
+  [K in InputComponentDataTypes | DisplayComponentDataTypes]: false | {
+    input?: K extends InputComponentDataTypes ? InputByDataTypes[K] | false : false
+    display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] | Display | true | false : Display | true | false
   }
 }
 

@@ -40,7 +40,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Table fields.
    */
   const tableFields = computed(() => {
-    return toValue(table)?.fields as TableColumnOptions<T> | undefined
+    return toValue(table)?.fields as TableFieldOptions<T> | undefined
   })
 
   /**
@@ -72,7 +72,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Get the field for the specified column.
    */
   function getColumnOption<C extends TableColumnNames<T>>(column: C) {
-    return toValue(tableFields)?.[column] as TableColumnOption<T, C>
+    return toValue(tableFields)?.[column] as TableFieldOption<T, C>
   }
 
   /**
@@ -116,7 +116,22 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   function getDisplayComponent<C extends TableColumnNames<T>>(column: C, fallbackValue: string) {
     const option = getColumnOption(column)
 
-    if (!option || !option.display || !option.display.component) return h('p', { class: 'text-sm' }, fallbackValue ?? '')
+    // Only access option.display.class if option.display is an object
+    const displayClass = (option && option !== false && option.display && typeof option.display === 'object' && 'class' in option.display)
+      ? (option.display as { class?: string }).class
+      : undefined
+    const fallbackComponent = h('p', { class: displayClass }, fallbackValue ?? '')
+
+    // Handle case where option is false or display is false
+    if (!option || option === false || option.display === false) return fallbackComponent
+
+    // Handle case where display is true (use default display)
+    if (option.display === true) return fallbackComponent
+
+    // Handle case where display is an object but no component specified
+    if (!option.display || !option.display.component) {
+      return fallbackComponent
+    }
 
     const component = registeredDisplays[option.display.component as keyof typeof registeredDisplays]
 
