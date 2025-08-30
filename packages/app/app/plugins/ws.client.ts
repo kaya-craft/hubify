@@ -1,6 +1,8 @@
-import type { ScopedHubifyHooks } from '@/utils/hooks'
+import type { ScopedHubifyHooks } from '@hubify/api/hooks'
 
 export default defineNuxtPlugin(() => {
+  if (typeof globalThis.WebSocket === 'undefined') return
+
   const ws = new WebSocket('/ws/public')
 
   ws.onmessage = async (event) => {

@@ -4,7 +4,6 @@ import { useSortable } from '@vueuse/integrations/useSortable'
 
 type Props = {
   collection: T
-  level?: number
 }
 
 const clauses = defineModel<ConditionTreeAsArray<T>[]>({
@@ -15,7 +14,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: ConditionTreeAsArray<T>[]]
 }>()
 
-const { level = 0 } = defineProps<Props>()
+defineProps<Props>()
 
 /**
  * Reference to the template element.
@@ -24,6 +23,10 @@ const el = useTemplateRef('el')
 
 useSortable(el, clauses, {
   group: 'clauses',
+  forceFallback: false,
+  removeCloneOnHide: true,
+  touchStartThreshold: 10,
+  dragoverBubble: true,
   onStart(event) {
     if (!isNumber(event.oldIndex)) return
     const clause = JSON.parse(JSON.stringify(toValue(clauses).at(event.oldIndex)))
@@ -60,11 +63,13 @@ function updateModelValue() {
   <div
     ref="el"
     class="flex flex-col gap-2 py-4"
+    data-testid="filter-clauses"
   >
     <div
       v-for="(_, index) of clauses"
-      :key="level + '-' + index"
+      :key="index"
       class="flex items-center gap-2"
+      :data-testid="`filter-clause-${index}`"
     >
       <CollectionFilterClause
         v-if="clauses[index]?.type === 'clause'"
@@ -87,7 +92,6 @@ function updateModelValue() {
         v-else-if="clauses[index]"
         v-model="clauses[index]"
         :collection
-        :level="level + 1"
         @update:model-value="updateModelValue"
       >
         <UButton

@@ -68,5 +68,6 @@
   "app.admin.filters.$ncontains": "Does not contain",
   "app.admin.filters.column": "Column",
   "app.icon-selector.placeholder": "Search icons...",
-  "app.icon-selector.empty": "No icons found"
+  "app.icon-selector.empty": "No icons found",
+  "app.admin.filters.label": "Filters"
 }

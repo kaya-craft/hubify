@@ -134,9 +134,12 @@ function updateModelValue() {
       <UIcon
         name="mdi:drag"
         class="drag-handle cursor-move"
+        data-testid="drag-handle"
       />
+
       <USelect
         v-model="clause.column"
+        data-testid="filter-column"
         :label="clause.column || t('app.admin.filters.column')"
         size="xs"
         variant="subtle"
@@ -147,8 +150,10 @@ function updateModelValue() {
         }"
         @update:model-value="updateModelValue"
       />
+
       <USelect
         v-model="clause.operator"
+        data-testid="filter-operator"
         :items="operatorItems"
         size="xs"
         variant="subtle"
@@ -163,6 +168,7 @@ function updateModelValue() {
           v-model="clause.value"
           size="xs"
           class="flex-1"
+          data-testid="filter-value"
           @update:model-value="updateModelValue"
         />
       </template>
@@ -174,6 +180,7 @@ function updateModelValue() {
           v-model="clause.value"
           size="xs"
           class="flex-1"
+          data-testid="filter-value"
           @update:model-value="updateModelValue"
         />
       </template>
@@ -182,6 +189,7 @@ function updateModelValue() {
           v-model.number="clause.value"
           size="xs"
           class="flex-1"
+          data-testid="filter-value"
           @update:model-value="updateModelValue"
         />
       </template>
@@ -191,6 +199,7 @@ function updateModelValue() {
           placeholder="Value"
           class="flex-1"
           size="xs"
+          data-testid="filter-value"
           @update:model-value="updateModelValue"
         />
       </template>

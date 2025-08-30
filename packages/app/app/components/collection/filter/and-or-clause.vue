@@ -46,6 +46,7 @@ function updateModelValue() {
         <UIcon
           name="mdi:drag"
           class="drag-handle cursor-move"
+          data-testid="drag-handle"
         />
 
         <USelect
