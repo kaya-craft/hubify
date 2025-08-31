@@ -21,9 +21,8 @@ export function columnTypeToZod(column: TableColumn) {
       return z.uuid()
     case 'timestamp':
     case 'timestamptz':
-      return z.iso.datetime()
     case 'date':
-      return z.date()
+      return z.iso.date()
     case 'boolean':
       return z.boolean()
     case 'json':
