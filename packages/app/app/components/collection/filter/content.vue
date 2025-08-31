@@ -1,5 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
 import type { ConditionTree, Operator } from '@hubify/restql'
+import type { AndOrClause } from './index.vue'
+import type { DropdownMenuItem } from '@nuxt/ui'
 
 export type Clause<T extends TableNames> = {
   type: 'clause'
@@ -18,10 +20,11 @@ type Props = {
 }
 
 const filter = defineModel<ConditionTree<Schema, T>, string, ConditionTreeAsArray<T>[], ConditionTreeAsArray<T>[]>({
-  default: () => ({}),
   get: value => clausesObjectToArray(value),
   set: value => ({ $and: clausesArrayToObject(value) })
 })
+
+const fullscreen = defineModel<boolean>('fullscreen')
 
 const { collection } = defineProps<Props>()
 
@@ -50,32 +53,34 @@ function clausesArrayToObject(clauses: ConditionTreeAsArray<T>[]): ConditionTree
 /**
  * Converts a condition tree object into an array of clauses.
  */
-function clausesObjectToArray(clauses: ConditionTree<Schema, T>, root = true): ConditionTreeAsArray<T>[] {
-  return Object.entries(clauses).flatMap(([key, value], _, array) => {
+function clausesObjectToArray(clauses: ConditionTree<Schema, T>, root = true) {
+  const array = Object.entries(clauses).flatMap(([key, value], _, array): ConditionTreeAsArray<T>[] => {
     if (root && array.length === 1 && key === '$and') {
-      return value.flatMap(value => clausesObjectToArray(value, false))
+      return value.flatMap(value => clausesObjectToArray(value, false)) as ConditionTreeAsArray<T>[]
     }
 
     if (key === '$and' || key === '$or') {
-      return { type: key, children: value.flatMap(value => clausesObjectToArray(value, false)) }
+      return [{ type: key, children: value.flatMap(value => clausesObjectToArray(value, false)) }] as AndOrClause<T>[]
     }
 
-    return Object.entries(value).flatMap(([operator, value]) => {
+    return Object.entries(value).flatMap(([operator, value]): ConditionTreeAsArray<T>[] => {
       if (operator === '$and' || operator === '$or') {
         if (Array.isArray(value)) {
-          return { type: operator, children: value.flatMap(value => clausesObjectToArray(value, false)) }
+          return [{ type: operator, children: value.flatMap(value => clausesObjectToArray(value, false)) }] as AndOrClause<T>[]
         }
         throw new Error(`Expected array for operator ${operator}, but got ${typeof value}`)
       }
 
-      return {
+      return [{
         type: 'clause',
         column: key,
         operator,
         value
-      } as Clause<T>
+      }] as Clause<T>[]
     })
   })
+
+  return reactive(array) as ConditionTreeAsArray<T>[]
 }
 
 /**
@@ -87,17 +92,66 @@ const { t } = useI18n()
  * Add a new filter clause.
  */
 function add(type: 'clause' | '$and' | '$or') {
-  filter.value = filter.value.concat({
-    type
-  })
+  filter.value ??= []
+  filter.value = filter.value.concat({ type })
 }
+
+/**
+ * Dropdown menu items.
+ */
+const dropdownItems = computed(() => [
+  {
+    label: t('app.admin.filters.add-condition'),
+    icon: 'heroicons:plus',
+    dataTestid: 'add-condition',
+    onSelect: () => add('clause')
+  },
+  {
+    label: t('app.admin.filters.add-group'),
+    icon: 'heroicons:plus',
+    dataTestid: 'add-group',
+    onSelect: () => add('$and')
+  }
+] satisfies DropdownMenuItem[])
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 p-4">
+  <div
+    class="flex flex-col gap-4 p-4 min-w-md"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex flex-col">
+        <h2 class="font-bold">
+          {{ t('app.admin.filters.title') }}
+        </h2>
+        <p class="text-sm text-gray-500">
+          {{ t('app.admin.filters.description') }}
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <UButton
+          :icon="fullscreen ? 'heroicons:arrows-pointing-in' : 'heroicons:arrows-pointing-out'"
+          variant="subtle"
+          color="neutral"
+          data-testid="toggle-fullscreen"
+          @click="fullscreen = !fullscreen"
+        />
+
+        <UDropdownMenu :items="dropdownItems">
+          <UButton
+            icon="heroicons:ellipsis-vertical"
+            data-testid="filter-options"
+            variant="subtle"
+            color="neutral"
+          />
+        </UDropdownMenu>
+      </div>
+    </div>
+
     <p
-      v-if="filter.length === 0"
-      class="text-sm text-gray-500 text-center"
+      v-if="filter?.length === 0"
+      class="text-sm text-center border-2 border-dashed text-gray-500 border-gray-400 rounded p-4 select-none"
     >
       {{ t('app.admin.filters.no-filter') }}
     </p>
@@ -107,34 +161,5 @@ function add(type: 'clause' | '$and' | '$or') {
       v-model="filter"
       :collection
     />
-
-    <div class="flex items-center justify-center gap-2">
-      <UButton
-        :label="t('app.admin.filters.add-clause')"
-        size="xs"
-        color="primary"
-        icon="heroicons:plus"
-        data-testid="add-filter-clause"
-        @click="add('clause')"
-      />
-
-      <UButton
-        :label="t('app.admin.filters.and')"
-        size="xs"
-        color="info"
-        icon="heroicons:plus"
-        data-testid="add-filter-and"
-        @click="add('$and')"
-      />
-
-      <UButton
-        :label="t('app.admin.filters.or')"
-        size="xs"
-        color="neutral"
-        icon="heroicons:plus"
-        data-testid="add-filter-or"
-        @click="add('$or')"
-      />
-    </div>
   </div>
 </template>

@@ -13,10 +13,6 @@ const clause = defineModel<Clause<T>>({
   required: true
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [Clause<T>]
-}>()
-
 /**
  * Tabloe information.
  */
@@ -116,95 +112,84 @@ function isClauseJson(_clause: Clause<T>): _clause is Clause<T> & { value: Recor
 function isClauseText(_clause: Clause<T>): _clause is Clause<T> & { value: string } {
   return toValue(inputType) === 'text'
 }
-
-/**
- * Update the model value when the clause changes.
- */
-function updateModelValue() {
-  emit('update:modelValue', { ...toValue(clause) })
-}
 </script>
 
 <template>
   <div
-    ref="element"
-    class="flex gap-2 items-center w-full"
+    class="flex gap-2 items-center p-2"
   >
-    <div class="flex gap-2 items-center rounded bg-gray-200 p-1.5 w-full dark:bg-gray-700">
-      <UIcon
-        name="mdi:drag"
-        class="drag-handle cursor-move"
-        data-testid="drag-handle"
-      />
+    <UIcon
+      name="mdi:drag"
+      data-handle="true"
+      class="cursor-move size-3"
+      data-testid="drag-handle"
+    />
 
-      <USelect
-        v-model="clause.column"
-        data-testid="filter-column"
-        :label="clause.column || t('app.admin.filters.column')"
+    <USelect
+      v-model="clause.column"
+      data-testid="filter-column"
+      :label="clause.column || t('app.admin.filters.column')"
+      size="xs"
+      variant="subtle"
+      color="neutral"
+      :items="columnItems"
+      :ui="{
+        content: 'w-max'
+      }"
+    />
+
+    <USelect
+      v-model="clause.operator"
+      data-testid="filter-operator"
+      :items="operatorItems"
+      size="xs"
+      variant="subtle"
+      :ui="{
+        content: 'w-max'
+      }"
+    />
+
+    <template v-if="isClauseBoolean(clause)">
+      <USwitch
+        v-model="clause.value"
         size="xs"
-        variant="subtle"
-        color="neutral"
-        :items="columnItems"
-        :ui="{
-          content: 'w-max'
-        }"
-        @update:model-value="updateModelValue"
+        class="flex-1"
+        data-testid="filter-value"
       />
+    </template>
 
-      <USelect
-        v-model="clause.operator"
-        data-testid="filter-operator"
-        :items="operatorItems"
+    <template v-else-if="isClauseJson(clause)">
+      <p>JSON</p>
+    </template>
+
+    <template v-else-if="isClauseDate(clause)">
+      <!-- <UCalendar
+          v-model="clause.value"
+          size="xs"
+          class="flex-1"
+          data-testid="filter-value"
+        /> -->
+    </template>
+
+    <template v-else-if="isClauseNumber(clause)">
+      <UInputNumber
+        v-model.number="clause.value"
         size="xs"
-        variant="subtle"
-        :ui="{
-          content: 'w-max'
-        }"
-        @update:model-value="updateModelValue"
+        class="flex-1"
+        data-testid="filter-value"
       />
+    </template>
 
-      <template v-if="isClauseBoolean(clause)">
-        <USwitch
-          v-model="clause.value"
-          size="xs"
-          class="flex-1"
-          data-testid="filter-value"
-          @update:model-value="updateModelValue"
-        />
-      </template>
-      <template v-else-if="isClauseJson(clause)">
-        <p>JSON</p>
-      </template>
-      <template v-else-if="isClauseDate(clause)">
-        <UDatePicker
-          v-model="clause.value"
-          size="xs"
-          class="flex-1"
-          data-testid="filter-value"
-          @update:model-value="updateModelValue"
-        />
-      </template>
-      <template v-else-if="isClauseNumber(clause)">
-        <UInputNumber
-          v-model.number="clause.value"
-          size="xs"
-          class="flex-1"
-          data-testid="filter-value"
-          @update:model-value="updateModelValue"
-        />
-      </template>
-      <template v-else-if="isClauseText(clause)">
-        <UInput
-          v-model="clause.value"
-          placeholder="Value"
-          class="flex-1"
-          size="xs"
-          data-testid="filter-value"
-          @update:model-value="updateModelValue"
-        />
-      </template>
+    <template v-else-if="isClauseText(clause)">
+      <UInput
+        v-model="clause.value"
+        placeholder="Value"
+        class="flex-1"
+        size="xs"
+        data-testid="filter-value"
+      />
+    </template>
 
-      <slot />
-    </div>
+    <slot />
   </div>
 </template>

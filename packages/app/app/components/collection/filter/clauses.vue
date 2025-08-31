@@ -1,109 +1,109 @@
 <script setup lang="ts" generic="T extends TableNames">
-import type { Clause, ConditionTreeAsArray } from './index.vue'
-import { useSortable } from '@vueuse/integrations/useSortable'
+import { CollectionFilterAndOrClause, CollectionFilterClause } from '#components'
+import type { ConditionTreeAsArray } from './index.vue'
 
 type Props = {
   collection: T
 }
 
-const clauses = defineModel<ConditionTreeAsArray<T>[]>({
-  default: () => []
-})
+const clauses = defineModel<ConditionTreeAsArray<T>[]>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: ConditionTreeAsArray<T>[]]
+  'update:model-value': [ConditionTreeAsArray<T>[] | undefined]
 }>()
 
 defineProps<Props>()
 
 /**
- * Reference to the template element.
+ * Remove a clause at the given index.
  */
-const el = useTemplateRef('el')
-
-useSortable(el, clauses, {
-  group: 'clauses',
-  forceFallback: false,
-  removeCloneOnHide: true,
-  touchStartThreshold: 10,
-  dragoverBubble: true,
-  onStart(event) {
-    if (!isNumber(event.oldIndex)) return
-    const clause = JSON.parse(JSON.stringify(toValue(clauses).at(event.oldIndex)))
-    Object.assign(event.from, { clause })
-  },
-  onRemove: event => remove(event.oldIndex),
-  // @ts-expect-error - not typed
-  onAdd: event => add(event.from.clause, event.newIndex)
-})
-
-/**
- * Remove a clause at the specified index.
- */
-function remove(index?: number) {
-  clauses.value = toValue(clauses).filter((_, i) => i !== index)
+function remove(index: number) {
+  clauses.value?.splice(index, 1)
 }
 
 /**
- * Function add clause at
+ * Copy a clause at the given index.
  */
-function add(clause: Clause<T>, index?: number) {
-  clauses.value.splice(index ?? clauses.value.length, 0, clause)
+function copy(item: ConditionTreeAsArray<T>, index: number) {
+  clauses.value?.splice(index + 1, 0, JSON.parse(JSON.stringify(item)))
 }
 
 /**
- * Update the model value when the clause changes.
+ * Translation.
  */
-function updateModelValue() {
-  emit('update:modelValue', [...toValue(clauses)])
-}
+const { t } = useI18n()
+
+watch(clauses, (newValue) => {
+  emit('update:model-value', newValue)
+}, { deep: true })
 </script>
 
 <template>
-  <div
-    ref="el"
-    class="flex flex-col gap-2 py-4"
+  <DragAndDrop
+    v-model="clauses"
+    class="flex gap-2 flex-col"
     data-testid="filter-clauses"
   >
-    <div
-      v-for="(_, index) of clauses"
-      :key="index"
-      class="flex items-center gap-2"
-      :data-testid="`filter-clause-${index}`"
-    >
-      <CollectionFilterClause
-        v-if="clauses[index]?.type === 'clause'"
-        v-model="clauses[index]"
-        :collection
-        @update:model-value="updateModelValue"
+    <template #default="propsData">
+      <div
+        class="border border-gray-400 rounded overflow-hidden select-none"
+        :data-testid="`filter-clause-${propsData.index}`"
       >
-        <UButton
-          icon="heroicons:x-mark"
-          size="xs"
-          color="error"
-          :ui="{ base: 'rounded-full' }"
-          square
-          variant="ghost"
-          @click="remove(index)"
-        />
-      </CollectionFilterClause>
+        <CollectionFilterClause
+          v-if="propsData.item.type === 'clause'"
+          v-model="propsData.item"
+          :collection
+        >
+          <UButton
+            icon="heroicons:x-mark"
+            size="xs"
+            color="error"
+            :ui="{ base: 'rounded-full' }"
+            square
+            variant="ghost"
+            data-testid="remove-clause"
+            @click="remove(propsData.index)"
+          />
+        </CollectionFilterClause>
 
-      <CollectionFilterAndOrClause
-        v-else-if="clauses[index]"
-        v-model="clauses[index]"
-        :collection
-        @update:model-value="updateModelValue"
+        <CollectionFilterAndOrClause
+          v-else
+          v-model="propsData.item"
+          :collection
+        >
+          <UButton
+            icon="heroicons:document-duplicate"
+            size="xs"
+            color="info"
+            :ui="{ base: 'rounded-full' }"
+            square
+            variant="ghost"
+            data-testid="copy-group"
+            @click="copy(propsData.item, propsData.index)"
+          />
+
+          <UButton
+            icon="heroicons:x-mark"
+            size="xs"
+            color="error"
+            :ui="{ base: 'rounded-full' }"
+            square
+            variant="ghost"
+            data-testid="remove-group"
+            @click="remove(propsData.index)"
+          />
+        </CollectionFilterAndOrClause>
+      </div>
+    </template>
+
+    <template #empty="{ active }">
+      <div
+        class="p-4 border-gray-300 border-2 text-sm text-center border-dashed rounded transition-colors"
+        :class="[active ? 'bg-gray-100 text-gray-500' : 'text-gray-400']"
+        data-testid="filter-drop-here"
       >
-        <UButton
-          icon="heroicons:x-mark"
-          size="xs"
-          color="error"
-          :ui="{ base: 'rounded-full' }"
-          square
-          variant="ghost"
-          @click="remove(index)"
-        />
-      </CollectionFilterAndOrClause>
-    </div>
-  </div>
+        {{ t('app.admin.filters.drop-inside-group') }}
+      </div>
+    </template>
+  </DragAndDrop>
 </template>

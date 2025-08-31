@@ -69,5 +69,10 @@
   "app.admin.filters.column": "Column",
   "app.icon-selector.placeholder": "Search icons...",
   "app.icon-selector.empty": "No icons found",
-  "app.admin.filters.label": "Filters"
+  "app.admin.filters.label": "Filters",
+  "app.admin.filters.title": "Filters",
+  "app.admin.filters.description": "Set the query filters",
+  "app.admin.filters.add-condition": "Add a condition",
+  "app.admin.filters.add-group": "Add a group",
+  "app.admin.filters.drop-inside-group": "Drop conditions here"
 }

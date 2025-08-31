@@ -1,4 +1,5 @@
 import { locators } from '@vitest/browser/context'
+
 import { vi } from 'vitest'
 
 vi.stubGlobal('useI18n', () => ({
