@@ -75,5 +75,9 @@
   "app.admin.filters.add-condition": "Add a condition",
   "app.admin.filters.add-group": "Add a group",
   "app.admin.filters.drop-inside-group": "Drop conditions here",
-  "app.admin.settings.collections.title": "Collections"
+  "app.admin.settings.collections.title": "Collections",
+  "app.admin.filters.select-a-date": "Select a date",
+  "app.admin.filters.min": "Min",
+  "app.admin.filters.max": "Max",
+  "app.admin.filters.select-a-date-range": "Select a date range"
 }

@@ -27,7 +27,7 @@ const items = computed(() => [
 
 <template>
   <div
-    class="flex gap-2 items-center p-1.5 bg-gray-100 border-b border-gray-400"
+    class="flex gap-2 items-center p-1.5 bg-gray-100 border-b border-gray-400 dark:bg-gray-800 dark:border-gray-700"
   >
     <UIcon
       name="mdi:drag"
