@@ -1,12 +1,7 @@
 import { columns } from '@hubify/api/schema/hubify/collections'
 
 export const fields = defineFieldOptions(columns, {
-  id: {
-    input: false,
-    display: {
-      class: 'text-red-600'
-    }
-  },
+  id: false,
   createdAt: {
     input: false,
     display: {

@@ -3,7 +3,7 @@ import registeredInputs from '#hubify/inputs'
 import tables from '#hubify/schema'
 import { getPrimaryKey } from '@hubify/restql/utils/helpers'
 import type { AsyncComponentLoader } from 'vue'
-import InputText from '~/components/inputs/text.vue'
+import { InputsText, DisplaysText } from '#components'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
@@ -80,7 +80,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getInput<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
-    if (columnOptions === false) return
+
+    if (columnOptions === false || columnOptions.input === false) return false
 
     return columnOptions.input
   }
@@ -90,7 +91,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getDisplay<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
-    if (columnOptions === false) return
+
+    if (columnOptions === false || columnOptions.display === false) return false
 
     return columnOptions.display
   }
@@ -99,13 +101,13 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Get the input component for the specified column.
    */
   function getInputComponent<C extends TableColumnNames<T>>(column: C) {
-    const option = getColumnOption(column)
+    const input = getInput(column)
 
-    if (!option || !option.input) return
+    if (input === false) return
 
-    if (!option.input?.component) return InputText
+    if (!input?.component) return h(InputsText, { class: input?.class })
 
-    const component = registeredInputs[option.input.component as keyof typeof registeredInputs]
+    const component = registeredInputs[input.component as keyof typeof registeredInputs]
 
     return defineAsyncComponent(component as AsyncComponentLoader)
   }
@@ -113,27 +115,14 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   /**
    * Get the display component for the specified column.
    */
-  function getDisplayComponent<C extends TableColumnNames<T>>(column: C, fallbackValue: string) {
-    const option = getColumnOption(column)
+  function getDisplayComponent<C extends TableColumnNames<T>>(column: C) {
+    const display = getDisplay(column)
 
-    // Only access option.display.class if option.display is an object
-    const displayClass = (option && option !== false && option.display && typeof option.display === 'object' && 'class' in option.display)
-      ? (option.display as { class?: string }).class
-      : undefined
-    const fallbackComponent = h('p', { class: displayClass }, fallbackValue ?? '')
+    if (display === false) return
 
-    // Handle case where option is false or display is false
-    if (!option || option === false || option.display === false) return fallbackComponent
+    if (!display?.component) return h(DisplaysText, { class: display?.class })
 
-    // Handle case where display is true (use default display)
-    if (option.display === true) return fallbackComponent
-
-    // Handle case where display is an object but no component specified
-    if (!option.display || !option.display.component) {
-      return fallbackComponent
-    }
-
-    const component = registeredDisplays[option.display.component as keyof typeof registeredDisplays]
+    const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
 
     return defineAsyncComponent(component as AsyncComponentLoader)
   }

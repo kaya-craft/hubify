@@ -40,7 +40,7 @@ export type Display = {
 
 export type FieldOption = false | {
   input?: Input | false
-  display?: Display | true | false
+  display?: Display | false
 }
 
 export type FieldOptions<C extends SchemaColumns> = {
@@ -48,7 +48,7 @@ export type FieldOptions<C extends SchemaColumns> = {
     ? FieldOptionByDataTypes[C[K]['type']] | false
     : false | {
       input?: false
-      display?: Display | true | false
+      display?: Display | false
     }
 }
 
