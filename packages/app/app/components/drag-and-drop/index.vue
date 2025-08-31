@@ -195,6 +195,7 @@ watchEffect(initialize)
 <template>
   <div
     ref="el"
+    :key="id + list?.length"
   >
     <template v-if="list && list.length > 0">
       <DragAndDropChild

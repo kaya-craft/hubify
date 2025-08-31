@@ -97,7 +97,7 @@ function getData(): ItemData<T> {
 /**
  * Set up draggable and drop target functionality.
  */
-function setDraggableAndDropTarget() {
+async function setDraggableAndDropTarget() {
   const element = container.value = getDraggableElement()
 
   if (!element) return
