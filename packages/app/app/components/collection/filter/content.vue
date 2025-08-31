@@ -20,7 +20,7 @@ type Props = {
 }
 
 const filter = defineModel<ConditionTree<Schema, T>, string, ConditionTreeAsArray<T>[], ConditionTreeAsArray<T>[]>({
-  get: value => clausesObjectToArray(value),
+  get: value => clausesObjectToArray(value || {}),
   set: value => ({ $and: clausesArrayToObject(value) })
 })
 

@@ -40,6 +40,10 @@ const settings = computed<NavigationMenuItem[]>(() =>
     icon: 'i-lucide-settings',
     type: 'trigger',
     children: [{
+      label: t('app.admin.settings.collections.title'),
+      to: localeRoute({ name: 'admin-items-collection', params: { collection: 'hubify_collections' } }),
+      exact: true
+    }, {
       label: t('app.admin.settings.general.title'),
       to: localeRoute({ name: 'admin-settings-general' }),
       exact: true
@@ -57,11 +61,8 @@ const settings = computed<NavigationMenuItem[]>(() =>
 
 /**
  * List of collections.
- *
- * TODO: replace with actual collections when available.
  */
-const collections = computed<NavigationMenuItem[]>(() => [
-])
+const { collections } = useCollections()
 </script>
 
 <template>

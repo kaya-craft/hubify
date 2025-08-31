@@ -121,7 +121,7 @@ function isClauseText(_clause: Clause<T>): _clause is Clause<T> & { value: strin
     <UIcon
       name="mdi:drag"
       data-handle="true"
-      class="cursor-move size-3"
+      class="cursor-move size-6"
       data-testid="drag-handle"
     />
 

@@ -74,5 +74,6 @@
   "app.admin.filters.description": "Set the query filters",
   "app.admin.filters.add-condition": "Add a condition",
   "app.admin.filters.add-group": "Add a group",
-  "app.admin.filters.drop-inside-group": "Drop conditions here"
+  "app.admin.filters.drop-inside-group": "Drop conditions here",
+  "app.admin.settings.collections.title": "Collections"
 }
