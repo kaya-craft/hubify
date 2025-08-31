@@ -39,7 +39,8 @@ export default defineNuxtConfig({
   },
 
   hubify: {
-    fields: [resolve(__dirname, 'app/components/fields')],
+    inputs: [resolve(__dirname, 'app/components/inputs')],
+    displays: [resolve(__dirname, 'app/components/displays')],
     schema: [resolve(__dirname, 'schema')]
   },
 

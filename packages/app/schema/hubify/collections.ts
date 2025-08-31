@@ -1,51 +1,88 @@
 import { columns } from '@hubify/api/schema/hubify/collections'
 
-export const fields = defineColumnFields(columns, {
+export const fields = defineFieldOptions(columns, {
   id: false,
-  createdAt: false,
-  updatedAt: false,
+  createdAt: {
+    input: false,
+    display: {
+      component: 'date'
+    }
+  },
+  updatedAt: {
+    input: false,
+    display: {
+      component: 'date'
+    }
+  },
   color: {
-    component: 'color-picker',
-    label: 'Color',
-    class: 'col-span-6'
+    input: {
+      component: 'color-picker',
+      label: 'Color',
+      class: 'col-span-6'
+    },
+    display: {
+      component: 'color'
+    }
   },
   description: {
-    component: 'input-text',
-    label: 'Description',
-    class: 'col-span-6',
-    props: {
-      placeholder: 'Description',
-      type: 'text'
+    input: {
+      component: 'text',
+      label: 'Description',
+      class: 'col-span-6',
+      props: {
+        placeholder: 'Description',
+        type: 'text'
+      }
     }
   },
   hidden: {
-    component: 'switch',
-    label: 'Hidden',
-    class: 'col-span-6',
-    props: {
-      description: 'If true, the collection will not be displayed in the UI.'
+    input: {
+      component: 'switch',
+      label: 'Hidden',
+      class: 'col-span-6',
+      props: {
+        description: 'If true, the collection will not be displayed in the UI.'
+      }
+    },
+    display: {
+      component: 'checkbox'
     }
   },
   icon: {
-    component: 'icon-picker',
-    label: 'Icon',
-    class: 'col-span-6'
+    input: {
+      component: 'icon-picker',
+      label: 'Icon',
+      class: 'col-span-6'
+    },
+    display: {
+      component: 'icon'
+    }
   },
   name: {
-    component: 'input-text',
-    label: 'Name',
-    class: 'col-span-6',
-    props: {
-      placeholder: 'Name',
-      type: 'text'
+    input: {
+      component: 'text',
+      label: 'Name',
+      class: 'col-span-6',
+      props: {
+        placeholder: 'Name',
+        type: 'text'
+      }
+    },
+    display: {
+      class: 'text-lg text-blue-900'
     }
   },
   singleton: {
-    component: 'switch',
-    label: 'Singleton',
-    class: 'col-span-6',
-    props: {
-      description: 'If true, only one instance of this collection can exist.'
+    input: {
+      component: 'switch',
+      label: 'Singleton',
+      class: 'col-span-6',
+      props: {
+        description: 'If true, only one instance of this collection can exist.'
+      }
+    },
+    display: {
+      component: 'checkbox'
     }
   }
 })

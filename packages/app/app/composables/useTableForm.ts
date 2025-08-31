@@ -4,11 +4,11 @@ import z from 'zod'
 import { columnTypeToZod } from '@hubify/api/lib/column-types'
 
 export type TableFormState<T extends TableNames> = {
-  [C in TableColumnNames<T>]: TableFieldValue<T, C> | undefined
+  [C in TableColumnNames<T>]: TableFieldOptionValue<T, C> | undefined
 } extends infer U extends object ? U : never
 
 export type TableFormSchema<T extends TableNames> = z.ZodObject<{
-  [C in TableColumnNames<T>]: z.ZodType<TableFieldValue<T, C> | undefined>
+  [C in TableColumnNames<T>]: z.ZodType<TableFieldOptionValue<T, C> | undefined>
 }>
 
 export type TableFormSubmitEvent<T extends TableNames> = FormSubmitEvent<z.Infer<TableFormSchema<T>>>
@@ -17,7 +17,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
   /**
    * Table definition.
    */
-  const { primaryKey, columnNames, getField, getColumn, getFieldComponent } = useTable(collection)
+  const { primaryKey, columnNames, getInput, getColumn, getInputComponent } = useTable(collection)
 
   /**
    * Toast.
@@ -124,10 +124,10 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
     for (const name of toValue(columnNames)) {
       const column = getColumn(name)
       if (!column) continue
-      const field = getField(name)
-      if (field === false) continue
+      const input = getInput(name)
+      if (input === false) continue
       const defaultRules = columnTypeToZod(column)
-      const rules = field?.rules?.(defaultRules) ?? defaultRules
+      const rules = input?.rules?.(defaultRules) ?? defaultRules
 
       schema[name] = column.notNull ? rules : rules.optional()
     }
@@ -144,8 +144,8 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
     for (const name of toValue(columnNames)) {
       const column = getColumn(name)
       if (!column) continue
-      const field = getField(name)
-      if (field === false) continue
+      const input = getInput(name)
+      if (input === false) continue
       if (initialState && name in toValue(initialState)) {
         state[name] = toValue(initialState)[name as keyof Partial<TableFormState<T>>]
       }
@@ -170,8 +170,8 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
   return {
     loading,
     columnNames,
-    getField,
-    getFieldComponent,
+    getInput,
+    getInputComponent,
     state,
     schema,
     submit
