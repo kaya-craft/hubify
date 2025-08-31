@@ -16,7 +16,7 @@ const { columns, getDisplayComponent, getDisplay } = useTable(collection)
 /**
  * Fetch data for the collection.
  */
-const { data, status, refresh } = await useFetch(`/api/items/${collection}` as `/api/items/:collection`)
+const { data, status, refresh } = await useFetch<TableItem<T>[]>(`/api/items/${collection}` as `/api/items/:collection`)
 
 /**
  * List of collection columns.
@@ -25,21 +25,20 @@ const collectionColumns = computed(() => {
   return Object.entries(toValue(columns))
     .map(([name, column]) => {
       const display = getDisplay(name as TableColumnNames<T>)
+
       if (!display) return
+
       return {
         id: name,
         accessorKey: name,
         header: column.label ?? name,
         cell: ({ row }) => {
           const value = row.original[name as keyof typeof row.original]
-          const component = getDisplayComponent(name as TableColumnNames<T>, value as string)
-          return h(component, {
-            value
-          })
+          const component = getDisplayComponent(name as TableColumnNames<T>)
+          return h(component, { value })
         }
-
       } satisfies TableColumn<TableItem<T>>
-    }).filter(Boolean)
+    }).filter(Boolean) as TableColumn<TableItem<T>>[]
 })
 
 /**

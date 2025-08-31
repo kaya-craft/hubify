@@ -13,10 +13,7 @@ const { t } = useI18n()
 
 const localeRoute = useLocaleRoute()
 
-// Not sure if we shold have that as a props in the schema or hardcode it like this ?
-const showCreateButton = computed(() => {
-  return collection !== 'hubify_collections'
-})
+const { canCreate } = useTable(collection)
 </script>
 
 <template>
@@ -27,7 +24,7 @@ const showCreateButton = computed(() => {
           {{ collection }}
         </h2>
         <UButton
-          v-if="showCreateButton"
+          v-if="canCreate()"
           :to="localeRoute({ name: 'admin-items-collection-create', params: { collection } })"
           variant="soft"
           color="secondary"

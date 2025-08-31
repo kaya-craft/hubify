@@ -127,6 +127,27 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     return defineAsyncComponent(component as AsyncComponentLoader)
   }
 
+  /**
+   * Can create new items in the table?
+   */
+  function canCreate() {
+    return toValue(tableName) !== 'hubify_collections'
+  }
+
+  /**
+   * Can delete items in the table?
+   */
+  function canDelete(_id: TablePrimaryKeyValue<T>) {
+    return toValue(tableName) !== 'hubify_collections'
+  }
+
+  /**
+   * Can update items in the table?
+   */
+  function canUpdate(_id: TablePrimaryKeyValue<T>) {
+    return true
+  }
+
   return {
     name: tableName,
     table,
@@ -142,6 +163,10 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     getDisplayComponent,
 
     primaryKey,
-    getPrimaryKeyValue
+    getPrimaryKeyValue,
+
+    canCreate,
+    canDelete,
+    canUpdate
   }
 }
