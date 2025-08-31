@@ -106,9 +106,6 @@ function setDraggableAndDropTarget() {
     element,
     getInitialData: getData,
     dragHandle: element.querySelector('[data-handle]') as HTMLElement | undefined,
-    onDragStart() {
-      console.log('DRAG STARTED!')
-    },
     onGenerateDragPreview({ nativeSetDragImage }) {
       if (!hasPreview) return
       setCustomNativeDragPreview({

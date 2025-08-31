@@ -11,7 +11,7 @@ interface Props {
   dropIndicatorPadding?: number
 }
 
-const { dropIndicatorColor = 'black', dropIndicatorHeight = 2, dropIndicatorPadding = 4 } = defineProps<Props>()
+const { dropIndicatorColor = 'black', dropIndicatorHeight = 2, dropIndicatorPadding = 0 } = defineProps<Props>()
 
 type GroupData<T> = {
   list: T[]
@@ -131,18 +131,36 @@ function initialize() {
 const dropIndicatorProps = shallowRef<ItemData<T> & {
   edge: Edge | null
   container: HTMLElement
-  rect: DOMRect
+  rect: Pick<DOMRect, 'x' | 'y' | 'width' | 'height'>
+  style: Record<string, string>
 }>()
 
 /**
  * Handle drag enter event.
  */
 function onDragEnter(data: ItemData<T>, container: HTMLElement, edge: Edge | null) {
+  const rect = container.getBoundingClientRect()
+  if (!el.value) return
+
+  const elRect = el.value.getBoundingClientRect()
+  rect.x = rect.x - elRect.x
+  rect.y = rect.y - elRect.y
+
   dropIndicatorProps.value = {
     ...data,
     edge,
     container,
-    rect: container.getBoundingClientRect()
+    rect: {
+      x: rect.x,
+      y: rect.y,
+      width: rect.width,
+      height: rect.height
+    },
+    style: {
+      left: `${rect.x}px`,
+      top: edge === 'top' ? `${rect.y - dropIndicatorPadding}px` : `${rect.y + rect.height + dropIndicatorPadding}px`,
+      width: `${rect.width}px`
+    }
   }
 }
 
@@ -214,9 +232,7 @@ watchEffect(initialize)
     >
       <div
         :style="{
-          left: `${dropIndicatorProps.rect.x}px`,
-          top: dropIndicatorProps.edge === 'top' ? `${dropIndicatorProps.rect.y - dropIndicatorPadding}px` : `${dropIndicatorProps.rect.y + dropIndicatorProps.rect.height + dropIndicatorPadding}px`,
-          width: `${dropIndicatorProps.rect.width}px`,
+          ...dropIndicatorProps.style,
           height: `${dropIndicatorHeight}px`,
           backgroundColor: dropIndicatorColor,
           position: 'absolute'

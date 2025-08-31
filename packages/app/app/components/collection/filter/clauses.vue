@@ -41,7 +41,7 @@ watch(clauses, (newValue) => {
 <template>
   <DragAndDrop
     v-model="clauses"
-    class="flex gap-2 flex-col"
+    class="flex gap-2 flex-col relative"
     data-testid="filter-clauses"
   >
     <template #default="propsData">
@@ -93,6 +93,20 @@ watch(clauses, (newValue) => {
             @click="remove(propsData.index)"
           />
         </CollectionFilterAndOrClause>
+      </div>
+    </template>
+
+    <template #drop-indicator="{ style }">
+      <div
+        class="absolute"
+        :style="style"
+      >
+        <div
+          class="h-[2px] bg-blue-500 relative w-full"
+        >
+          <div class="aspect-square size-2 border-blue-500 rounded-full border bg-blue-100 absolute -left-1 -top-1" />
+          <div class="aspect-square size-2 border-blue-500 rounded-full border bg-blue-100 absolute -right-1 -top-1" />
+        </div>
       </div>
     </template>
 
