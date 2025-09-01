@@ -2,8 +2,6 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Clause } from './index.vue'
 import { columnTypeToOperators } from '@hubify/api/lib/column-types'
-import type { ZonedDateTime } from '@internationalized/date'
-import { fromDate } from '@internationalized/date'
 
 type Props = {
   collection: T
@@ -165,68 +163,6 @@ function isClauseText(_clause: Clause<T>): _clause is Clause<T> & { value: strin
 }
 
 /**
- * To Calendar Date.
- */
-function toCalendarDate(value?: Date) {
-  if (!value) return
-  return fromDate(new Date(value), 'UTC')
-}
-
-/**
- * From Calendar Date.
- */
-function fromCalendarDate(value?: ZonedDateTime) {
-  if (!value) return
-  const date = value.toDate()
-  date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
-  return date.toISOString().split('T')[0]
-}
-
-/**
- * To date string.
- */
-function toDateString(value?: ZonedDateTime | { start?: ZonedDateTime, end?: ZonedDateTime }): string | undefined {
-  if (!value) return
-
-  if ('toDate' in value) {
-    return value.toDate().toLocaleDateString()
-  }
-  else if (value.start && value.end) {
-    return `${toDateString(value.start)} - ${toDateString(value.end)}`
-  }
-}
-
-/**
- * Value as calendar date.
- */
-const valueAsCalendarDate = computed({
-  get() {
-    if (!isClauseDate(clause.value) || !clause.value.value) return
-    return toCalendarDate(clause.value.value)
-  },
-  set(value) {
-    clause.value.value = fromCalendarDate(value)
-  }
-})
-
-/**
- * Value as calendar date range.
- */
-const valueAsCalendarDateRange = computed({
-  get() {
-    if (!isClauseDateBetween(clause.value) || !Array.isArray(clause.value.value)) return
-
-    return {
-      start: toCalendarDate(clause.value.value[0]),
-      end: toCalendarDate(clause.value.value[1])
-    }
-  },
-  set(value) {
-    clause.value.value = [fromCalendarDate(value?.start), fromCalendarDate(value?.end)]
-  }
-})
-
-/**
  * Ensute proper value type when operator changes.
  */
 function ensureProperValueType(value: Clause<T>, oldValue?: Clause<T>) {
@@ -306,51 +242,22 @@ watch(clause, ensureProperValueType, { immediate: true })
       </template>
 
       <template v-else-if="isClauseDateBetween(clause)">
-        <UPopover>
-          <UButton
-            size="xs"
-            class="flex-1"
-            variant="subtle"
-            color="neutral"
-            data-testid="filter-value"
-          >
-            {{ toDateString(valueAsCalendarDateRange) || t('app.admin.filters.select-a-date-range') }}
-          </UButton>
-
-          <template #content>
-            <UCalendar
-              v-model="valueAsCalendarDateRange"
-              range
-              size="xs"
-              class="flex-1"
-              color="neutral"
-              data-testid="filter-value"
-            />
-          </template>
-        </UPopover>
+        <InputsDatePicker
+          v-model="clause.value"
+          size="xs"
+          variant="subtle"
+          color="neutral"
+          :calendar="{ range: true }"
+        />
       </template>
 
       <template v-else-if="isClauseDate(clause)">
-        <UPopover>
-          <UButton
-            size="xs"
-            class="flex-1"
-            variant="subtle"
-            color="neutral"
-            data-testid="filter-value"
-          >
-            {{ toDateString(valueAsCalendarDate) || t('app.admin.filters.select-a-date') }}
-          </UButton>
-
-          <template #content>
-            <UCalendar
-              v-model="valueAsCalendarDate"
-              size="xs"
-              class="flex-1"
-              data-testid="filter-value"
-            />
-          </template>
-        </UPopover>
+        <InputsDatePicker
+          v-model="clause.value"
+          size="xs"
+          variant="subtle"
+          color="neutral"
+        />
       </template>
 
       <template v-else-if="isClauseNumberBetween(clause)">
