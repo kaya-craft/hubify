@@ -15,7 +15,7 @@ export type Props<T> = {
 
 export type ItemData<T> = Props<T> & { type: 'item' }
 
-const { groupId, hasPreview, list, index } = defineProps<Props<T>>()
+const { groupId, hasPreview, item, list, index } = defineProps<Props<T>>()
 
 /**
  * Emits.
@@ -54,7 +54,6 @@ function hasChildren(node: unknown): node is VNode & { children: VNode[] } {
 function isItemData(data: unknown): data is ItemData<T> {
   return !!data && typeof data === 'object' && 'type' in data && data.type === 'item'
 }
-
 /**
  * Find the draggable element within the component's subTree.
  */
@@ -88,10 +87,20 @@ function getData(): ItemData<T> {
   return {
     groupId,
     index,
-    item: list[index]!,
     list,
+    item,
     type: 'item'
   }
+}
+
+/**
+ * Reset the edge.
+ */
+function resetEdge() {
+  if (!edge.value) return
+  console.log('leave')
+  edge.value = undefined
+  emit('dragleave')
 }
 
 /**
@@ -128,19 +137,25 @@ async function setDraggableAndDropTarget() {
         allowedEdges: ['top', 'bottom']
       })
     },
-    onDrag({ location, self }) {
-      if (!isItemData(location.current.dropTargets?.at(0)?.data)) return
-      edge.value = extractClosestEdge(self.data)
-      emit('dragenter', getData(), element, edge.value)
+    onDrag({ self, source, location }) {
+      const data = location.current.dropTargets?.at(0)?.data
+      if (
+        source.element.contains(self.element)
+        || !isItemData(data)
+        || !isItemData(source.data)
+        || data.groupId !== groupId
+      ) return resetEdge()
+
+      const newEdge = extractClosestEdge(self.data)
+
+      if (newEdge === 'top' && index === source.data.index + 1) return resetEdge()
+      if (newEdge === 'bottom' && index === source.data.index - 1) return resetEdge()
+
+      emit('dragenter', source.data, element, newEdge)
+      edge.value = newEdge
     },
-    onDragLeave() {
-      edge.value = undefined
-      emit('dragleave')
-    },
-    onDrop() {
-      edge.value = undefined
-      emit('dragleave')
-    }
+    onDragLeave: resetEdge,
+    onDrop: resetEdge
   })
 }
 

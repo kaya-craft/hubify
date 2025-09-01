@@ -88,6 +88,7 @@ useDraggable(modalContainer, {
     :description="t('app.admin.filters.description')"
     :default-open="fullscreen"
     :overlay="false"
+    open
   >
     <UButton :label="t('app.admin.filters.label')" />
 

@@ -43,18 +43,18 @@ function isGroupData(data: unknown): data is GroupData<T> {
 /**
  * Is dragging inside.
  */
-const isDraggingInside = ref(false)
+const isDroppingInside = ref(false)
 
 /**
  * Group id.
  */
-const id = useId()
+const groupId = useId()
 
 /**
  * Move item to new group.
  */
 async function moveItemIntoGroup(itemData: ItemData<T>, at = 0) {
-  if (itemData.groupId === id) return
+  if (itemData.groupId === groupId) return
   list.value ??= []
   await nextTick()
   list.value.splice(at, 0, itemData.item)
@@ -88,28 +88,33 @@ function setDropTarget(element: HTMLElement) {
   dropTargetForElements({
     element,
     canDrop: ({ source }) => isItemData(source.data),
-    getData: () => ({ list: list.value, groupId: id, type: 'group' } as GroupData<T>),
-    onDragEnter({ source, self }) {
-      isDraggingInside.value = !source.element.contains(self.element)
+    getData: () => ({ list: list.value, groupId, type: 'group' } as GroupData<T>),
+    onDrag({ location }) {
+      const data = location.current.dropTargets?.at(0)?.data
+      isDroppingInside.value = isGroupData(data) && data.groupId === groupId
     },
     onDragLeave() {
-      isDraggingInside.value = false
+      isDroppingInside.value = false
     },
     async onDrop({ location, source }) {
-      isDraggingInside.value = false
+      isDroppingInside.value = false
       const destination = location.current.dropTargets?.at(0)
 
       if (!isItemData(source.data)) return
 
-      if (isGroupData(destination?.data) && destination.data.groupId === id) {
+      if (isGroupData(destination?.data) && destination.data.groupId === groupId) {
         await moveItemIntoGroup(source.data)
       }
-      else if (isItemData(destination?.data) && destination.data.groupId === id) {
-        if (source.data.groupId === id) {
-          reorderGroup(source.data.index, destination.data.index, extractClosestEdge(destination.data))
+      else if (isItemData(destination?.data) && destination.data.groupId === groupId) {
+        const edge = extractClosestEdge(destination.data)
+        if (source.data.groupId === groupId) {
+          reorderGroup(source.data.index, destination.data.index, edge)
         }
         else {
-          await moveItemIntoGroup(source.data, destination.data.index)
+          const index = edge === 'top'
+            ? destination.data.index
+            : destination.data.index + 1
+          await moveItemIntoGroup(source.data, index)
         }
       }
     }
@@ -189,20 +194,27 @@ function onPreview(data: ItemData<T>, container: HTMLElement) {
   }
 }
 
+/**
+ * Compute the list with unique ids for rendering.
+ */
+const listWithIds = computed(() => {
+  return toValue(list)?.map(item => ({ item, id: crypto.randomUUID() })) ?? []
+})
+
 watchEffect(initialize)
 </script>
 
 <template>
   <div
+    :id="groupId"
     ref="el"
-    :key="id + list?.length"
   >
     <template v-if="list && list.length > 0">
       <DragAndDropChild
-        v-for="(item, index) of list"
-        :key="index"
+        v-for="({ item, id }, index) of listWithIds"
+        :key="id"
         v-slot="{ edge }"
-        :group-id="id"
+        :group-id="groupId"
         :has-preview="!!$slots['item-preview']"
         :list
         :index
@@ -223,11 +235,11 @@ watchEffect(initialize)
     <slot
       v-else
       name="empty"
-      :active="isDraggingInside"
+      :active="isDroppingInside"
     />
 
     <slot
-      v-if="!isDraggingInside && dropIndicatorProps"
+      v-if="!isDroppingInside && dropIndicatorProps"
       name="drop-indicator"
       v-bind="dropIndicatorProps"
     >

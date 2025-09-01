@@ -41,72 +41,74 @@ watch(clauses, (newValue) => {
 <template>
   <DragAndDrop
     v-model="clauses"
-    class="flex gap-2 flex-col relative"
+    class="flex flex-col relative overflow-visible"
     data-testid="filter-clauses"
   >
     <template #default="propsData">
       <div
-        class="border border-gray-400 rounded overflow-hidden select-none"
+        class="py-1"
         :data-testid="`filter-clause-${propsData.index}`"
       >
-        <CollectionFilterClause
-          v-if="propsData.item.type === 'clause'"
-          v-model="propsData.item"
-          :collection
+        <div
+          class="border border-gray-400 rounded overflow-hidden select-none"
         >
-          <UButton
-            icon="heroicons:x-mark"
-            size="xs"
-            color="error"
-            :ui="{ base: 'rounded-full' }"
-            square
-            variant="ghost"
-            data-testid="remove-clause"
-            @click="remove(propsData.index)"
-          />
-        </CollectionFilterClause>
+          <CollectionFilterClause
+            v-if="propsData.item.type === 'clause'"
+            v-model="propsData.item"
+            :collection
+          >
+            <UButton
+              icon="heroicons:x-mark"
+              size="xs"
+              color="error"
+              :ui="{ base: 'rounded-full' }"
+              square
+              variant="ghost"
+              data-testid="remove-clause"
+              @click="remove(propsData.index)"
+            />
+          </CollectionFilterClause>
 
-        <CollectionFilterAndOrClause
-          v-else
-          v-model="propsData.item"
-          :collection
-        >
-          <UButton
-            icon="heroicons:document-duplicate"
-            size="xs"
-            color="info"
-            :ui="{ base: 'rounded-full' }"
-            square
-            variant="ghost"
-            data-testid="copy-group"
-            @click="copy(propsData.item, propsData.index)"
-          />
+          <CollectionFilterAndOrClause
+            v-else
+            v-model="propsData.item"
+            :collection
+          >
+            <UButton
+              icon="heroicons:document-duplicate"
+              size="xs"
+              color="info"
+              :ui="{ base: 'rounded-full' }"
+              square
+              variant="ghost"
+              data-testid="copy-group"
+              @click="copy(propsData.item, propsData.index)"
+            />
 
-          <UButton
-            icon="heroicons:x-mark"
-            size="xs"
-            color="error"
-            :ui="{ base: 'rounded-full' }"
-            square
-            variant="ghost"
-            data-testid="remove-group"
-            @click="remove(propsData.index)"
-          />
-        </CollectionFilterAndOrClause>
+            <UButton
+              icon="heroicons:x-mark"
+              size="xs"
+              color="error"
+              :ui="{ base: 'rounded-full' }"
+              square
+              variant="ghost"
+              data-testid="remove-group"
+              @click="remove(propsData.index)"
+            />
+          </CollectionFilterAndOrClause>
+        </div>
       </div>
     </template>
 
-    <template #drop-indicator="{ style }">
+    <template #drop-indicator="{ style, edge }">
       <div
-        class="absolute"
+        class="absolute flex items-center"
+        :class="[edge === 'top' ? '-translate-y-1/2' : '']"
         :style="style"
       >
-        <div
-          class="h-[2px] bg-blue-500 relative w-full"
-        >
-          <div class="aspect-square size-2 border-blue-500 rounded-full border bg-blue-100 absolute -left-1 -top-1" />
-          <div class="aspect-square size-2 border-blue-500 rounded-full border bg-blue-100 absolute -right-1 -top-1" />
-        </div>
+        <div class="size-2 border-blue-500 rounded-full border bg-blue-100" />
+        <div class="h-1 bg-blue-500 flex-1" />
+        <div class="size-2 border-blue-500 rounded-full border bg-blue-100" />
       </div>
     </template>
 
