@@ -40,6 +40,7 @@ export type Display = {
 
 export type FieldOption = false | {
   order?: number
+  label?: string
   input?: Input | false
   display?: Display | false
 }

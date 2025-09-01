@@ -5,11 +5,11 @@ type Props = {
   state?: TableFormState<T>
 }
 
-const value = defineModel<TableColumnOptionValue<T, C>>()
+const value = defineModel<TableFieldOptionValue<T, C>>()
 
 const { collection, column, state } = defineProps<Props>()
 
-const { getInputComponent, getInput } = useTableForm(collection)
+const { getInputComponent, getColumnLabel, getInput } = useTableForm(collection)
 
 /**
  * Current input.
@@ -31,7 +31,7 @@ defineOptions({ inheritAttrs: false })
 <template>
   <UFormField
     v-if="input !== false"
-    :label="input?.label || column"
+    :label="getColumnLabel(column)"
     :name="column"
     :class="[$attrs.class?.toString(), input?.class]"
   >

@@ -47,6 +47,24 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   })
 
   /**
+   * Displayed columns.
+   */
+  const displayedColumns = computed(() => {
+    return toValue(columnNames).filter((name) => {
+      return getDisplay(name) !== false
+    })
+  })
+
+  /**
+   * Displayed fields.
+   */
+  const displayedFields = computed(() => {
+    return toValue(columnNames).filter((name) => {
+      return getInput(name) !== false
+    })
+  })
+
+  /**
    * Table fields.
    */
   const tableFields = computed(() => {
@@ -83,6 +101,14 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getColumnOption<C extends TableColumnNames<T>>(column: C) {
     return toValue(tableFields)?.[column] as TableFieldOption<T, C> | undefined
+  }
+
+  /**
+   * Get column labeling.
+   */
+  function getColumnLabel<C extends TableColumnNames<T>>(column: C) {
+    const columnOptions = getColumnOption(column)
+    return (columnOptions && columnOptions.label) || titleCase(column)
   }
 
   /**
@@ -128,8 +154,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   function getDisplayComponent<C extends TableColumnNames<T>>(column: C) {
     const display = getDisplay(column)
 
-    console.log('display', display, column)
-
     if (display === false) return
 
     if (!display?.component) return h(DisplaysText, { class: display?.class })
@@ -163,10 +187,16 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   return {
     name: tableName,
     table,
+
     columnNames,
     tableFields,
     columns,
+
+    displayedColumns,
+    displayedFields,
+
     getColumn,
+    getColumnLabel,
 
     getInput,
     getInputComponent,

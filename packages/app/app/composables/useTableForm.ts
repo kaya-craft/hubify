@@ -17,7 +17,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
   /**
    * Table definition.
    */
-  const { primaryKey, columnNames, getInput, getColumn, getInputComponent } = useTable(collection)
+  const { primaryKey, getColumnLabel, columnNames, getInput, getColumn, getInputComponent } = useTable(collection)
 
   /**
    * Toast.
@@ -170,6 +170,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
   return {
     loading,
     columnNames,
+    getColumnLabel,
     getInput,
     getInputComponent,
     state,
