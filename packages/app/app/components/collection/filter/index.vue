@@ -79,6 +79,11 @@ useDraggable(modalContainer, {
     el.style.left = `${position.x}px`
   }
 })
+
+/**
+ * Open state.
+ */
+const open = ref(false)
 </script>
 
 <template>
@@ -88,9 +93,12 @@ useDraggable(modalContainer, {
     :description="t('app.admin.filters.description')"
     :default-open="fullscreen"
     :overlay="false"
-    open
+    :open="open"
   >
-    <UButton :label="t('app.admin.filters.label')" />
+    <UButton
+      :label="t('app.admin.filters.label')"
+      @click.prevent="open = !open"
+    />
 
     <template #content>
       <CollectionFilterContent
