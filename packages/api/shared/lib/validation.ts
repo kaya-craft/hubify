@@ -1,7 +1,7 @@
 import type { TableName } from '@hubify/restql'
 import z from 'zod'
 import tables from '#hubify/schema'
-import { columnTypeToOperators, columnTypeToZod } from './column-types'
+import { columnTypeToOperators, columnValidation } from './column-types'
 
 /**
  * Special validation for the `where` clause in query parameters.
@@ -13,10 +13,9 @@ export function whereValidation<T extends TableName<Schema>>(
 
   const obj = columns.reduce((acc, [column, def]) => {
     const operators = columnTypeToOperators(def)
-    const rule = columnTypeToZod(def).optional()
     acc[column] = z.strictObject({
       ...operators.reduce((opAcc, operator) => {
-        opAcc[operator] = rule
+        opAcc[operator] = columnValidation(def, operator).optional()
         return opAcc
       }, {} as Record<typeof operators[number], z.ZodTypeAny>)
     }).transform(asNonEmptyObject).optional()

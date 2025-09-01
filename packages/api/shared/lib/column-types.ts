@@ -60,3 +60,32 @@ export function columnTypeToOperators(column: TableColumn): Operator[] {
       return values
   }
 }
+
+/**
+ * Column validation type.
+ */
+export function columnValidation(column: TableColumn, operator: Operator) {
+  if (expectsBooleanValue(operator)) {
+    return z.boolean()
+  }
+
+  if (expectsArrayValue(operator)) {
+    return z.array(columnTypeToZod(column))
+  }
+
+  return columnTypeToZod(column)
+}
+
+/**
+ * The operator expects an array value.
+ */
+function expectsArrayValue(operator: Operator) {
+  return ['$in', '$nin', '$between', '$nbetween'].includes(operator)
+}
+
+/**
+ * The operator expects a boolean value.
+ */
+function expectsBooleanValue(operator: Operator) {
+  return ['$null', '$nnull'].includes(operator)
+}
