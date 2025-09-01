@@ -2,10 +2,7 @@ import { columns } from '@hubify/api/schema/hubify/collections'
 
 export const fields = defineFieldOptions(columns, {
   id: {
-    input: false,
-    display: {
-      component: 'text'
-    }
+    input: false
   },
   createdAt: {
     input: false,
@@ -72,9 +69,6 @@ export const fields = defineFieldOptions(columns, {
         placeholder: 'Name',
         type: 'text'
       }
-    },
-    display: {
-      class: 'text-lg text-blue-500'
     }
   },
   singleton: {
