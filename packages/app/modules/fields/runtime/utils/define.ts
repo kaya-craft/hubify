@@ -39,6 +39,7 @@ export type Display = {
 }
 
 export type FieldOption = false | {
+  label?: string
   input?: Input | false
   display?: Display | false
 }

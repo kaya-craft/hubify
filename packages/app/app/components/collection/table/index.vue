@@ -11,7 +11,7 @@ const { collection } = defineProps<Props>()
 /**
  * Collection definition.
  */
-const { columns, getDisplayComponent, getDisplay } = useTable(collection)
+const { columnNames, getDisplayComponent, getDisplay, getColumnLabel } = useTable(collection)
 
 /**
  * Where query.
@@ -29,23 +29,22 @@ const { data, status, refresh } = await useFetch<TableItem<T>[]>(`/api/items/${c
  * List of collection columns.
  */
 const collectionColumns = computed(() => {
-  return Object.entries(toValue(columns))
-    .map(([name, column]) => {
-      const display = getDisplay(name as TableColumnNames<T>)
+  return toValue(columnNames).map((name) => {
+    const display = getDisplay(name)
 
-      if (!display) return
+    if (!display) return
 
-      return {
-        id: name,
-        accessorKey: name,
-        header: column.label ?? name,
-        cell: ({ row }) => {
-          const value = row.original[name as keyof typeof row.original]
-          const component = getDisplayComponent(name as TableColumnNames<T>)
-          return h(component, { value })
-        }
-      } satisfies TableColumn<TableItem<T>>
-    }).filter(Boolean) as TableColumn<TableItem<T>>[]
+    return {
+      id: name,
+      accessorKey: name,
+      header: getColumnLabel(name),
+      cell: ({ row }) => {
+        const value = row.original[name as keyof typeof row.original]
+        const component = getDisplayComponent(name)
+        return h(component, { value })
+      }
+    } satisfies TableColumn<TableItem<T>>
+  }).filter(Boolean) as TableColumn<TableItem<T>>[]
 })
 
 /**

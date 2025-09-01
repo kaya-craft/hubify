@@ -76,6 +76,14 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   }
 
   /**
+   * Get column labeling.
+   */
+  function getColumnLabel<C extends TableColumnNames<T>>(column: C) {
+    const columnOptions = getColumnOption(column)
+    return (columnOptions && columnOptions.label) || titleCase(column)
+  }
+
+  /**
    * Get the input for the specified column.
    */
   function getInput<C extends TableColumnNames<T>>(column: C) {
@@ -155,6 +163,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     tableFields,
     columns,
     getColumn,
+    getColumnLabel,
 
     getInput,
     getInputComponent,
