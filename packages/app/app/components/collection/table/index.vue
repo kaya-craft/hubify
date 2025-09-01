@@ -14,9 +14,16 @@ const { collection } = defineProps<Props>()
 const { columns, getDisplayComponent, getDisplay } = useTable(collection)
 
 /**
+ * Where query.
+ */
+const { where, validatedWhere } = useQueryWhere(collection)
+
+/**
  * Fetch data for the collection.
  */
-const { data, status, refresh } = await useFetch<TableItem<T>[]>(`/api/items/${collection}` as `/api/items/:collection`)
+const { data, status, refresh } = await useFetch<TableItem<T>[]>(`/api/items/${collection}` as `/api/items/:collection`, {
+  query: { where: validatedWhere }
+})
 
 /**
  * List of collection columns.
@@ -63,10 +70,19 @@ onHubifyHook('items', ({ collection: name }) => {
 </script>
 
 <template>
-  <UTable
-    :columns="[...collectionColumns, ...actionColumns]"
-    :data
-    sticky
-    :loading="status === 'pending'"
-  />
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center justify-end gap-4">
+      <CollectionFilter
+        v-model="where"
+        :collection
+      />
+    </div>
+
+    <UTable
+      :columns="[...collectionColumns, ...actionColumns]"
+      :data
+      sticky
+      :loading="status === 'pending'"
+    />
+  </div>
 </template>

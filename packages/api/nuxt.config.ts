@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   modules: ['@nuxt/test-utils', 'nuxt-auth-utils'],

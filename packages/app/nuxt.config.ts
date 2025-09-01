@@ -1,10 +1,20 @@
 import { resolve } from 'path'
 import i18nConfig from './i18n/config'
+import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   extends: ['@hubify/api'],
 
-  modules: ['@nuxt/test-utils', '@nuxt/ui-pro', '@nuxtjs/i18n', '@vueuse/nuxt'],
+  modules: [
+    '@nuxt/test-utils/module',
+    '@nuxt/ui-pro',
+    '@vueuse/nuxt',
+
+    /**
+     * Fix: cannot use i18n in vitest browser mode.
+     */
+    process.env.VITEST ? '' : '@nuxtjs/i18n'
+  ],
 
   pages: true,
 

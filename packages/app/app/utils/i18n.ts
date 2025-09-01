@@ -1,5 +1,4 @@
-import type { RouteLocationAsRelativeI18n } from 'vue-router'
-import type { RouteNamedMapI18n } from 'vue-router/auto-routes'
+import type { RouteLocationAsRelativeI18n, RouteNamedMapI18n } from 'vue-router'
 
 export function navigateToLocaleRoute(routeName: keyof RouteNamedMapI18n | RouteLocationAsRelativeI18n) {
   const localeRoute = useLocaleRoute()

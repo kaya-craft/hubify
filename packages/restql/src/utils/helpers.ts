@@ -3,24 +3,30 @@ import type { Trim, UnionToTuple } from 'type-fest'
 import type { JoinableItem } from 'type-fest/source/join'
 import type { CleanJoin, Simplify, UniqueArray } from '@/types/helpers'
 import type { Condition, ConditionTree, QueryParams } from '@/types/params'
-import type { FieldName, PrimaryKey, PrimaryKeyValue, Relation, RelationDefinition, RelationName, RelationTableName, Schema, Table, TableColumn, TableDefinition, TableName, TableRelation } from '@/types/schema'
+import type { ColumnTypes, FieldName, PrimaryKey, PrimaryKeyValue, Relation, RelationDefinition, RelationName, RelationTableName, Schema, Table, TableColumn, TableDefinition, TableName, TableRelation } from '@/types/schema'
 
 /**
  * SQL Operators.
  */
 export const OPERATORS = {
-  $eq: (value: unknown) => `= ${normalizeOperationValue(value)}`,
-  $neq: (value: unknown) => `!= ${normalizeOperationValue(value)}`,
-  $gt: (value: unknown) => `> ${value}`,
-  $gte: (value: unknown) => `>= ${value}`,
-  $lt: (value: unknown) => `< ${value}`,
-  $lte: (value: unknown) => `<= ${value}`,
-  $like: (value: unknown) => `LIKE ${normalizeOperationValue(value)}`,
-  $nlike: (value: unknown) => `NOT LIKE ${normalizeOperationValue(value)}`,
-  $in: (value: unknown[]) => `IN (${join(value.map(normalizeOperationValue), ', ')})`,
-  $nin: (value: unknown[]) => `NOT IN (${join(value.map(normalizeOperationValue), ', ')})`,
-  $between: (value: unknown[]) => `BETWEEN ${value[0]} AND ${value[1]}`,
-  $nbetween: (value: unknown[]) => `NOT BETWEEN ${value[0]} AND ${value[1]}`
+  $eq: (value: unknown, type?: ColumnTypes) => `= ${normalizeOperationValue(value, type)}`,
+  $neq: (value: unknown, type?: ColumnTypes) => `!= ${normalizeOperationValue(value, type)}`,
+  $gt: (value: unknown, type?: ColumnTypes) => `> ${normalizeOperationValue(value, type)}`,
+  $gte: (value: unknown, type?: ColumnTypes) => `>= ${normalizeOperationValue(value, type)}`,
+  $lt: (value: unknown, type?: ColumnTypes) => `< ${normalizeOperationValue(value, type)}`,
+  $lte: (value: unknown, type?: ColumnTypes) => `<= ${normalizeOperationValue(value, type)}`,
+  $contains: (value: unknown) => `LIKE ${normalizeOperationValue('%' + value + '%')}`,
+  $ncontains: (value: unknown) => `NOT LIKE ${normalizeOperationValue('%' + value + '%')}`,
+  $startsWith: (value: unknown) => `LIKE ${normalizeOperationValue(value + '%')}`,
+  $nstartsWith: (value: unknown) => `NOT LIKE ${normalizeOperationValue(value + '%')}`,
+  $endsWith: (value: unknown) => `LIKE ${normalizeOperationValue('%' + value)}`,
+  $nendsWith: (value: unknown) => `NOT LIKE ${normalizeOperationValue('%' + value)}`,
+  $in: (value: unknown[], type?: ColumnTypes) => `IN (${join(value.map(value => normalizeOperationValue(value, type)), ', ')})`,
+  $nin: (value: unknown[], type?: ColumnTypes) => `NOT IN (${join(value.map(value => normalizeOperationValue(value, type)), ', ')})`,
+  $between: (value: unknown[], type?: ColumnTypes) => `BETWEEN ${normalizeOperationValue(value[0], type)} AND ${normalizeOperationValue(value[1], type)}`,
+  $nbetween: (value: unknown[], type?: ColumnTypes) => `NOT BETWEEN ${normalizeOperationValue(value[0], type)} AND ${normalizeOperationValue(value[1], type)}`,
+  $null: () => 'IS NULL',
+  $nnull: () => 'IS NOT NULL'
 }
 
 /**
@@ -97,6 +103,17 @@ export function normalizeColumn<S extends Schema, T extends TableName<S>, const 
     }
     return `${wrap(table)}.${wrap(part)}`
   }, '') as NormalizedColumn<S, T, C>
+}
+
+/**
+ * Adds column modifier based on type.
+ */
+export function addColumnModifier<C extends string>(column: C, type?: ColumnTypes) {
+  if (type === 'date' || type === 'timestamp' || type === 'timestamptz') {
+    return `DATE(${column})` as const
+  }
+
+  return column
 }
 
 /**
@@ -197,10 +214,11 @@ export function getWhereClauses<S extends Schema, T extends TableName<S>, const 
     }
     else if (!Array.isArray(value) && typeof value === 'object') {
       const column = normalizeColumn(schema, table, key)
+      const type = schema[table]?.columns?.[key]?.type as ColumnTypes
       return Object.entries(value).flatMap(([operator, val]) => {
         if (operator in OPERATORS) {
           const fn = OPERATORS[operator as keyof typeof OPERATORS]
-          return `${column} ${fn(val as any)}`
+          return `${addColumnModifier(column, type)} ${fn(val as unknown[], type)}`
         }
         return getWhereClauses(schema, table, { [operator]: val })
       })
@@ -213,8 +231,12 @@ export function getWhereClauses<S extends Schema, T extends TableName<S>, const 
 /**
  * Stringify operator value if necessary
  */
-export function normalizeOperationValue<V>(value: V) {
-  return (typeof value === 'string' ? `'${value}'` : value) as Normalize<V>
+export function normalizeOperationValue<V>(value: V, type?: ColumnTypes): Normalize<V> {
+  if (type === 'numeric' || type === 'float4' || type === 'int4' || type === 'integer' || type === 'int8' || type === 'boolean') {
+    return value as Normalize<V>
+  }
+
+  return `'${value}'` as Normalize<V>
 }
 
 /**
@@ -350,13 +372,19 @@ export type OperatorToSQL<O extends keyof typeof OPERATORS, V>
           : O extends '$gte' ? `>= ${Normalize<V>}`
             : O extends '$lt' ? `< ${Normalize<V>}`
               : O extends '$lte' ? `<= ${Normalize<V>}`
-                : O extends '$like' ? `LIKE ${Normalize<V>}`
-                  : O extends '$nlike' ? `NOT LIKE ${Normalize<V>}`
-                    : O extends '$in' ? V extends any[] ? `IN (${CleanJoin<NormalizeArray<V>>})` : never
-                      : O extends '$nin' ? V extends any[] ? `NOT IN (${CleanJoin<NormalizeArray<V>>})` : never
-                        : O extends '$between' ? V extends any[] ? `BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
-                          : O extends '$nbetween' ? V extends any[] ? `NOT BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
-                            : never
+                : O extends '$contains' ? `LIKE %${Normalize<V>}%`
+                  : O extends '$ncontains' ? `NOT LIKE %${Normalize<V>}%`
+                    : O extends '$startsWith' ? `LIKE ${Normalize<V>}%`
+                      : O extends '$nstartsWith' ? `NOT LIKE ${Normalize<V>}%`
+                        : O extends '$endsWith' ? `LIKE %${Normalize<V>}`
+                          : O extends '$nendsWith' ? `NOT LIKE %${Normalize<V>}`
+                            : O extends '$null' ? 'IS NULL'
+                              : O extends '$nnull' ? 'IS NOT NULL'
+                                : O extends '$in' ? V extends any[] ? `IN (${CleanJoin<NormalizeArray<V>>})` : never
+                                  : O extends '$nin' ? V extends any[] ? `NOT IN (${CleanJoin<NormalizeArray<V>>})` : never
+                                    : O extends '$between' ? V extends any[] ? `BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
+                                      : O extends '$nbetween' ? V extends any[] ? `NOT BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
+                                        : never
 
 export type WhereColumnClause<F extends string, C extends Condition>
     = CleanJoin<UnionToTuple<{
