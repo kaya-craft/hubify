@@ -1,5 +1,5 @@
-import createDriver from '@hubify/restql/drivers/sqlite'
 import schema from '#hubify/schema'
+import createDriver from '@hubify/restql/drivers/sqlite'
 
 const db = createDriver(schema)
 db.setDatabase(useDatabase('hubify'))

@@ -1,6 +1,6 @@
-import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, useLogger, useNuxt } from 'nuxt/kit'
-import { resolve, isAbsolute, extname, join } from 'node:path'
 import { existsSync, readdirSync, writeFileSync } from 'node:fs'
+import { extname, isAbsolute, join, resolve } from 'node:path'
+import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, useLogger, useNuxt } from 'nuxt/kit'
 
 export interface HubifyModuleOptions {
   schema: string[]

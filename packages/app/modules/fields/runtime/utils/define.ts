@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { SchemaColumns } from '@hubify/api/modules/schema/runtime/utils/define'
 import type { ColumnTypes, ColumnTypeToTsType } from '@hubify/restql'
 import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
 import type { ZodType } from 'zod'
@@ -23,17 +22,17 @@ export function defineFieldDataTypes(..._dataTypes: ColumnTypes[]) {
   // return defineExpose({ dataTypes })
 }
 
-export type Input = {
-  component: string
-  props?: Record<string, any>
+export type Input<T extends keyof InputComponents = keyof InputComponents> = {
+  component: T
+  props?: ComponentProps<InputComponents[T]>
   class?: string
   label?: string
   rules?: (defaultRules: ZodType<any>) => ZodType<any>
 }
 
-export type Display = {
-  component?: string
-  props?: Record<string, any>
+export type Display<T extends keyof DisplayComponents = keyof DisplayComponents> = {
+  component: T
+  props?: ComponentProps<DisplayComponents[T]>
   class?: string
   label?: string
 }
@@ -48,7 +47,7 @@ export type FieldOptions<C extends SchemaColumns> = {
   [K in keyof C]?: C[K]['type'] extends keyof FieldOptionByDataTypes
     ? FieldOptionByDataTypes[C[K]['type']] | false
     : false | {
-      input?: false
+      input?: Input | false
       display?: Display | false
     }
 }
@@ -88,7 +87,7 @@ type DisplayComponentDataTypes = {
 type DisplayByDataTypes = {
   [K in DisplayComponentDataTypes]: {
     [P in keyof DisplayComponents]: K extends ComponentDataTypes<DisplayComponents[P]> ? false | {
-      component?: P
+      component: P
       props?: Simplify<ComponentProps<DisplayComponents[P]>>
       class?: string
       label?: string
@@ -110,8 +109,8 @@ type InputByDataTypes = {
 
 type FieldOptionByDataTypes = {
   [K in InputComponentDataTypes | DisplayComponentDataTypes]: false | {
-    input?: K extends InputComponentDataTypes ? InputByDataTypes[K] | false : false
-    display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] | Display | true | false : Display | true | false
+    input?: K extends InputComponentDataTypes ? InputByDataTypes[K] | Input | false : false
+    display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] | Display | false : false
   }
 }
 
