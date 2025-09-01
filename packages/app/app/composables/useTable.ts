@@ -30,17 +30,27 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   })
 
   /**
- * Columns of the table.
- */
+   * Columns of the table.
+   */
   const columnNames = computed(() => {
-    return Object.keys(toValue(columns)) as TableColumnNames<T>[]
+    const keys = Object.keys(toValue(columns)) as TableColumnNames<T>[]
+    const fields = toValue(tableFields)
+    if (fields) {
+      return keys.sort((a, b) => {
+        const aIndex = (fields?.[a] && fields?.[a]?.order) ?? 0
+        const bIndex = (fields?.[b] && fields?.[b]?.order) ?? 0
+        return aIndex - bIndex
+      })
+    }
+
+    return keys
   })
 
   /**
    * Table fields.
    */
   const tableFields = computed(() => {
-    return toValue(table)?.fields as TableFieldOptions<T> | undefined
+    return ('fields' in table.value && table.value.fields) as TableFieldOptions<T> | undefined
   })
 
   /**
@@ -72,7 +82,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Get the field for the specified column.
    */
   function getColumnOption<C extends TableColumnNames<T>>(column: C) {
-    return toValue(tableFields)?.[column] as TableFieldOption<T, C>
+    return toValue(tableFields)?.[column] as TableFieldOption<T, C> | undefined
   }
 
   /**
@@ -81,9 +91,9 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   function getInput<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
 
-    if (columnOptions === false || columnOptions.input === false) return false
+    if (columnOptions === false || columnOptions?.input === false) return false
 
-    return columnOptions.input
+    return columnOptions?.input
   }
 
   /**
@@ -92,9 +102,9 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   function getDisplay<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
 
-    if (columnOptions === false || columnOptions.display === false) return false
+    if (columnOptions === false || columnOptions?.display === false) return false
 
-    return columnOptions.display
+    return columnOptions?.display
   }
 
   /**
@@ -117,6 +127,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getDisplayComponent<C extends TableColumnNames<T>>(column: C) {
     const display = getDisplay(column)
+
+    console.log('display', display, column)
 
     if (display === false) return
 

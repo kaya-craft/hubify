@@ -36,6 +36,11 @@ export const columns = defineTableColumns({
     type: 'text',
     notNull: false
   },
+
+  role: {
+    type: 'integer'
+  },
+
   /**
    * Timestamp when the user was created.
    */
@@ -50,5 +55,16 @@ export const columns = defineTableColumns({
   updatedAt: {
     type: 'timestamp',
     default: 'CURRENT_TIMESTAMP'
+  }
+})
+
+/**
+ * Define relationships between tables.
+ */
+export const relations = defineTableRelations({
+  role: {
+    fromKey: 'id',
+    toKey: 'id',
+    table: 'roles'
   }
 })

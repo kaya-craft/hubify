@@ -39,17 +39,15 @@ export type Display = {
 }
 
 export type FieldOption = false | {
+  order?: number
   input?: Input | false
   display?: Display | false
 }
 
 export type FieldOptions<C extends SchemaColumns> = {
   [K in keyof C]?: C[K]['type'] extends keyof FieldOptionByDataTypes
-    ? FieldOptionByDataTypes[C[K]['type']] | false
-    : false | {
-      input?: false
-      display?: Display | false
-    }
+    ? FieldOptionByDataTypes[C[K]['type']] extends infer I ? I extends boolean ? I : I & Omit<Exclude<FieldOption, boolean>, keyof I> : never
+    : FieldOption
 }
 
 export type TableFieldOptions<T extends TableNames> = FieldOptions<TableColumns<T>>
@@ -109,8 +107,8 @@ type InputByDataTypes = {
 
 type FieldOptionByDataTypes = {
   [K in InputComponentDataTypes | DisplayComponentDataTypes]: false | {
-    input?: K extends InputComponentDataTypes ? InputByDataTypes[K] | false : false
-    display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] | Display | true | false : Display | true | false
+    input?: K extends InputComponentDataTypes ? InputByDataTypes[K] : Input | false
+    display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] : Display | false
   }
 }
 

@@ -74,7 +74,7 @@ export function updateRaw<const S extends Schema>(schema: S) {
   return <T extends TableName<S>, const I extends Partial<Item<S, T>>, const P extends UpdateParams<S, T>>(table: T, item: I, params: P) => {
     return trim(join([
       update(table),
-      set(item),
+      set(schema, table, item),
       where(schema, table, params.where as P['where'])
     ], ' ')) as UpdateRaw<S, T, I, P>
   }
@@ -89,7 +89,7 @@ export function updateOneRaw<const S extends Schema>(schema: S) {
 
     return trim(join([
       update(table),
-      set(item),
+      set(schema, table, item),
       where(schema, table, whereClause)
     ], ' ')) as UpdateOneRaw<S, T, K, I, P>
   }
@@ -98,11 +98,11 @@ export function updateOneRaw<const S extends Schema>(schema: S) {
 /**
  * Write a SQL query to create a single record in a table.
  */
-export function createOneRaw<const S extends Schema>(_schema: S) {
+export function createOneRaw<const S extends Schema>(schema: S) {
   return <T extends TableName<S>, const I extends Partial<Item<S, T>>>(table: T, item: I) => {
     return trim(join([
       insert(table),
-      values(item),
+      values(schema, table, item),
       returning('*')
     ], ' ')) as CreateOneRaw<S, T, I>
   }
