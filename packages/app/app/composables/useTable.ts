@@ -72,6 +72,13 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   })
 
   /**
+   * Table relations.
+   */
+  const relations = computed(() => {
+    return ('relations' in table.value && table.value.relations) as SchemaRelations | undefined
+  })
+
+  /**
    * Primary key of the table.
    */
   const primaryKey = computed(() => {
@@ -187,6 +194,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   return {
     name: tableName,
     table,
+    relations,
 
     columnNames,
     tableFields,

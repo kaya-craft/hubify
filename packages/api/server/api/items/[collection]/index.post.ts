@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
 
   emitMessage(event, {
     type: 'items:created',
+    // @ts-expect-error - not typed
     data: { collection, id: item.id }
   })
 

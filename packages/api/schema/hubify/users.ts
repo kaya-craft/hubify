@@ -38,7 +38,8 @@ export const columns = defineTableColumns({
   },
 
   role: {
-    type: 'integer'
+    type: 'integer',
+    notNull: false
   },
 
   /**
@@ -65,6 +66,8 @@ export const relations = defineTableRelations({
   role: {
     fromKey: 'id',
     toKey: 'id',
-    table: 'roles'
+    table: 'hubify_roles',
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE'
   }
 })

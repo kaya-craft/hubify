@@ -63,9 +63,15 @@ export async function ensureValidItem(
     columnNames.map((name) => {
       const column = tables[collection].columns[name] as TableColumn
       const rule = columnTypeToZod(tables[collection].columns[name])
-      if (optional || column.default || !column.notNull) {
+
+      if (!column.notNull) {
+        return [name, rule.nullable().optional()]
+      }
+
+      if (optional || column.default) {
         return [name, rule.optional()]
       }
+
       return [name, rule]
     })
   )

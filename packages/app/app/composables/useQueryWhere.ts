@@ -1,13 +1,14 @@
 import type { QueryParams } from '@hubify/restql'
 import { whereValidation } from '@hubify/api/lib/validation'
+import { defu } from 'defu'
 
 export type Where<T extends TableNames> = QueryParams<Schema, T>['where']
 
-export function useQueryWhere<T extends TableNames>(table: T) {
+export function useQueryWhere<T extends TableNames>(table: T, baseWhere?: MaybeRefOrGetter<Where<T>>) {
 /**
  * Where query model.
  */
-  const where = useRouteQuery<string, Where<T>>('where', undefined, {
+  const queryWhere = useRouteQuery<string, Where<T>>('where', undefined, {
     mode: 'replace',
     transform: {
       get: value => value ? JSON.parse(value) : undefined,
@@ -16,10 +17,20 @@ export function useQueryWhere<T extends TableNames>(table: T) {
   })
 
   /**
+   * Where state.
+   */
+  const where = computed<Where<T>>(() => {
+    return defu(toValue(baseWhere), toValue(queryWhere)) as Where<T>
+  })
+
+  /**
    * Validated where.
    */
   const validatedWhere = ref<Where<T>>()
 
+  /**
+   * Watch for changes in the where and validate it.
+   */
   watchEffect(() => {
     const newValue = whereValidation(table).safeParse(where.value)?.data as Where<T> | undefined
 
@@ -30,6 +41,7 @@ export function useQueryWhere<T extends TableNames>(table: T) {
 
   return {
     where,
+    queryWhere,
     validatedWhere
   }
 }

@@ -37,7 +37,7 @@ export const relations = defineTableRelations({
      * A role can have many users.
      */
   users: {
-    table: 'users',
+    table: 'hubify_users',
     fromKey: 'id',
     toKey: 'role',
     onDelete: 'SET NULL',

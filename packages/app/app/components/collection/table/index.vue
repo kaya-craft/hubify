@@ -1,12 +1,14 @@
 <script setup lang="ts" generic="T extends TableNames">
-import { CollectionTableActions } from '#components'
+import { CollectionTableActions, UCheckbox, UTable } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 
 type Props = {
   collection: T
+  where?: Where<T>
+  selectable?: boolean
 }
 
-const { collection } = defineProps<Props>()
+const { selectable, collection, where } = defineProps<Props>()
 
 /**
  * Collection definition.
@@ -16,7 +18,7 @@ const { displayedColumns, getDisplayComponent, getColumnLabel } = useTable(colle
 /**
  * Where query.
  */
-const { where, validatedWhere } = useQueryWhere(collection)
+const { queryWhere, validatedWhere } = useQueryWhere(collection, where)
 
 /**
  * Fetch data for the collection.
@@ -54,29 +56,94 @@ const actionColumns = [{
 }] satisfies TableColumn<TableItem<T>>[]
 
 /**
+ * Selectable column.
+ */
+const prependColumns = computed(() => {
+  if (!selectable) return []
+  return [
+  {
+    id: 'select',
+    header: ({ table }) =>
+      h(UCheckbox, {
+        'modelValue': table.getIsSomePageRowsSelected()
+          ? 'indeterminate'
+          : table.getIsAllPageRowsSelected(),
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') =>
+          table.toggleAllPageRowsSelected(!!value),
+        'aria-label': 'Select all'
+      }),
+    cell: ({ row }) =>
+      h(UCheckbox, {
+        'modelValue': row.getIsSelected(),
+        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
+        'aria-label': 'Select row'
+      })
+  } satisfies TableColumn<TableItem<T>>]
+})
+
+/**
+ * Table reference.
+ */
+const table = useTemplateRef('table')
+
+/**
+ * Selected items
+ */
+const selected = computed((): TableItem<T>[] => {
+  return (table.value?.tableApi.getSelectedRowModel().flatRows.map(row => row.original) ?? []) as TableItem<T>[]
+})
+
+/**
  * Refresh the collection when the collection is updated.
  */
 onHubifyHook('items', ({ collection: name }) => {
   if (name === collection) {
     refresh()
+    table.value?.tableApi.resetRowSelection()
   }
 })
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
-    <div class="flex items-center justify-end gap-4">
-      <CollectionFilter
-        v-model="where"
-        :collection
-      />
-    </div>
+  <UCard>
+    <template #header>
+      <div class="flex items-center gap-4">
+        <slot
+          name="prepend-header"
+          :selected
+        />
+
+        <h2 class="text-lg font-semibold">
+          {{ collection }}
+        </h2>
+
+        <div class="flex-1" />
+
+        <slot
+          name="append-header"
+          :selected
+        />
+
+        <CollectionFilter
+          v-model="queryWhere"
+          :collection
+        />
+      </div>
+    </template>
 
     <UTable
-      :columns="[...collectionColumns, ...actionColumns]"
+      ref="table"
+      :columns="[...prependColumns, ...collectionColumns, ...actionColumns]"
       :data
       sticky
       :loading="status === 'pending'"
     />
-  </div>
+
+    <template #footer>
+      <slot
+        name="footer"
+        :selected
+      />
+    </template>
+  </UCard>
 </template>

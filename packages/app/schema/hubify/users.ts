@@ -14,17 +14,7 @@ export const fields = defineFieldOptions(columns, {
       }
     }
   },
-  password: {
-    input: {
-      component: 'text',
-      label: 'Password',
-      class: 'col-span-6',
-      props: {
-        placeholder: 'Password',
-        type: 'password'
-      }
-    }
-  },
+  password: false,
   firstname: {
     input: {
       component: 'text',

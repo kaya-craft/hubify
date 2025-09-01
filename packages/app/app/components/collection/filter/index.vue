@@ -97,6 +97,9 @@ const open = ref(false)
   >
     <UButton
       :label="t('app.admin.filters.label')"
+      variant="soft"
+      color="neutral"
+      leading-icon="heroicons:funnel"
       @click.prevent="open = !open"
     />
 

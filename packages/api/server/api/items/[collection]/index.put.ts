@@ -11,5 +11,13 @@ export default defineEventHandler(async (event) => {
 
   const { update } = useDb()
 
-  return update(collection, item, params)
+  const items = await update(collection, item, params)
+
+  emitMessage(event, {
+    type: 'items:updated',
+    // @ts-expect-error - not typed
+    data: { collection, items }
+  })
+
+  return items
 })
