@@ -97,8 +97,8 @@ export function unprepend<T extends string, P extends string>(value: T, prefix: 
  * Normalizes a column name to ensure it is properly formatted for SQL queries.
  */
 export function normalizeColumn<S extends Schema, T extends TableName<S>, const C extends string>(schema: S, table: T, col: C) {
-  return col.split('.').reduce((_, part) => {
-    if (schema[table]?.relations?.[part]) {
+  return col.split('.').reduce((_, part, index, array) => {
+    if (schema[table]?.relations?.[part] && index < array.length - 1) {
       table = schema[table].relations?.[part].table as T
     }
     return `${wrap(table)}.${wrap(part)}`
