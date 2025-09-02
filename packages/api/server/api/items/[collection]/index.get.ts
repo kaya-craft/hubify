@@ -8,5 +8,5 @@ export default defineEventHandler(async (event) => {
 
   const { find } = useDb()
 
-  return find(collection, params)
+  return ensureValidOutputItems(collection, find(collection, params))
 })

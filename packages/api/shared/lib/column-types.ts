@@ -20,11 +20,11 @@ export function columnTypeToZod(column: TableColumn) {
     case 'uuid':
       return z.uuid()
     case 'timestamp':
-    case 'timestamptz':
     case 'date':
-      return z.iso.date()
+    case 'timestamptz':
+      return z.coerce.date()
     case 'boolean':
-      return z.boolean()
+      return z.coerce.boolean()
     case 'json':
     default:
       return z.any() // Fallback for unsupported types

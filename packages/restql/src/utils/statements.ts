@@ -175,11 +175,11 @@ export function where<S extends Schema, T extends TableName<S>, W extends QueryP
 /**
  * SQL Returning statement for the specified columns.
  */
-export function returning<C extends string[]>(...columns: C): `RETURNING ${CleanJoin<C>}` {
+export function returning<C extends unknown[]>(...columns: C): `RETURNING ${CleanJoin<C>}` {
   return `RETURNING ${columns.join(', ')}` as Returning<C>
 }
 
-export type Returning<C extends string[]> = `RETURNING ${CleanJoin<C>}`
+export type Returning<C extends unknown[]> = `RETURNING ${CleanJoin<C>}`
 
 export type Insert<T extends TableName<Schema>> = `INSERT INTO ${Wrap<T>}`
 

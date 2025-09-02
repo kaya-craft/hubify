@@ -7,17 +7,17 @@ export default defineEventHandler(async (event) => {
   const [id, params, item] = await Promise.all([
     ensureValidId(collection, event),
     ensureValidQueryParams(collection, event),
-    ensureValidItem(collection, true, event)
+    ensureValidInputItem(collection, true, event)
   ])
 
   const { updateOne } = useDb()
 
-  await updateOne(collection, id, item, params)
+  return ensureValidOutputItem(collection, updateOne(collection, id, item, params)).then((item) => {
+    emitMessage(event, {
+      type: 'items:updated',
+      data: { collection, item }
+    })
 
-  emitMessage(event, {
-    type: 'items:updated',
-    data: { collection, id }
+    return item
   })
-
-  return id
 })

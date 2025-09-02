@@ -1,7 +1,6 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
-import type { ZodType } from 'zod'
-import z from 'zod'
-import { columnTypeToZod } from '@hubify/api/lib/column-types'
+import type z from 'zod'
+import { itemValidation } from '@hubify/api/lib/validation'
 
 export type TableFormState<T extends TableNames> = {
   [C in TableColumnNames<T>]: TableFieldOptionValue<T, C> | undefined
@@ -119,20 +118,9 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
    * Create zod schema for the table.
    */
   function createTableSchema() {
-    const schema: Record<string, ZodType> = {}
-
-    for (const name of toValue(columnNames)) {
-      const column = getColumn(name)
-      if (!column) continue
-      const input = getInput(name)
-      if (input === false) continue
-      const defaultRules = columnTypeToZod(column)
-      const rules = input?.rules?.(defaultRules) ?? defaultRules
-
-      schema[name] = column.notNull ? rules : rules.optional()
-    }
-
-    return z.object(schema) as TableFormSchema<T>
+    return itemValidation(collection, {
+      includePrimaryKey: false
+    }) as TableFormSchema<T>
   }
 
   /**

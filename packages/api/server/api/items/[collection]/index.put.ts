@@ -6,18 +6,19 @@ export default defineEventHandler(async (event) => {
 
   const [params, item] = await Promise.all([
     ensureValidQueryParams(collection, event),
-    ensureValidItem(collection, true, event)
+    ensureValidInputItem(collection, true, event)
   ])
 
   const { update } = useDb()
 
-  const items = await update(collection, item, params)
+  return ensureValidOutputItems(collection, update(collection, item, params)).then((items) => {
+    for (const item of items) {
+      emitMessage(event, {
+        type: 'items:updated',
+        data: { collection, item }
+      })
+    }
 
-  emitMessage(event, {
-    type: 'items:updated',
-    // @ts-expect-error - not typed
-    data: { collection, items }
+    return items
   })
-
-  return items
 })
