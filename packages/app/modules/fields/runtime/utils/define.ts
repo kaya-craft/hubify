@@ -109,6 +109,7 @@ type InputByDataTypes = {
 
 type FieldOptionByDataTypes = {
   [K in InputComponentDataTypes | DisplayComponentDataTypes]: false | {
+    label?: string
     input?: K extends InputComponentDataTypes ? InputByDataTypes[K] | Input | false : false
     display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] | Display | false : false
   }

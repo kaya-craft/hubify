@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 interface Props {
-  value: boolean | number
+  value: boolean
 }
 
 /**

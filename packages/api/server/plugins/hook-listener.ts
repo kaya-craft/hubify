@@ -3,9 +3,7 @@ export default defineNitroPlugin((nitroApp) => {
     try {
       await $fetch(`/api/items/hubify_collections`, {
         method: 'POST',
-        body: {
-          name: table
-        }
+        body: { name: table }
       })
       console.info('Table added to hubify_collections:', table)
       return table

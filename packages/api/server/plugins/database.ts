@@ -12,7 +12,7 @@ export default defineNitroPlugin(async (nitroApp) => {
     columns: ['name'],
     where: {
       name: {
-        $nlike: 'hubify_'
+        $ncontains: 'hubify_%'
       }
     }
   })

@@ -1,7 +1,7 @@
+import { columnTypeToZod } from '@hubify/api/lib/column-types'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type { ZodType } from 'zod'
 import z from 'zod'
-import { columnTypeToZod } from '@hubify/api/lib/column-types'
 
 export type TableFormState<T extends TableNames> = {
   [C in TableColumnNames<T>]: TableFieldOptionValue<T, C> | undefined
@@ -129,7 +129,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
       const defaultRules = columnTypeToZod(column)
       const rules = input?.rules?.(defaultRules) ?? defaultRules
 
-      schema[name] = column.notNull ? rules : rules.optional()
+      schema[name] = column.notNull ? rules : rules.nullable().optional()
     }
 
     return z.object(schema) as TableFormSchema<T>
