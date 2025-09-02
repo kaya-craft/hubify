@@ -139,7 +139,10 @@ onHubifyHook('items', ({ collection: name }) => {
       :loading="status === 'pending'"
     />
 
-    <template #footer>
+    <template
+      v-if="$slots.footer"
+      #footer
+    >
       <slot
         name="footer"
         :selected

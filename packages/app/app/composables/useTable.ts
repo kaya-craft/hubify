@@ -7,6 +7,16 @@ import { InputsText, DisplaysText } from '#components'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
+   * Toast.
+   */
+  const { add } = useToast()
+
+  /**
+   * Loading state.
+   */
+  const loading = ref(false)
+
+  /**
    * Name of the table.
    */
   const tableName = computed(() => {
@@ -30,11 +40,34 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   })
 
   /**
+   * Table fields.
+   */
+  const tableFields = computed(() => {
+    return toValue(table).fields as TableFieldOptions<T>
+  })
+
+  /**
+   * Table relations.
+   */
+  const relations = computed(() => {
+    return toValue(table).relations as TableRelations<T>
+  })
+
+  /**
+   * Primary key of the table.
+   */
+  const primaryKey = computed(() => {
+    return getPrimaryKey(tables, toValue(tableName)) as TablePrimaryKey<T>
+  })
+
+  /**
    * Columns of the table.
    */
   const columnNames = computed(() => {
     const keys = Object.keys(toValue(columns)) as TableColumnNames<T>[]
+
     const fields = toValue(tableFields)
+
     if (fields) {
       return keys.sort((a, b) => {
         const aIndex = (fields?.[a] && fields?.[a]?.order) ?? 0
@@ -62,27 +95,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     return toValue(columnNames).filter((name) => {
       return getInput(name) !== false
     })
-  })
-
-  /**
-   * Table fields.
-   */
-  const tableFields = computed(() => {
-    return ('fields' in table.value && table.value.fields) as TableFieldOptions<T> | undefined
-  })
-
-  /**
-   * Table relations.
-   */
-  const relations = computed(() => {
-    return ('relations' in table.value && table.value.relations) as SchemaRelations | undefined
-  })
-
-  /**
-   * Primary key of the table.
-   */
-  const primaryKey = computed(() => {
-    return getPrimaryKey(tables, toValue(tableName)) as TablePrimaryKey<T>
   })
 
   /**
@@ -171,6 +183,106 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   }
 
   /**
+   * Get relation by name.
+   */
+  function getRelation<R extends TableRelationNames<T>>(name: R) {
+    const rels = toValue(relations)
+    if (!rels || !(name in rels)) throw new Error(`Relation "${String(name)}" does not exist in table "${toValue(tableName)}".`)
+    return rels[name] as TableRelation<T, R>
+  }
+
+  /**
+   * Extract primary key values from IDs or items.
+   */
+  function extractPrimaryKeyValues<T extends TableNames>(table: T, idsOrItems: (TablePrimaryKeyValue<T> | TableItem<T>)[]) {
+    const primaryKey = getPrimaryKey(tables, table)
+
+    if (!primaryKey) throw new Error(`Primary key for table "${table}" is not defined.`)
+
+    const values = idsOrItems.map((idOrItem) => {
+      if (typeof idOrItem === 'object') return idOrItem[primaryKey as keyof typeof idOrItem]
+      return idOrItem
+    }).filter(isNonNullish) as TablePrimaryKeyValue<T>[]
+
+    return [primaryKey, [...new Set(values)]] as const
+  }
+
+  /**
+   * Detatch from the specified relation.
+   */
+  async function detach<R extends TableRelationNames<T>, RT extends TableRelation<T, R>['table']>(
+    relationName: R,
+    ...idOrItems: (TablePrimaryKeyValue<RT> | TableItem<RT>)[]) {
+    try {
+      loading.value = true
+
+      const relation = getRelation(relationName)
+      const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
+
+      await $fetch('/api/items/' + relation.table, {
+        method: 'put',
+        query: { where: { [primaryKey]: { $in: ids } } },
+        body: { [relation.toKey]: null }
+      })
+
+      add({
+        title: 'Items detatched successfully',
+        color: 'success',
+        description: 'The items have been successfully detatched.'
+      })
+    }
+    catch (error) {
+      add({
+        title: 'Error detatching items',
+        color: 'error',
+        description: 'There was an error detatching the items. ' + String(error)
+      })
+      throw error
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Attach to the specified relation.
+   */
+  async function attach<R extends TableRelationNames<T>, RT extends TableRelation<T, R>['table']>(
+    id: TablePrimaryKeyValue<T>,
+    relationName: R,
+    ...idOrItems: (TablePrimaryKeyValue<RT> | TableItem<RT>)[]) {
+    try {
+      loading.value = true
+
+      const relation = getRelation(relationName)
+      const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
+
+      await $fetch('/api/items/' + relation.table, {
+        method: 'put',
+        query: { where: { [primaryKey]: { $in: ids } } },
+        body: { [relation.toKey]: id }
+      })
+
+      add({
+        title: 'Items attached successfully',
+        color: 'success',
+        description: 'The items have been successfully attached.'
+      })
+    }
+    catch (error) {
+      add({
+        title: 'Error attaching items',
+        color: 'error',
+        description: 'There was an error attaching the items. ' + String(error)
+      })
+      throw error
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  /**
    * Can create new items in the table?
    */
   function canCreate() {
@@ -194,7 +306,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   return {
     name: tableName,
     table,
-    relations,
 
     columnNames,
     tableFields,
@@ -217,6 +328,13 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     canCreate,
     canDelete,
-    canUpdate
+    canUpdate,
+
+    relations,
+    getRelation,
+    detach,
+    attach,
+
+    loading
   }
 }
