@@ -28,6 +28,14 @@ export const columns = defineTableColumns({
   icon: {
     type: 'varchar',
     default: 'heroicons:user-circle'
+  },
+
+  /**
+   * Is admin?
+   */
+  admin: {
+    type: 'boolean',
+    default: false
   }
 })
 

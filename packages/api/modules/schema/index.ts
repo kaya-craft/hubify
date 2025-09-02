@@ -46,8 +46,25 @@ export default defineNuxtModule<HubifyModuleOptions>({
     nuxt.options.nitro.alias ??= {}
     nuxt.options.nitro.alias['#hubify/schema'] = schemaPath
     nuxt.options.alias['#hubify/schema'] = schemaPath
+
+    nuxt.options.runtimeConfig.hubify = {
+      systemCollections: getSystemCollections(schemaDirs)
+    }
+
+    nuxt.options.runtimeConfig.public.hubify = {
+      systemCollections: getSystemCollections(schemaDirs)
+    }
   }
 })
+
+/**
+ * Get the list of system collections.
+ */
+function getSystemCollections(schemaDirs: string[]) {
+  const files = schemaDirs.flatMap(dir => listDirFiles(dir, '_', ['.ts', '.js']))
+  const collections = [...new Set(files.map(file => file.name))]
+  return collections.filter(name => name.startsWith('hubify_'))
+}
 
 /**
  * Get schema directories from the Nuxt options.

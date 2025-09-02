@@ -52,7 +52,7 @@ export function itemValidation<T extends TableNames>(collection: T, options: Ite
         return [name, rule.optional().nullable()]
       }
 
-      if (options.optional || column.default) {
+      if (options.optional || !isUndefined(column.default)) {
         return [name, rule.optional()]
       }
 
