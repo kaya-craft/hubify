@@ -42,8 +42,9 @@ async function seedDatabase() {
       }) as TableItem<'hubify_roles'>
 
       await db.createOne('hubify_users', {
+        firstname: 'Admin',
         email: 'admin@example.com',
-        password: await hashPassword('admin'),
+        password: await hashPassword('password'),
         role: role.id
       })
 

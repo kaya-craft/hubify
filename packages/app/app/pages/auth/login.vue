@@ -43,7 +43,7 @@ function onLoginSuccess() {
     color: 'success',
     title: 'User logged in successfully'
   })
-  return navigateToLocaleRoute('admin')
+  return navigateToLocaleRoute('/admin')
 }
 
 function onLoginError(err: NuxtError<{ message: string }>) {

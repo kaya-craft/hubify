@@ -232,11 +232,17 @@ export function getWhereClauses<S extends Schema, T extends TableName<S>, const 
  * Stringify operator value if necessary
  */
 export function normalizeOperationValue<V>(value: V, type?: ColumnTypes): Normalize<V> {
-  if (type === 'numeric' || type === 'float4' || type === 'int4' || type === 'integer' || type === 'int8' || type === 'boolean') {
-    return value as Normalize<V>
+  switch (type) {
+    case 'text':
+    case 'varchar':
+      return `'${value}'` as Normalize<V>
+    case 'boolean':
+      return (value ? 'TRUE' : 'FALSE') as Normalize<V>
+    case 'date':
+      return `DATE('${value}')` as Normalize<V>
+    default:
+      return value as Normalize<V>
   }
-
-  return `'${value}'` as Normalize<V>
 }
 
 /**
