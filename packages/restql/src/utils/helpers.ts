@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Trim, UnionToTuple } from 'type-fest'
-import type { JoinableItem } from 'type-fest/source/join'
 import type { CleanJoin, Simplify, UniqueArray } from '@/types/helpers'
 import type { Condition, ConditionTree, QueryParams } from '@/types/params'
 import type { ColumnTypes, FieldName, PrimaryKey, PrimaryKeyValue, Relation, RelationDefinition, RelationName, RelationTableName, Schema, Table, TableColumn, TableDefinition, TableName, TableRelation } from '@/types/schema'
+import type { Trim, UnionToTuple } from 'type-fest'
+import type { JoinableItem } from 'type-fest/source/join'
 
 /**
  * SQL Operators.
@@ -15,12 +15,12 @@ export const OPERATORS = {
   $gte: (value: unknown, type?: ColumnTypes) => `>= ${normalizeOperationValue(value, type)}`,
   $lt: (value: unknown, type?: ColumnTypes) => `< ${normalizeOperationValue(value, type)}`,
   $lte: (value: unknown, type?: ColumnTypes) => `<= ${normalizeOperationValue(value, type)}`,
-  $contains: (value: unknown) => `LIKE ${normalizeOperationValue('%' + value + '%')}`,
-  $ncontains: (value: unknown) => `NOT LIKE ${normalizeOperationValue('%' + value + '%')}`,
-  $startsWith: (value: unknown) => `LIKE ${normalizeOperationValue(value + '%')}`,
-  $nstartsWith: (value: unknown) => `NOT LIKE ${normalizeOperationValue(value + '%')}`,
-  $endsWith: (value: unknown) => `LIKE ${normalizeOperationValue('%' + value)}`,
-  $nendsWith: (value: unknown) => `NOT LIKE ${normalizeOperationValue('%' + value)}`,
+  $contains: (value: unknown) => `LIKE '${normalizeOperationValue('%' + value + '%')}'`,
+  $ncontains: (value: unknown) => `NOT LIKE '${normalizeOperationValue('%' + value + '%')}'`,
+  $startsWith: (value: unknown) => `LIKE '${normalizeOperationValue(value + '%')}'`,
+  $nstartsWith: (value: unknown) => `NOT LIKE '${normalizeOperationValue(value + '%')}'`,
+  $endsWith: (value: unknown) => `LIKE '${normalizeOperationValue('%' + value)}'`,
+  $nendsWith: (value: unknown) => `NOT LIKE '${normalizeOperationValue('%' + value)}'`,
   $in: (value: unknown[], type?: ColumnTypes) => `IN (${join(value.map(value => normalizeOperationValue(value, type)), ', ')})`,
   $nin: (value: unknown[], type?: ColumnTypes) => `NOT IN (${join(value.map(value => normalizeOperationValue(value, type)), ', ')})`,
   $between: (value: unknown[], type?: ColumnTypes) => `BETWEEN ${normalizeOperationValue(value[0], type)} AND ${normalizeOperationValue(value[1], type)}`,

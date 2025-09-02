@@ -1,3 +1,7 @@
 export default defineNuxtConfig({
-  extends: ['@hubify/app']
+  extends: ['@hubify/app'],
+
+  hubify: {
+    schema: ['./schemas']
+  }
 })
