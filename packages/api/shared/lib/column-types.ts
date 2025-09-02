@@ -1,3 +1,4 @@
+import schema from '#hubify/schema'
 import type { TableColumn, Operator } from '@hubify/restql'
 import { OPERATORS } from '@hubify/restql/utils/helpers'
 import z from 'zod'
@@ -88,4 +89,18 @@ function expectsArrayValue(operator: Operator) {
  */
 function expectsBooleanValue(operator: Operator) {
   return ['$null', '$nnull'].includes(operator)
+}
+
+/**
+ * Check if a column is a one-to-many relation.
+ */
+export function isOneToManyRelation<T extends TableNames, R extends TableRelationNames<T>>(table: T, relation: R) {
+  return 'relations' in schema[table] && relation in schema[table].relations && (relation in schema[table].columns)
+}
+
+/**
+ * Check if a column is a many-to-one relation.
+ */
+export function isManyToOneRelation<T extends TableNames, R extends TableRelationNames<T>>(table: T, relation: R) {
+  return 'relations' in schema[table] && relation in schema[table].relations && !(relation in schema[table].columns)
 }

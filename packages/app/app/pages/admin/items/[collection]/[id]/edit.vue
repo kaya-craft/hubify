@@ -1,4 +1,6 @@
 <script setup lang="ts" generic="T extends TableNames">
+import { isManyToOneRelation } from '@hubify/api/lib/column-types'
+
 interface Props {
   collection: T
   id: TablePrimaryKeyValue<T>
@@ -79,11 +81,15 @@ async function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
     />
   </UCard>
 
-  <CollectionTableRelation
+  <template
     v-for="(relation, relationName) in relations"
-    :id="id"
     :key="relation.table"
-    :collection="collection"
-    :relation="relationName"
-  />
+  >
+    <CollectionTableRelation
+      v-if="isManyToOneRelation(collection, relationName)"
+      :id="id"
+      :collection="collection"
+      :relation="relationName"
+    />
+  </template>
 </template>

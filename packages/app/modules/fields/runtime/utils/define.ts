@@ -24,7 +24,7 @@ export function defineFieldDataTypes(..._dataTypes: ColumnTypes[]) {
 }
 
 export type Input = {
-  component: string
+  component?: string
   props?: Record<string, any>
   class?: string
   label?: string

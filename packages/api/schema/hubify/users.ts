@@ -22,6 +22,7 @@ export const columns = defineTableColumns({
     type: 'text',
     notNull: false
   },
+
   /**
    * Firstname of the user.
    */
@@ -29,6 +30,7 @@ export const columns = defineTableColumns({
     type: 'text',
     notNull: false
   },
+
   /**
    * Lastname of the user.
    */
@@ -37,6 +39,9 @@ export const columns = defineTableColumns({
     notNull: false
   },
 
+  /**
+   * Role of the user.
+   */
   role: {
     type: 'integer',
     notNull: false

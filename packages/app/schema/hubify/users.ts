@@ -37,6 +37,11 @@ export const fields = defineFieldOptions(columns, {
       }
     }
   },
+  role: {
+    input: {
+      class: 'col-span-6'
+    }
+  },
   createdAt: false,
   updatedAt: false
 })
