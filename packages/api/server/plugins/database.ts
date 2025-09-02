@@ -1,9 +1,9 @@
 import type { Schema } from '@hubify/restql'
-
+import type { NitroApp } from 'nitropack'
 /**
  * Update schema upon modification.
  */
-export default defineNitroPlugin(async () => {
+export default defineNitroPlugin(async (nitroApp) => {
   const { schema, updateSchema, retrieveSchema } = useDb()
 
   const currentSchema = await retrieveSchema()
@@ -13,7 +13,38 @@ export default defineNitroPlugin(async () => {
   if (needsInitialSeed(currentSchema)) {
     await seedDatabase()
   }
+
+  await updateHubifyCollections(nitroApp)
 })
+
+/**
+ * Update Hubify collections based on the current schema.
+ * @returns {Promise<void>}
+ */
+async function updateHubifyCollections(nitroApp: NitroApp) {
+  const { schema, find } = useDb()
+
+  const collections = await find('hubify_collections', {
+    columns: ['name'],
+    where: {
+      name: {
+        $nstartsWith: 'hubify_'
+      }
+    }
+  })
+
+  const collectionsNames = collections.map(c => c.name)
+
+  const schemaTablesNames = Object.keys(schema).filter(t => !t.startsWith('hubify_'))
+
+  const diff = schemaTablesNames.filter(name => !collectionsNames.includes(name))
+
+  if (diff.length === 0) return
+
+  for await (const table of diff) {
+    await nitroApp.hooks.callHook('hubify:table:created', { table })
+  }
+}
 
 /**
  * Check if the database needs initial seeding.
