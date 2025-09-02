@@ -18,11 +18,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hubify/restql": "workspace:*",
     "@nuxt/kit": "^4.0.0",
     "@simplewebauthn/browser": "^11.0.0",
     "@simplewebauthn/server": "^11.0.0",
     "crossws": "^0.4.1",
+    "knex": "^3.1.0",
     "nuxt": "catalog:",
     "nuxt-auth-utils": "0.5.20",
     "vue": "catalog:",
