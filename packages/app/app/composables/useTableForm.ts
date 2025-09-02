@@ -102,7 +102,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
 
       const id = toValue(primaryKeyValue)
 
-      if (typeof id !== 'undefined') {
+      if (!isUndefined(id)) {
         await save(event.data, String(id))
       }
       else {

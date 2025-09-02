@@ -17,26 +17,19 @@ const { canCreate } = useTable(collection)
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">
-          {{ collection }}
-        </h2>
-        <UButton
-          v-if="canCreate()"
-          :to="localeRoute({ name: 'admin-items-collection-create', params: { collection } })"
-          variant="soft"
-          color="secondary"
-          leading-icon="heroicons:plus"
-        >
-          {{ t('app.admin.items.create') }}
-        </UButton>
-      </div>
+  <CollectionTable
+    :collection
+  >
+    <template #append-header>
+      <UButton
+        v-if="canCreate()"
+        :to="localeRoute({ name: 'admin-items-collection-create', params: { collection } })"
+        variant="soft"
+        color="secondary"
+        leading-icon="heroicons:plus"
+      >
+        {{ t('app.admin.items.create') }}
+      </UButton>
     </template>
-
-    <CollectionTable
-      :collection
-    />
-  </UCard>
+  </CollectionTable>
 </template>

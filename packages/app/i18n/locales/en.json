@@ -79,5 +79,8 @@
   "app.admin.filters.select-a-date": "Select a date",
   "app.admin.filters.min": "Min",
   "app.admin.filters.max": "Max",
-  "app.admin.filters.select-a-date-range": "Select a date range"
+  "app.admin.filters.select-a-date-range": "Select a date range",
+  "app.admin.items.attach-items": "Attach {name}",
+  "app.admin.form.cancel": "Cancel",
+  "app.admin.items.detatch-items": "Detach {name}"
 }

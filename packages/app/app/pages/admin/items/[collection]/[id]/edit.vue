@@ -1,13 +1,21 @@
-<script setup lang="ts" generic="T extends TableNames, I extends TablePrimaryKey<T>">
+<script setup lang="ts" generic="T extends TableNames">
+import { isManyToOneRelation } from '@hubify/api/lib/column-types'
+
 interface Props {
   collection: T
-  id: I
+  id: TablePrimaryKeyValue<T>
 }
 
 const { id, collection } = defineProps<Props>()
 
+/**
+ * Fetch the item to edit.
+ */
 const { data: item } = await useFetch('/api/items/' + collection + '/' + id)
 
+/**
+ * If the item does not exist, throw a 404 error.
+ */
 if (!toValue(item)) {
   throw createError({
     statusCode: 404,
@@ -15,20 +23,35 @@ if (!toValue(item)) {
   })
 }
 
+/**
+ * Translation.
+ */
 const { t } = useI18n()
 
+/**
+ * Locale path instance.
+ */
 const localePath = useLocalePath()
 
+/**
+ * Back route to the collection items list.
+ */
 const backRoute = localePath({
   name: 'admin-items-collection',
   params: { collection: collection }
 })
 
-const router = useRouter()
+/**
+ * Table composable.
+ */
+const { relations } = useTable(collection)
 
-function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
+/**
+ * Handle form success event.
+ */
+async function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
   if (!stay && backRoute) {
-    router.push(backRoute)
+    await navigateTo(backRoute)
   }
 }
 </script>
@@ -54,8 +77,19 @@ function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
       v-if="item"
       :collection
       :initial-state="item"
-      type="update"
       @success="onSuccess"
     />
   </UCard>
+
+  <template
+    v-for="(relation, relationName) in relations"
+    :key="relation.table"
+  >
+    <CollectionTableRelation
+      v-if="isManyToOneRelation(collection, relationName)"
+      :id="id"
+      :collection="collection"
+      :relation="relationName"
+    />
+  </template>
 </template>
