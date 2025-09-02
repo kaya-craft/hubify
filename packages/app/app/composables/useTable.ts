@@ -3,8 +3,7 @@ import registeredInputs from '#hubify/inputs'
 import tables from '#hubify/schema'
 import { getPrimaryKey } from '@hubify/restql/utils/helpers'
 import type { AsyncComponentLoader } from 'vue'
-import { InputsText, DisplaysText } from '#components'
-import OneToMany from '~/components/inputs/one-to-many.vue'
+import { InputsText, DisplaysText, InputsOneToMany } from '#components'
 import { isOneToManyRelation } from '@hubify/api/lib/column-types'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
@@ -164,7 +163,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (!input?.component) {
       if (isOneToManyRelation(toValue(tableName), column)) {
-        return h(OneToMany, {
+        return h(InputsOneToMany, {
           class: input?.class,
           collection: toValue(tableName),
           relation: column
