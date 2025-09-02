@@ -49,11 +49,11 @@ export function defineDriver<R extends DriverOptions, S extends Schema>(create: 
     }
 
     const update = <T extends TableName<S>, const P extends QueryParams<S, T>>(table: T, item: Partial<Item<S, T, P['columns']>>, params?: P) => {
-      return exec<Item<S, T, P['columns']>>(updateRaw(table, item, params || {}))
+      return exec<Item<S, T, P['columns']>[]>(updateRaw(table, item, params || {}))
     }
 
     const updateOne = <T extends TableName<S>, const K extends PrimaryKeyValue<S, T>, const P extends QueryParams<S, T>>(table: T, primaryKey: K, item: Partial<Item<S, T, P['columns']>>, params?: P) => {
-      return exec<Item<S, T, P['columns']> | null>(updateOneRaw(table, primaryKey, item, params || {}))
+      return exec<Item<S, T, P['columns']>[]>(updateOneRaw(table, primaryKey, item, params || {})).then(rows => rows[0])
     }
 
     const createOne = <T extends TableName<S>>(table: T, item: Partial<Item<S, T>>) => {
@@ -61,11 +61,11 @@ export function defineDriver<R extends DriverOptions, S extends Schema>(create: 
     }
 
     const remove = <T extends TableName<S>, const P extends QueryParams<S, T>>(table: T, params: P) => {
-      return exec<Item<S, T>[]>(removeRaw(table, params))
+      return exec<Item<S, T>[]>(removeRaw(table, params)).then(rows => rows as PrimaryKeyValue<S, T>[])
     }
 
     const removeOne = <T extends TableName<S>, const K extends PrimaryKeyValue<S, T>, const P extends QueryParams<S, T>>(table: T, primaryKey: K, params?: P) => {
-      return exec<Item<S, T> | null>(removeOneRaw(table, primaryKey, params || {}))
+      return exec<Item<S, T>[]>(removeOneRaw(table, primaryKey, params || {})).then(rows => rows[0] as PrimaryKeyValue<S, T>)
     }
 
     const setDatabase = (newDb: Database) => {

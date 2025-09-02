@@ -1,7 +1,7 @@
 import type { TableName } from '@hubify/restql'
 import z from 'zod'
 import tables from '#hubify/schema'
-import { columnTypeToOperators, columnValidation } from './column-types'
+import { columnTypeToOperators, columnTypeToZod, columnValidation } from './column-types'
 
 /**
  * Special validation for the `where` clause in query parameters.
@@ -37,6 +37,33 @@ export function whereValidation<T extends TableName<Schema>>(
 }
 
 /**
+ * Item validation.
+ */
+export function itemValidation<T extends TableNames>(collection: T, options: ItemValidationOptions = {}) {
+  const columns = tables[collection].columns
+
+  const columnSchemas = Object.fromEntries(
+    Object.entries(columns).map(([name, column]) => {
+      if (!options.includePrimaryKey && column.primaryKey) return
+
+      const rule = columnTypeToZod(column)
+
+      if (!column.notNull) {
+        return [name, rule.optional().nullable()]
+      }
+
+      if (options.optional || column.default) {
+        return [name, rule.optional()]
+      }
+
+      return [name, rule]
+    }).filter(isNonNullish)
+  )
+
+  return z.strictObject(columnSchemas)
+}
+
+/**
  * Helper function to convert an array to a Zod schema that validates as an array of enums.
  */
 export function asEnumArray<T extends string>(arr: T[]) {
@@ -64,4 +91,9 @@ export function asNonEmptyObject(value: Record<string, unknown>) {
 export function asNonEmptyArray(value: unknown[]) {
   const newValue = value.filter(isNotEmpty)
   return newValue.length > 0 ? newValue : undefined
+}
+
+interface ItemValidationOptions {
+  optional?: boolean
+  includePrimaryKey?: boolean
 }

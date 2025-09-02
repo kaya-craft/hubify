@@ -11,12 +11,12 @@ export default defineEventHandler(async (event) => {
 
   const { removeOne } = useDb()
 
-  await removeOne(collection, id, params)
+  return removeOne(collection, id, params).then((id) => {
+    emitMessage(event, {
+      type: 'items:deleted',
+      data: { collection, id }
+    })
 
-  emitMessage(event, {
-    type: 'items:deleted',
-    data: { collection, id }
+    return id
   })
-
-  return id
 })

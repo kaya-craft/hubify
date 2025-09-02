@@ -1,10 +1,10 @@
 import type { Trim } from 'type-fest'
 import type { CleanJoin } from '@/types/helpers'
 import type { ConditionTree } from '@/types/params'
-import type { FieldName, PrimaryKeyValue, Schema, TableName } from '@/types/schema'
+import type { FieldName, PrimaryKey, PrimaryKeyValue, Schema, TableName } from '@/types/schema'
 import type { Item, WhereWithPrimaryKey } from '@/utils/helpers'
 import type { From, GroupBy, Insert, Joins, Limit, Offset, OrderBy, Remove, Returning, Select, Set, Update, Values, Where } from '@/utils/statements'
-import { addPrimaryKeyCondition, join, trim } from '@/utils/helpers'
+import { addPrimaryKeyCondition, getPrimaryKey, join, trim } from '@/utils/helpers'
 import { from, groupBy, insert, joins, limit, offset, orderBy, remove, returning, select, set, update, values, where } from '@/utils/statements'
 
 /**
@@ -48,7 +48,8 @@ export function removeRaw<const S extends Schema>(schema: S) {
   return <T extends TableName<S>, const P extends RemoveParams<S, T>>(table: T, params: P) => {
     return trim(join([
       remove(table),
-      where(schema, table, params.where as P['where'])
+      where(schema, table, params.where as P['where']),
+      returning(getPrimaryKey(schema, table))
     ], ' ')) as RemoveRaw<S, T, P>
   }
 }
@@ -62,7 +63,8 @@ export function removeOneRaw<const S extends Schema>(schema: S) {
 
     return trim(join([
       remove(table),
-      where(schema, table, whereClause)
+      where(schema, table, whereClause),
+      returning(getPrimaryKey(schema, table))
     ], ' ')) as RemoveOneRaw<S, T, K, P>
   }
 }
@@ -74,8 +76,9 @@ export function updateRaw<const S extends Schema>(schema: S) {
   return <T extends TableName<S>, const I extends Partial<Item<S, T>>, const P extends UpdateParams<S, T>>(table: T, item: I, params: P) => {
     return trim(join([
       update(table),
-      set(item),
-      where(schema, table, params.where as P['where'])
+      set(schema, table, item),
+      where(schema, table, params.where as P['where']),
+      returning('*')
     ], ' ')) as UpdateRaw<S, T, I, P>
   }
 }
@@ -89,8 +92,9 @@ export function updateOneRaw<const S extends Schema>(schema: S) {
 
     return trim(join([
       update(table),
-      set(item),
-      where(schema, table, whereClause)
+      set(schema, table, item),
+      where(schema, table, whereClause),
+      returning('*')
     ], ' ')) as UpdateOneRaw<S, T, K, I, P>
   }
 }
@@ -98,11 +102,11 @@ export function updateOneRaw<const S extends Schema>(schema: S) {
 /**
  * Write a SQL query to create a single record in a table.
  */
-export function createOneRaw<const S extends Schema>(_schema: S) {
+export function createOneRaw<const S extends Schema>(schema: S) {
   return <T extends TableName<S>, const I extends Partial<Item<S, T>>>(table: T, item: I) => {
     return trim(join([
       insert(table),
-      values(item),
+      values(schema, table, item),
       returning('*')
     ], ' ')) as CreateOneRaw<S, T, I>
   }
@@ -173,23 +177,27 @@ export type CreateOneRaw<S extends Schema, T extends TableName<S>, I extends Par
 export type UpdateOneRaw<S extends Schema, T extends TableName<S>, K extends PrimaryKeyValue<S, T>, I extends Partial<Item<S, T>>, P extends UpdateOneParams<S, T>> = Trim<CleanJoin<[
   Update<T>,
   Set<S, T, I>,
-  Where<S, T, WhereWithPrimaryKey<S, T, K, P>>
+  Where<S, T, WhereWithPrimaryKey<S, T, K, P>>,
+  Returning<['*']>
 ], ' '>>
 
 export type UpdateRaw<S extends Schema, T extends TableName<S>, I extends Partial<Item<S, T>>, P extends UpdateParams<S, T>> = Trim<CleanJoin<[
   Update<T>,
   Set<S, T, I>,
-  Where<S, T, P['where']>
+  Where<S, T, P['where']>,
+  Returning<['*']>
 ], ' '>>
 
 export type RemoveRaw<S extends Schema, T extends TableName<S>, P extends RemoveParams<S, T>> = Trim<CleanJoin<[
   Remove<T>,
-  Where<S, T, P['where']>
+  Where<S, T, P['where']>,
+  Returning<[PrimaryKey<S, T>]>
 ], ' '>>
 
 export type RemoveOneRaw<S extends Schema, T extends TableName<S>, K extends PrimaryKeyValue<S, T>, P extends RemoveOneParams<S, T>> = Trim<CleanJoin<[
   Remove<T>,
-  Where<S, T, WhereWithPrimaryKey<S, T, K, P>>
+  Where<S, T, WhereWithPrimaryKey<S, T, K, P>>,
+  Returning<[PrimaryKey<S, T>]>
 ], ' '>>
 
 export type FindRaw<S extends Schema, T extends TableName<S>, P extends FindParams<S, T>> = Trim<CleanJoin<[

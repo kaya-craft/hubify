@@ -8,5 +8,14 @@ export default defineEventHandler(async (event) => {
 
   const { remove } = useDb()
 
-  return remove(collection, params)
+  return remove(collection, params).then((ids) => {
+    for (const id of ids) {
+      emitMessage(event, {
+        type: 'items:deleted',
+        data: { collection, id }
+      })
+    }
+
+    return ids
+  })
 })

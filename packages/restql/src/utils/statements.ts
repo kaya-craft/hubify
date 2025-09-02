@@ -56,7 +56,7 @@ function defineTableColumn<N extends string, C extends TableColumn, R extends Ta
     column.primaryKey ? 'PRIMARY KEY' : '',
     column.unique ? 'UNIQUE' : '',
     column.notNull ? 'NOT NULL' : '',
-    typeof column.default !== 'undefined' ? `DEFAULT ${column.default}` : '',
+    typeof column.default !== 'undefined' ? `DEFAULT ${normalizeOperationValue(name, column.type)}` : '',
     relation ? `REFERENCES ${relation.table}(${relation.toKey}) ON DELETE ${relation.onDelete || 'NO ACTION'} ON UPDATE ${relation.onUpdate || 'NO ACTION'}` : ''
   ].filter(Boolean).join(' ')
 
@@ -108,15 +108,19 @@ export function dropTable<N extends string>(table: N): DropTable<N> {
 /**
  * SQL Values statement for the specified item.
  */
-export function values<S extends Schema, T extends TableName<S>, I extends Partial<Item<S, T>>>(item: I): Values<S, T, I> {
-  return `(${join(Object.keys(item), ', ')}) VALUES (${join(Object.values(item).map(normalizeOperationValue), ', ')})` as Values<S, T, I>
+export function values<S extends Schema, T extends TableName<S>, I extends Partial<Item<S, T>>>(schema: S, table: T, item: I): Values<S, T, I> {
+  return `(${join(Object.keys(item), ', ')}) VALUES (${join(Object.entries(item).map(([column, value]) => {
+    return normalizeOperationValue(value, schema[table].columns[column]?.type)
+  }), ', ')})` as Values<S, T, I>
 }
 
 /**
  * SQL Set statement for the specified table and item.
  */
-export function set<S extends Schema, T extends TableName<S>, I extends Partial<Item<S, T>>>(item: I): Set<S, T, I> {
-  return `SET ${join(Object.entries(item).map(([key, value]) => `${wrap(key)} = ${normalizeOperationValue(value)}`), ', ')}` as Set<S, T, I>
+export function set<S extends Schema, T extends TableName<S>, I extends Partial<Item<S, T>>>(schema: S, table: T, item: I): Set<S, T, I> {
+  return `SET ${join(Object.entries(item).map(([column, value]) => {
+    return `${wrap(column)} = ${normalizeOperationValue(value, schema[table].columns[column]?.type)}`
+  }), ', ')}` as Set<S, T, I>
 }
 
 /**
@@ -171,11 +175,11 @@ export function where<S extends Schema, T extends TableName<S>, W extends QueryP
 /**
  * SQL Returning statement for the specified columns.
  */
-export function returning<C extends string[]>(...columns: C): `RETURNING ${CleanJoin<C>}` {
+export function returning<C extends unknown[]>(...columns: C): `RETURNING ${CleanJoin<C>}` {
   return `RETURNING ${columns.join(', ')}` as Returning<C>
 }
 
-export type Returning<C extends string[]> = `RETURNING ${CleanJoin<C>}`
+export type Returning<C extends unknown[]> = `RETURNING ${CleanJoin<C>}`
 
 export type Insert<T extends TableName<Schema>> = `INSERT INTO ${Wrap<T>}`
 

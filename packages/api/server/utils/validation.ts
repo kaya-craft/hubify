@@ -1,8 +1,9 @@
 import z from 'zod'
 import tables from '#hubify/schema'
-import type { ColumnName, TableColumn, TableName } from '@hubify/restql'
-import { asEnumArray, asObject, whereValidation } from '@hubify/api/lib/validation'
+import type { ColumnName, TableName } from '@hubify/restql'
+import { asEnumArray, asObject, itemValidation, whereValidation } from '@hubify/api/lib/validation'
 import { columnTypeToZod } from '@hubify/api/lib/column-types'
+import type { TableItem } from '~/modules/schema/runtime/utils/define'
 
 /**
  * Validates the router parameters for a collection and returns the collection name.
@@ -48,27 +49,47 @@ export async function ensureValidQueryParams(
 }
 
 /**
- * Validates the item for a collection and returns the validated item.
+ * Validates an input item for a collection and returns the validated item.
  */
-export async function ensureValidItem(
-  collection: TableName<typeof tables>,
+export async function ensureValidInputItem<T extends TableNames>(
+  collection: T,
   optional = false,
   event = useEvent()
 ) {
-  const columnNames = Object.entries(tables[collection].columns)
-    .filter(([_, col]) => !col.primaryKey)
-    .map(([key]) => key) as ColumnName<typeof tables, typeof collection>[]
+  const validateItem = itemValidation(collection, {
+    includePrimaryKey: false,
+    optional
+  })
 
-  const columnSchemas = Object.fromEntries(
-    columnNames.map((name) => {
-      const column = tables[collection].columns[name] as TableColumn
-      const rule = columnTypeToZod(tables[collection].columns[name])
-      if (optional || column.default || !column.notNull) {
-        return [name, rule.optional()]
-      }
-      return [name, rule]
-    })
-  )
+  return await readValidatedBody(event, validateItem.parse)
+}
 
-  return await readValidatedBody(event, z.object(columnSchemas).parse)
+/**
+ * Validates an output item for a collection and returns the validated item.
+ */
+export async function ensureValidOutputItem<T extends TableNames, I extends TableItem<T>>(
+  collection: T,
+  item: Partial<I> | Promise<Partial<I>>
+) {
+  const validateItem = itemValidation(collection, {
+    includePrimaryKey: true,
+    optional: true
+  })
+
+  return validateItem.parse(await item) as I
+}
+
+/**
+ * Validates many output items for a collection and returns the validated items.
+ */
+export async function ensureValidOutputItems<T extends TableNames, I extends TableItem<T>>(
+  collection: T,
+  items: Partial<I>[] | Promise<Partial<I>[]>
+) {
+  const validateItem = itemValidation(collection, {
+    includePrimaryKey: true,
+    optional: true
+  })
+
+  return (await items).map(item => validateItem.parse(item)) as I[]
 }
