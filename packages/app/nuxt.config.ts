@@ -38,6 +38,12 @@ export default defineNuxtConfig({
     typedPages: true
   },
 
+  vite: {
+    optimizeDeps: {
+      exclude: ['@nuxt/ui/utils/tv']
+    }
+  },
+
   hubify: {
     inputs: [resolve(__dirname, 'app/components/inputs')],
     displays: [resolve(__dirname, 'app/components/displays')],

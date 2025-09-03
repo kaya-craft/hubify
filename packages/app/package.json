@@ -33,6 +33,7 @@
     "@vueuse/integrations": "^13.6.0",
     "@vueuse/nuxt": "^13.5.0",
     "@vueuse/router": "^13.6.0",
+    "@yaireo/tagify": "^4.35.4",
     "nuxt": "catalog:",
     "tailwindcss": "^4.1.11",
     "vue": "catalog:",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@atlaskit/pragmatic-drag-and-drop-unit-testing": "^1.1.1",
     "@nuxt/test-utils": "catalog:",
+    "@types/yaireo__tagify": "^4.27.0",
     "@vitest/browser": "^3.2.4",
     "@vue/server-renderer": "^3.5.20",
     "playwright": "^1.55.0",
