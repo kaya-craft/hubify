@@ -19,12 +19,12 @@
   },
   "dependencies": {
     "@hubify/restql": "workspace:*",
-    "@nuxt/kit": "^4.0.0",
-    "@simplewebauthn/browser": "^11.0.0",
-    "@simplewebauthn/server": "^11.0.0",
+    "@nuxt/kit": "^4.1.0",
+    "@simplewebauthn/browser": "^13.1.2",
+    "@simplewebauthn/server": "^13.1.2",
     "crossws": "^0.4.1",
     "nuxt": "catalog:",
-    "nuxt-auth-utils": "0.5.20",
+    "nuxt-auth-utils": "0.5.23",
     "vue": "catalog:",
     "vue-router": "catalog:",
     "zod": "catalog:"

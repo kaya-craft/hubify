@@ -4,7 +4,7 @@ import { tv } from '@nuxt/ui/utils/tv'
 import themeInput from '#build/ui/input'
 import type { AppConfig } from '@nuxt/schema'
 import Tagify from '@yaireo/tagify'
-import { Icon, UBadge, UTextarea } from '#components'
+import { Icon, UBadge } from '#components'
 import { render } from 'vue'
 
 type Input = ComponentConfig<typeof themeInput, AppConfig, 'input'>
@@ -69,7 +69,6 @@ const nuxt = useNuxtApp()
  */
 function initialize() {
   if (!input.value) return
-  console.log('initializing')
   destroy()
 
   instance.value = new Tagify(input.value, {
@@ -103,9 +102,10 @@ function initialize() {
 
   instance.value.on('dropdown:show', showSelect)
   instance.value.on('dropdown:hide', hideSelect)
-  instance.value.on('input', updateValue)
   instance.value.on('remove', updateValue)
   instance.value.on('add', updateValue)
+  instance.value.on('input', updateValue)
+  instance.value.on('blur', updateValue)
   instance.value.loadOriginalValues(value.value || '')
 }
 
@@ -114,7 +114,8 @@ function initialize() {
  */
 function renderBadge(content: string) {
   const vNode = h(UBadge, {
-    'class': 'tag select-none',
+    'class': 'tag pointer-events-none',
+    'contenteditable': false,
     'data-tag': true,
     'as': 'tag',
     'size': props.size,
@@ -124,7 +125,7 @@ function renderBadge(content: string) {
     default: () => content,
     trailing: () => h(Icon, {
       'name': 'heroicons:x-mark',
-      'class': 'cursor-pointer',
+      'class': 'cursor-pointer pointer-events-auto',
       'data-tag-remove': true
     })
   })
@@ -152,7 +153,6 @@ function hideSelect() {
  * Update the value.
  */
 function updateValue() {
-  console.log('updated')
   value.value = instance.value?.getMixedTagsAsString()
 }
 
@@ -193,6 +193,7 @@ function destroy() {
 }
 
 useEventListener('click', onClick)
+
 onBeforeUnmount(destroy)
 watch(input, initialize, { immediate: true })
 
@@ -202,10 +203,10 @@ defineOptions({
 </script>
 
 <template>
-  <textarea
-    ref="input"
-  />
   <ClientOnly>
+    <input
+      ref="input"
+    >
     <USelect
       v-if="displaySelect"
       :items="variables"
@@ -215,8 +216,9 @@ defineOptions({
       @update:model-value="onSelect"
     />
     <template #placeholder>
-      <UTextarea
-        :model-value="value"
+      <UInput
+        loading
+        disabled
         v-bind="$attrs"
       />
     </template>
@@ -224,7 +226,7 @@ defineOptions({
 </template>
 
 <style scoped>
-tags + textarea {
+tags + input {
   display: none;
 }
 </style>
