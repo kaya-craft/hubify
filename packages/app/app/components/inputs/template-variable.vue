@@ -125,7 +125,8 @@ function renderBadge(content: string) {
     default: () => content,
     trailing: () => h(Icon, {
       'name': 'heroicons:x-mark',
-      'class': 'cursor-pointer pointer-events-auto',
+      'data-testid': 'template-variable-tag-remove',
+      'class': 'cursor-pointer pointer-events-auto size-2',
       'data-tag-remove': true
     })
   })
@@ -206,11 +207,13 @@ defineOptions({
   <ClientOnly>
     <input
       ref="input"
+      data-testid="template-variable-input"
     >
     <USelect
       v-if="displaySelect"
       :items="variables"
       default-open
+      data-testid="template-variable-select"
       :ui="{ base: 'invisible h-0 overflow-hidden p-0 w-full -mt-2', content: '-mt-4' }"
       @blur="hideSelect"
       @update:model-value="onSelect"
