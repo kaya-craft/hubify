@@ -1,10 +1,10 @@
 <script setup lang="ts" generic="T extends Record<string, unknown>, K extends KeyContainingCollection<T>">
-export type KeyContainingCollection<T> = {
+export type KeyContainingCollection<T> = string | {
   [K in keyof T]: T[K] extends TableNames ? K : never
 }[keyof T]
 
 type Props = {
-  state: T
+  state?: T
   collectionKey: K
   collection?: never
 } | {
@@ -14,8 +14,6 @@ type Props = {
 }
 
 const value = defineModel<string>()
-
-defineFieldDataTypes('text', 'varchar')
 
 const { collectionKey, state, collection } = defineProps<Props>()
 
@@ -30,6 +28,8 @@ const collectionName = computed(() => {
  * Composable to interact with collections
  */
 const { columnNames } = useTable(collectionName)
+
+defineFieldDataTypes('text', 'varchar')
 </script>
 
 <template>

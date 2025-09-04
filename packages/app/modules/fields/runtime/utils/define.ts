@@ -59,18 +59,21 @@ export type TableFieldOptionValue<T extends TableNames, C extends TableColumnNam
 
 type ComponentProps<C extends Component> = C extends new (...args: any) => any
   ? Omit<InstanceType<C>['$props'], keyof VNodeProps | keyof AllowedComponentProps>
-  : never
+  : C extends (...args: any) => any ? NonNullable<ReturnType<C>['__ctx']>['props'] : never
 
 export type ComponentDataTypes<C extends Component> = C extends new (...args: any) => any
   ? InstanceType<C>['dataTypes'] extends readonly (infer T)[]
     ? T
     : never
-  : never
+  : C extends (...args: any) => any
+    ? Parameters<NonNullable<ReturnType<C>['__ctx']>['expose']>[0] extends { dataTypes: readonly (infer T)[] }
+      ? T
+      : never
+    : never
 
 type InputComponents = {
   [K in keyof typeof import('#hubify/inputs').default]: typeof import('#hubify/inputs').default[K] extends () => Promise<infer C extends Component> ? C : never
 }
-
 type DisplayComponents = {
   [K in keyof typeof import('#hubify/displays').default]: typeof import('#hubify/displays').default[K] extends () => Promise<infer C extends Component> ? C : never
 }
