@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends AcceptableValue = AcceptableValue">
-import type { AcceptableValue, ComponentConfig, InputProps } from '@nuxt/ui'
+import type { AcceptableValue, BadgeProps, ComponentConfig, InputProps } from '@nuxt/ui'
 import { tv } from '@nuxt/ui/utils/tv'
 import themeInput from '#build/ui/input'
 import type { AppConfig } from '@nuxt/schema'
@@ -11,6 +11,7 @@ type Input = ComponentConfig<typeof themeInput, AppConfig, 'input'>
 
 interface Props extends /* @vue-ignore */ InputProps {
   variables?: string[]
+  variant?: InputProps['variant'] & BadgeProps['variant']
 }
 
 const value = defineModel<string>()
@@ -68,7 +69,7 @@ const nuxt = useNuxtApp()
  */
 function initialize() {
   if (!input.value) return
-
+  console.log('initializing')
   destroy()
 
   instance.value = new Tagify(input.value, {
@@ -115,7 +116,10 @@ function renderBadge(content: string) {
   const vNode = h(UBadge, {
     'class': 'tag select-none',
     'data-tag': true,
-    'as': 'tag'
+    'as': 'tag',
+    'size': props.size,
+    'color': props.color,
+    'variant': props.variant
   }, {
     default: () => content,
     trailing: () => h(Icon, {
@@ -190,7 +194,7 @@ function destroy() {
 
 useEventListener('click', onClick)
 onBeforeUnmount(destroy)
-watch(() => input.value, initialize, { immediate: true })
+watch(input, initialize, { immediate: true })
 
 defineOptions({
   inheritAttrs: false
@@ -198,10 +202,10 @@ defineOptions({
 </script>
 
 <template>
+  <textarea
+    ref="input"
+  />
   <ClientOnly>
-    <textarea
-      ref="input"
-    />
     <USelect
       v-if="displaySelect"
       :items="variables"

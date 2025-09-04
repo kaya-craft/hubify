@@ -39,7 +39,7 @@ export const fields = defineFieldOptions(columns, {
   },
   displayTemplate: {
     input: {
-      component: 'system-collection-display',
+      component: '',
       label: 'Display Template',
       class: 'col-span-6',
       props: { collectionKey: 'name' }
