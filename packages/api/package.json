@@ -21,16 +21,21 @@
     "@nuxt/kit": "^4.0.0",
     "@simplewebauthn/browser": "^11.0.0",
     "@simplewebauthn/server": "^11.0.0",
+    "better-sqlite3": "^12.2.0",
     "crossws": "^0.4.1",
+    "inflection": "^3.0.2",
     "knex": "^3.1.0",
+    "knex-schema-inspector": "^3.1.0",
     "nuxt": "catalog:",
     "nuxt-auth-utils": "0.5.20",
+    "pluralize": "^8.0.0",
     "vue": "catalog:",
     "vue-router": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@nuxt/test-utils": "catalog:",
+    "@types/knex": "^0.16.1",
     "vitest": "catalog:"
   }
 }

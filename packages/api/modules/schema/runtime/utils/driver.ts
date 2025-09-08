@@ -1,7 +1,5 @@
-import createDriver from '@hubify/restql/drivers/sqlite'
-import schema from '#hubify/schema'
+import { createDatabaseInstance } from '../../utils/database'
 
-const db = createDriver(schema)
-db.setDatabase(useDatabase('hubify'))
+const instance = createDatabaseInstance(useRuntimeConfig().hubify?.db)
 
-export const useDb = () => db
+export const useDatabase = () => instance

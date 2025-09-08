@@ -1,78 +1,14 @@
-export const columns = defineTableColumns({
-  /**
-   * Primary key for the table.
-   */
-  id: {
-    type: 'integer',
-    primaryKey: true
-  },
-  /**
-   * Email address of the user.
-   * This must be unique across all users.
-   */
-  email: {
-    type: 'text',
-    unique: true,
-    notNull: true
-  },
-  /**
-   * Password for the user account.
-   */
-  password: {
-    type: 'text',
-    notNull: false
-  },
-
-  /**
-   * Firstname of the user.
-   */
-  firstname: {
-    type: 'text',
-    notNull: false
-  },
-
-  /**
-   * Lastname of the user.
-   */
-  lastname: {
-    type: 'text',
-    notNull: false
-  },
-
-  /**
-   * Role of the user.
-   */
-  role: {
-    type: 'integer',
-    notNull: false
-  },
-
-  /**
-   * Timestamp when the user was created.
-   */
-  createdAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
-  },
-  /**
-   * Timestamp when the user was last updated.
-   * This is automatically set to the current timestamp when the record is updated.
-   */
-  updatedAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
-  }
-})
-
 /**
- * Define relationships between tables.
+ * Migration for creating the `hubify_users` table.
  */
-export const relations = defineTableRelations({
-  role: {
-    fromKey: 'id',
-    toKey: 'id',
-    table: 'hubify_roles',
-    onDelete: 'SET NULL',
-    onUpdate: 'CASCADE'
-  }
+
+export default defineTable((table, knex) => {
+  table.increments('id').primary()
+  table.text('email').notNullable().unique()
+  table.text('password').nullable()
+  table.text('firstname').nullable()
+  table.text('lastname').nullable()
+  table.integer('role').unsigned().references('id').inTable('hubify_roles').onDelete('SET NULL').onUpdate('CASCADE').nullable()
+  table.timestamp('createdAt').defaultTo(knex.fn.now())
+  table.timestamp('updatedAt').defaultTo(knex.fn.now())
 })

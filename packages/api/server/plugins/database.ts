@@ -1,16 +1,11 @@
-import type { Schema } from '@hubify/restql'
 import type { NitroApp } from 'nitropack'
+import schema from '#hubify/schema'
+
 /**
  * Update schema upon modification.
  */
 export default defineNitroPlugin(async (nitroApp) => {
-  const { schema, updateSchema, retrieveSchema } = useDb()
-
-  const currentSchema = await retrieveSchema()
-
-  await updateSchema(schema)
-
-  if (needsInitialSeed(currentSchema)) {
+  if (needsInitialSeed(schema)) {
     await seedDatabase()
   }
 
@@ -19,10 +14,9 @@ export default defineNitroPlugin(async (nitroApp) => {
 
 /**
  * Update Hubify collections based on the current schema.
- * @returns {Promise<void>}
  */
 async function updateHubifyCollections(nitroApp: NitroApp) {
-  const { schema, find } = useDb()
+  const { find } = useDatabase()
 
   const collections = await find('hubify_collections', {
     columns: ['name'],
@@ -61,22 +55,24 @@ function needsInitialSeed(currentSchema: Schema | null) {
  * Seed the database with initial data.
  */
 async function seedDatabase() {
-  const db = useDb()
+  const { db } = useDatabase()
 
   try {
     await db.transaction(async () => {
-      const role = await db.createOne('hubify_roles', {
+      const role = await db('hubify_roles').insert({
         name: 'Administrator',
         admin: true,
         description: 'Full access to the system',
         icon: 'heroicons:shield-check'
-      }) as TableItem<'hubify_roles'>
+      }).first()
 
-      await db.createOne('hubify_users', {
+      if (!role) throw new Error('Failed to create the Administrator role')
+
+      await db('hubify_users').insert({
         firstname: 'Admin',
         email: 'admin@example.com',
         password: await hashPassword('password'),
-        role: role.id
+        role: role
       })
 
       console.info('Database seeded with initial data')

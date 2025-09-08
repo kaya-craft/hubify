@@ -1,33 +1,20 @@
-export const columns = defineTableColumns({
-  id: {
-    type: 'integer',
-    primaryKey: true
-  },
-  publicKey: {
-    type: 'text',
-    notNull: true
-  },
-  counter: {
-    type: 'int4',
-    notNull: true
-  },
-  backedUp: {
-    type: 'boolean',
-    notNull: true,
-    default: false
-  },
-  transports: {
-    type: 'text',
-    notNull: true
-  }
-})
-
-export const relations = defineTableRelations({
-  user: {
-    table: 'hubify_users',
-    fromKey: 'id',
-    toKey: 'id',
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
-  }
+/**
+ * Migration for creating the `hubify_credentials` table.
+ */
+export default defineTable((table, knex) => {
+  table.increments('id').primary()
+  table.text('publicKey').notNullable()
+  table.integer('counter').notNullable()
+  table.boolean('backedUp').notNullable().defaultTo(false)
+  table.text('transports').notNullable()
+  table
+    .integer('userId')
+    .unsigned()
+    .references('id')
+    .inTable('hubify_users')
+    .onDelete('CASCADE')
+    .onUpdate('CASCADE')
+    .notNullable()
+  table.timestamp('createdAt').defaultTo(knex.fn.now())
+  table.timestamp('updatedAt').defaultTo(knex.fn.now())
 })

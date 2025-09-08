@@ -1,54 +1,12 @@
-export const columns = defineTableColumns({
-  /**
-   * Primary key for the table.
-   */
-  id: {
-    type: 'integer',
-    primaryKey: true
-  },
-
-  /**
-   * Name of the role.
-   */
-  name: {
-    type: 'varchar',
-    notNull: true
-  },
-
-  /**
-   * Description of the role.
-   */
-  description: {
-    type: 'text'
-  },
-
-  /**
-   * Icon representing the role.
-   */
-  icon: {
-    type: 'varchar',
-    default: 'heroicons:user-circle'
-  },
-
-  /**
-   * Is admin?
-   */
-  admin: {
-    type: 'boolean',
-    default: false
-  }
-})
-
-export const relations = defineTableRelations({
-  /**
-     * Relation to the users table.
-     * A role can have many users.
-     */
-  users: {
-    table: 'hubify_users',
-    fromKey: 'id',
-    toKey: 'role',
-    onDelete: 'SET NULL',
-    onUpdate: 'CASCADE'
-  }
+/**
+ * Migration for creating the `hubify_roles` table.
+ */
+export default defineTable((table, knex) => {
+  table.increments('id').primary()
+  table.text('name').notNullable()
+  table.text('description').nullable()
+  table.text('icon').defaultTo('heroicons:user-circle')
+  table.boolean('admin').defaultTo(false)
+  table.timestamp('createdAt').defaultTo(knex.fn.now())
+  table.timestamp('updatedAt').defaultTo(knex.fn.now())
 })

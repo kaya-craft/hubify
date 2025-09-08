@@ -10,14 +10,7 @@ export default defineNuxtConfig({
 
   nitro: {
     experimental: {
-      database: true,
       websocket: true
-    },
-
-    database: {
-      hubify: {
-        connector: 'node-sqlite'
-      }
     },
 
     imports: {

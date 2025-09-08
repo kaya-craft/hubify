@@ -1,12 +1,9 @@
 import type { Schema as _Schema, TableColumn as _TableColumn, PrimaryKey, TableRelation as _TableRelation } from '@hubify/restql'
 import type { Item } from '@hubify/restql/utils/helpers'
+import type { Knex } from 'knex'
 
-export function defineTableColumns<const C extends SchemaColumns>(columns: C): C {
-  return columns
-}
-
-export function defineTableRelations<const R extends SchemaRelations>(relations: R): R {
-  return relations
+export function defineTable(cb: (table: Knex.CreateTableBuilder, knex: Knex) => void) {
+  return cb
 }
 
 export type Schema = typeof import('#hubify/schema').default

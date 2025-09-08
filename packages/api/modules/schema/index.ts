@@ -1,8 +1,14 @@
-import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, useLogger, useNuxt } from 'nuxt/kit'
-import { resolve, isAbsolute, extname, join } from 'node:path'
-import { existsSync, readdirSync, writeFileSync } from 'node:fs'
+import { addImportsDir, addServerImportsDir, addTemplate, addTypeTemplate, createResolver, defineNuxtModule, useLogger, useNuxt } from 'nuxt/kit'
+import { resolve, isAbsolute, join } from 'node:path'
+import { existsSync, writeFileSync } from 'node:fs'
+import type { Knex } from 'knex'
+import type { Column } from 'knex-schema-inspector/dist/types/column'
+import { MigrationSource } from './utils/migration'
+import { generateSchemaTypes } from './utils/schema/types'
+import { generateSchemaContent } from './utils/schema/content'
+import { createDatabaseInstance } from './utils/database'
 
-export interface HubifyModuleOptions {
+export interface HubifyModuleOptions extends Knex.Config {
   schema: string[]
 }
 
@@ -14,9 +20,14 @@ export default defineNuxtModule<HubifyModuleOptions>({
     configKey: 'hubify'
   },
   defaults: nuxt => ({
-    schema: [localResolve('../../schema'), join(nuxt.options.rootDir, 'schema')]
+    schema: [localResolve('../../schema'), join(nuxt.options.rootDir, 'schema')],
+    client: 'better-sqlite3',
+    useNullAsDefault: true,
+    connection: {
+      filename: join(nuxt.options.buildDir, 'hubify.sqlite')
+    }
   }),
-  setup(options, nuxt) {
+  async setup(options, nuxt) {
     const logger = useLogger('@hubify/schema')
     const schemaDirs = getDirectories(options.schema)
 
@@ -27,43 +38,66 @@ export default defineNuxtModule<HubifyModuleOptions>({
     addImportsDir(localResolve('./runtime/utils'))
     addServerImportsDir(localResolve('./runtime/utils'))
 
-    const { dst: schemaPath } = addTemplate({
-      filename: 'hubify/schema.ts',
-      getContents: () => createSchemaContent(schemaDirs),
-      write: true
+    const schema = await updateDatabaseSchema(schemaDirs, options)
+
+    const { dst: schemaFile } = addTemplate({
+      filename: 'hubify/schema.mjs',
+      getContents: async () => generateSchemaContent(schema)
     })
 
-    nuxt.hook('builder:watch', (event, path) => {
+    const { dst: schemaTypesFile } = addTypeTemplate({
+      filename: 'hubify/schema.d.ts',
+      getContents: async () => generateSchemaTypes(schema)
+    })
+
+    nuxt.options.nitro.alias ??= {}
+    nuxt.options.nitro.alias['#hubify/schema'] = schemaTypesFile
+    nuxt.options.alias['#hubify/schema'] = schemaTypesFile
+
+    nuxt.hook('builder:watch', async (event, path) => {
       if (event === 'add' || event === 'addDir' || event === 'unlink' || event === 'unlinkDir') {
         const schemaDirs = getDirectories(options.schema)
         const isSchemaFile = schemaDirs.some(dir => path.startsWith(dir))
         if (isSchemaFile) {
-          writeFileSync(schemaPath, createSchemaContent(schemaDirs))
+          const schema = await updateDatabaseSchema(schemaDirs, options)
+          writeFileSync(schemaFile, generateSchemaContent(schema))
+          writeFileSync(schemaTypesFile, generateSchemaTypes(schema))
         }
       }
     })
 
-    nuxt.options.nitro.alias ??= {}
-    nuxt.options.nitro.alias['#hubify/schema'] = schemaPath
-    nuxt.options.alias['#hubify/schema'] = schemaPath
-
     nuxt.options.runtimeConfig.hubify = {
-      systemCollections: getSystemCollections(schemaDirs)
+      db: options,
+      systemCollections: getSystemCollections(schema)
     }
 
     nuxt.options.runtimeConfig.public.hubify = {
-      systemCollections: getSystemCollections(schemaDirs)
+      systemCollections: getSystemCollections(schema)
     }
   }
 })
 
 /**
+ * Update the database schema by running migrations and return the current schema.
+ */
+async function updateDatabaseSchema(dirs: string[], dbConfig: Knex.Config) {
+  const { db, getSchema } = createDatabaseInstance(dbConfig)
+
+  await db.migrate.latest({
+    tableName: 'hubify_migrations',
+    migrationSource: new MigrationSource(dirs)
+  })
+
+  console.log('Database migrated to the latest version.')
+
+  return await getSchema()
+}
+
+/**
  * Get the list of system collections.
  */
-function getSystemCollections(schemaDirs: string[]) {
-  const files = schemaDirs.flatMap(dir => listDirFiles(dir, '_', ['.ts', '.js']))
-  const collections = [...new Set(files.map(file => file.name))]
-  return collections.filter(name => name.startsWith('hubify_'))
+function getSystemCollections(schema: Record<string, Record<string, Column>>) {
+  return Object.keys(schema).filter(name => name.startsWith('hubify_'))
 }
 
 /**
@@ -72,71 +106,4 @@ function getSystemCollections(schemaDirs: string[]) {
 export function getDirectories(schema: string[]) {
   const layers = useNuxt().options._layers.map(layer => layer.cwd)
   return [...new Set(schema.flatMap(dir => isAbsolute(dir) ? dir : layers.map(layer => resolve(layer, dir))).filter(dir => existsSync(dir)))]
-}
-
-/**
- * Recursively lists all files in a directory and its subdirectories.
- */
-export function listDirFiles(dir: string, separator: string, extensions: string[], prepend = '') {
-  const files: {
-    path: string
-    name: string
-  }[] = []
-
-  const items = readdirSync(dir, { withFileTypes: true })
-
-  for (const item of items) {
-    const ext = extname(item.name)
-    const nameWithoutExt = item.name.replace(ext, '')
-    const fullPath = resolve(dir, nameWithoutExt)
-    const name = prepend ? `${prepend}${separator}${nameWithoutExt}` : nameWithoutExt
-
-    if (item.isDirectory()) {
-      files.push(...listDirFiles(fullPath, separator, extensions, name))
-    }
-    else if (item.isFile() && extensions.includes(ext)) {
-      files.push({
-        path: fullPath,
-        name: name
-      })
-    }
-  }
-
-  return files
-}
-
-/**
- * Generates the content for the schema file by importing all schema files found in the specified directories.
- */
-function createSchemaContent(schemaDirs: string[]) {
-  const files = schemaDirs.flatMap(dir => listDirFiles(dir, '_', ['.ts', '.js']))
-  const collections = [...new Set(files.map(file => file.name))]
-  const data = collections.map((collection) => {
-    const collectionFiles = files.filter(f => f.name === collection)
-    const hasMultipleFiles = collectionFiles.length > 1
-
-    if (hasMultipleFiles) {
-      return {
-        import: collectionFiles.map((file, index) => `import * as ${file.name}_${index} from '${file.path}'`).join('\n'),
-        export: `${collection}: Object.assign({}, ${collectionFiles.map((file, index) => `${file.name}_${index}`).join(', ')})`
-      }
-    }
-
-    const file = collectionFiles[0]
-
-    if (!file) return
-
-    return {
-      import: `import * as ${file.name} from '${file.path}'`,
-      export: file.name
-    }
-  }).filter((d): d is { import: string, export: string } => !!d)
-
-  return [
-    ...data.map(d => d.import),
-    '\n',
-    'export default {',
-    data.map(d => '\t' + d.export).join(',\n'),
-    '}'
-  ].join('\n')
 }
