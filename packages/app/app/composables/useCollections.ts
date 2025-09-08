@@ -16,6 +16,7 @@ export function useCollections() {
         label: item.name,
         icon: item.icon || 'i-lucide-folder',
         color: item.color || 'primary',
+        style: { color: `text-[${item.color}]` },
         description: item.description,
         to: localePath({ name: 'admin-items-collection', params: { collection: item.name } })
       }))

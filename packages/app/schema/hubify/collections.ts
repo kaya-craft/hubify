@@ -1,7 +1,9 @@
 import { columns } from '@hubify/api/schema/hubify/collections'
 
 export const fields = defineFieldOptions(columns, {
-  id: false,
+  id: {
+    input: false
+  },
   createdAt: {
     input: false,
     display: {
@@ -26,7 +28,7 @@ export const fields = defineFieldOptions(columns, {
   },
   description: {
     input: {
-      component: 'text',
+      component: 'textarea',
       label: 'Description',
       class: 'col-span-6',
       props: {
@@ -67,9 +69,6 @@ export const fields = defineFieldOptions(columns, {
         placeholder: 'Name',
         type: 'text'
       }
-    },
-    display: {
-      class: 'text-lg text-blue-900'
     }
   },
   singleton: {

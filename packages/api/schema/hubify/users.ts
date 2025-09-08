@@ -22,6 +22,7 @@ export const columns = defineTableColumns({
     type: 'text',
     notNull: false
   },
+
   /**
    * Firstname of the user.
    */
@@ -29,6 +30,7 @@ export const columns = defineTableColumns({
     type: 'text',
     notNull: false
   },
+
   /**
    * Lastname of the user.
    */
@@ -36,6 +38,15 @@ export const columns = defineTableColumns({
     type: 'text',
     notNull: false
   },
+
+  /**
+   * Role of the user.
+   */
+  role: {
+    type: 'integer',
+    notNull: false
+  },
+
   /**
    * Timestamp when the user was created.
    */
@@ -50,5 +61,18 @@ export const columns = defineTableColumns({
   updatedAt: {
     type: 'timestamp',
     default: 'CURRENT_TIMESTAMP'
+  }
+})
+
+/**
+ * Define relationships between tables.
+ */
+export const relations = defineTableRelations({
+  role: {
+    fromKey: 'id',
+    toKey: 'id',
+    table: 'hubify_roles',
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE'
   }
 })

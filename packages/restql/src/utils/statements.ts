@@ -56,7 +56,7 @@ function defineTableColumn<N extends string, C extends TableColumn, R extends Ta
     column.primaryKey ? 'PRIMARY KEY' : '',
     column.unique ? 'UNIQUE' : '',
     column.notNull ? 'NOT NULL' : '',
-    typeof column.default !== 'undefined' ? `DEFAULT ${normalizeOperationValue(name, column.type)}` : '',
+    typeof column.default !== 'undefined' ? `DEFAULT ${normalizeOperationValue(column.default, column.type)}` : '',
     relation ? `REFERENCES ${relation.table}(${relation.toKey}) ON DELETE ${relation.onDelete || 'NO ACTION'} ON UPDATE ${relation.onUpdate || 'NO ACTION'}` : ''
   ].filter(Boolean).join(' ')
 

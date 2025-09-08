@@ -3,9 +3,20 @@ import registeredInputs from '#hubify/inputs'
 import tables from '#hubify/schema'
 import { getPrimaryKey } from '@hubify/restql/utils/helpers'
 import type { AsyncComponentLoader } from 'vue'
-import { InputsText, DisplaysText } from '#components'
+import { InputsText, DisplaysText, InputsOneToMany } from '#components'
+import { isOneToManyRelation } from '@hubify/api/lib/column-types'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
+  /**
+   * Toast.
+   */
+  const { add } = useToast()
+
+  /**
+   * Loading state.
+   */
+  const loading = ref(false)
+
   /**
    * Name of the table.
    */
@@ -30,17 +41,17 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   })
 
   /**
- * Columns of the table.
- */
-  const columnNames = computed(() => {
-    return Object.keys(toValue(columns)) as TableColumnNames<T>[]
-  })
-
-  /**
    * Table fields.
    */
   const tableFields = computed(() => {
-    return toValue(table)?.fields as TableFieldOptions<T> | undefined
+    return toValue(table).fields as TableFieldOptions<T>
+  })
+
+  /**
+   * Table relations.
+   */
+  const relations = computed(() => {
+    return toValue(table).relations as TableRelations<T>
   })
 
   /**
@@ -48,6 +59,43 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   const primaryKey = computed(() => {
     return getPrimaryKey(tables, toValue(tableName)) as TablePrimaryKey<T>
+  })
+
+  /**
+   * Columns of the table.
+   */
+  const columnNames = computed(() => {
+    const keys = Object.keys(toValue(columns)) as TableColumnNames<T>[]
+
+    const fields = toValue(tableFields)
+
+    if (fields) {
+      return keys.sort((a, b) => {
+        const aIndex = (fields?.[a] && fields?.[a]?.order) ?? 0
+        const bIndex = (fields?.[b] && fields?.[b]?.order) ?? 0
+        return aIndex - bIndex
+      })
+    }
+
+    return keys
+  })
+
+  /**
+   * Displayed columns.
+   */
+  const displayedColumns = computed(() => {
+    return toValue(columnNames).filter((name) => {
+      return getDisplay(name) !== false
+    })
+  })
+
+  /**
+   * Displayed fields.
+   */
+  const displayedFields = computed(() => {
+    return toValue(columnNames).filter((name) => {
+      return getInput(name) !== false
+    })
   })
 
   /**
@@ -72,7 +120,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Get the field for the specified column.
    */
   function getColumnOption<C extends TableColumnNames<T>>(column: C) {
-    return toValue(tableFields)?.[column] as TableFieldOption<T, C>
+    return toValue(tableFields)?.[column] as TableFieldOption<T, C> | undefined
   }
 
   /**
@@ -89,9 +137,9 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   function getInput<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
 
-    if (columnOptions === false || columnOptions.input === false) return false
+    if (columnOptions === false || columnOptions?.input === false) return false
 
-    return columnOptions.input
+    return columnOptions?.input
   }
 
   /**
@@ -100,9 +148,9 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   function getDisplay<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
 
-    if (columnOptions === false || columnOptions.display === false) return false
+    if (columnOptions === false || columnOptions?.display === false) return false
 
-    return columnOptions.display
+    return columnOptions?.display
   }
 
   /**
@@ -113,7 +161,17 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (input === false) return
 
-    if (!input?.component) return h(InputsText, { class: input?.class })
+    if (!input?.component) {
+      if (isOneToManyRelation(toValue(tableName), column)) {
+        return h(InputsOneToMany, {
+          class: input?.class,
+          collection: toValue(tableName),
+          relation: column
+        })
+      }
+
+      return h(InputsText, { class: input?.class })
+    }
 
     const component = registeredInputs[input.component as keyof typeof registeredInputs]
 
@@ -133,6 +191,106 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
 
     return defineAsyncComponent(component as AsyncComponentLoader)
+  }
+
+  /**
+   * Get relation by name.
+   */
+  function getRelation<R extends TableRelationNames<T>>(name: R) {
+    const rels = toValue(relations)
+    if (!rels || !(name in rels)) throw new Error(`Relation "${String(name)}" does not exist in table "${toValue(tableName)}".`)
+    return rels[name] as TableRelation<T, R>
+  }
+
+  /**
+   * Extract primary key values from IDs or items.
+   */
+  function extractPrimaryKeyValues<T extends TableNames>(table: T, idsOrItems: (TablePrimaryKeyValue<T> | TableItem<T>)[]) {
+    const primaryKey = getPrimaryKey(tables, table)
+
+    if (!primaryKey) throw new Error(`Primary key for table "${table}" is not defined.`)
+
+    const values = idsOrItems.map((idOrItem) => {
+      if (typeof idOrItem === 'object') return idOrItem[primaryKey as keyof typeof idOrItem]
+      return idOrItem
+    }).filter(isNonNullish) as TablePrimaryKeyValue<T>[]
+
+    return [primaryKey, [...new Set(values)]] as const
+  }
+
+  /**
+   * Detatch from the specified relation.
+   */
+  async function detach<R extends TableRelationNames<T>, RT extends TableRelation<T, R>['table']>(
+    relationName: R,
+    ...idOrItems: (TablePrimaryKeyValue<RT> | TableItem<RT>)[]) {
+    try {
+      loading.value = true
+
+      const relation = getRelation(relationName)
+      const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
+
+      await $fetch('/api/items/' + relation.table, {
+        method: 'put',
+        query: { where: { [primaryKey]: { $in: ids } } },
+        body: { [relation.toKey]: null }
+      })
+
+      add({
+        title: 'Items detatched successfully',
+        color: 'success',
+        description: 'The items have been successfully detatched.'
+      })
+    }
+    catch (error) {
+      add({
+        title: 'Error detatching items',
+        color: 'error',
+        description: 'There was an error detatching the items. ' + String(error)
+      })
+      throw error
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Attach to the specified relation.
+   */
+  async function attach<R extends TableRelationNames<T>, RT extends TableRelation<T, R>['table']>(
+    id: TablePrimaryKeyValue<T>,
+    relationName: R,
+    ...idOrItems: (TablePrimaryKeyValue<RT> | TableItem<RT>)[]) {
+    try {
+      loading.value = true
+
+      const relation = getRelation(relationName)
+      const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
+
+      await $fetch('/api/items/' + relation.table, {
+        method: 'put',
+        query: { where: { [primaryKey]: { $in: ids } } },
+        body: { [relation.toKey]: id }
+      })
+
+      add({
+        title: 'Items attached successfully',
+        color: 'success',
+        description: 'The items have been successfully attached.'
+      })
+    }
+    catch (error) {
+      add({
+        title: 'Error attaching items',
+        color: 'error',
+        description: 'There was an error attaching the items. ' + String(error)
+      })
+      throw error
+    }
+    finally {
+      loading.value = false
+    }
   }
 
   /**
@@ -159,9 +317,14 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   return {
     name: tableName,
     table,
+
     columnNames,
     tableFields,
     columns,
+
+    displayedColumns,
+    displayedFields,
+
     getColumn,
     getColumnLabel,
 
@@ -176,6 +339,13 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     canCreate,
     canDelete,
-    canUpdate
+    canUpdate,
+
+    relations,
+    getRelation,
+    detach,
+    attach,
+
+    loading
   }
 }
