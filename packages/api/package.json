@@ -7,6 +7,7 @@
     "./utils/*": "./shared/utils/*.ts",
     "./lib/*": "./shared/lib/*.ts",
     "./modules/*": "./modules/*.ts",
+    "./types/*": "./types/*.d.ts",
     "./schema/*": "./schema/*.ts",
     "./hooks": "./hooks.d.ts"
   },
@@ -37,6 +38,8 @@
   "devDependencies": {
     "@nuxt/test-utils": "catalog:",
     "@types/knex": "^0.16.1",
+    "jiti": "^2.5.1",
+    "unimport": "^5.2.0",
     "vitest": "catalog:"
   }
 }

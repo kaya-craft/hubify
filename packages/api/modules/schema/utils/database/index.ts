@@ -1,9 +1,9 @@
 import { knex, type Knex } from 'knex'
 import { SchemaInspector } from 'knex-schema-inspector'
 import type { Column } from 'knex-schema-inspector/dist/types/column'
-import type { Schema, TableNames, QueryParams, Item } from './../types'
-import { normalizeOrderBy, normalizeColumns, buildWhereQuery, buildJoins, getPrimaryKeyColumn } from './helpers'
-import { isNumber, isArray } from '@hubify/api/utils/types'
+import type { Schema, TableNames, QueryParams, TablePrimaryKeyValue, TableItem } from '@hubify/api/types/database'
+import { normalizeOrderBy, normalizeColumns, buildWhereQuery, addJoinQueries, getPrimaryKeyColumn } from './helpers'
+import { isArray, isNumber } from '@hubify/api/utils/types'
 
 /**
  * Create a database instance using Knex and Schema Inspector.
@@ -51,19 +51,28 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
    */
   function find<T extends TableNames<S>>(table: T, query: QueryParams<S, T> = {}) {
     const builder = db(table)
+      .select(normalizeColumns(schema, table, query.columns || ['*']))
+      .where(buildWhereQuery(schema, table, query.where))
 
-    if (isNumber(query.limit)) builder.limit(query.limit)
-    if (isNumber(query.offset)) builder.offset(query.offset)
-    if (isArray(query.groupBy)) builder.groupBy(normalizeColumns(schema, table, query.groupBy))
-    if (isArray(query.orderBy)) {
-      normalizeOrderBy(schema, table, query.orderBy).forEach((col) => {
-        return col.startsWith('-') ? builder.orderBy(col.slice(1), 'desc') : builder.orderBy(col, 'asc')
-      })
+    if (isNumber(query.limit)) {
+      builder.limit(query.limit)
     }
-    if (isArray(query.columns)) builder.select(normalizeColumns(schema, table, query.columns))
-    if (query.where) builder.where(buildWhereQuery(schema, table, query.where))
 
-    buildJoins(schema, table, query)(builder)
+    if (isNumber(query.offset)) {
+      builder.offset(query.offset)
+    }
+
+    if (isArray(query.groupBy)) {
+      builder.groupBy(normalizeColumns(schema, table, query.groupBy))
+    }
+
+    if (isArray(query.orderBy)) {
+      for (const [col, sort] of normalizeOrderBy(schema, table, query.orderBy)) {
+        builder.orderBy(col, sort)
+      }
+    }
+
+    addJoinQueries(schema, table, query, builder)
 
     return builder
   }
@@ -73,44 +82,51 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
    */
   function findOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, query: QueryParams<S, T> = {}) {
     const key = getPrimaryKeyColumn(schema, table)
-    return find(table, query).where(key, pk).first()
+
+    const builder = find(table, query)
+      .where(key, '=', pk)
+      .first()
+
+    return builder as knex.Knex.QueryBuilder<{}, TableItem<S, T>>
   }
 
   /**
    * Create an item in a table.
    */
-  function createOne<T extends TableNames<S>>(table: T, data: Partial<Item<S, T>>) {
-    const key = getPrimaryKeyColumn(schema, table)
+  function createOne<T extends TableNames<S>>(table: T, data: Partial<TableItem<S, T>>) {
+    const builder = db(table)
+      .insert(data)
+      .returning('*')
 
-    const query = db(table).insert(data).returning(key)
-
-    return query
+    return builder as knex.Knex.QueryBuilder<{}, TableItem<S, T>>
   }
 
   /**
    * Update an item in a table.
    */
-  function updateOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, data: Partial<Item<S, T>>) {
+  function updateOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, data: Partial<TableItem<S, T>>) {
     const key = getPrimaryKeyColumn(schema, table)
 
-    const query = db(table).update(data).where(key, pk).returning(key)
+    const builder = db(table)
+      .update(data)
+      .where(key, '=', pk)
+      .returning(key)
 
-    return query
+    return builder as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>>
   }
 
   /**
    * Update multiple items in a table.
    */
-  function update<T extends TableNames<S>>(table: T, data: Partial<Item<S, T>>, where: NonNullable<QueryParams<S, T>['where']>) {
-    const builder = db(table)
-
-    builder.where(buildWhereQuery(schema, table, where))
-
+  function update<T extends TableNames<S>>(table: T, data: Partial<TableItem<S, T>>, where: QueryParams<S, T>['where']) {
     const key = getPrimaryKeyColumn(schema, table)
 
-    const query = builder.update(data).returning(key)
+    const builder = db(table)
+      .where(buildWhereQuery(schema, table, where))
+      .update(data)
+      .returning(key)
 
-    return query
+    return builder as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>[]>
   }
 
   /**
@@ -119,24 +135,26 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
   function removeOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>) {
     const key = getPrimaryKeyColumn(schema, table)
 
-    const query = db(table).delete().where(key, pk).returning(key)
+    const builder = db(table)
+      .delete()
+      .where(key, '=', pk)
+      .returning(key)
 
-    return query
+    return builder as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>>
   }
 
   /**
    * Delete multiple items in a table.
    */
-  function remove<T extends TableNames<S>>(table: T, where: NonNullable<QueryParams<S, T>['where']>) {
-    const builder = db(table)
-
-    builder.where(buildWhereQuery(schema, table, where))
-
+  function remove<T extends TableNames<S>>(table: T, where: QueryParams<S, T>['where']) {
     const key = getPrimaryKeyColumn(schema, table)
 
-    const query = builder.delete().returning(key)
+    const builder = db(table)
+      .where(buildWhereQuery(schema, table, where))
+      .delete()
+      .returning(key)
 
-    return query
+    return builder as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>[]>
   }
 
   return {

@@ -1,51 +1,83 @@
-import type { QueryBuilder } from 'knex'
-import type { Schema, TableRelations, TableNames, QueryParams, FieldName } from '../types'
-import { OPERATORS } from '../operators'
+import type { knex } from 'knex'
+import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition } from '@hubify/api/types/database'
+import { OPERATORS } from './operators'
 
 /**
  * Get all query columns from the query parameters.
  */
-export function getAllColumns<S extends Schema, T extends TableNames<S>>(query: QueryParams<S, T>) {
+export function getQueriedColumns<S extends Schema, T extends TableNames<S>>(query: QueryParams<S, T>) {
   const columns = new Set<string>([
-    ...(query.columns || []),
-    ...(query.orderBy?.map(c => c.replace(/^-/, '')) || []),
-    ...(query.groupBy || []),
-    ...(query.where
-      ? Object.entries(query.where).flatMap(function _([key, value]): string[] {
-          if (key === '$and' || key === '$or') {
-            return value.flatMap(v => Object.entries(v).flatMap(_))
-          }
-
-          return [key]
-        })
-      : [])
+    ...getColumnsColumns(query.columns),
+    ...getOrderByColumns(query.orderBy),
+    ...getGroupByColumns(query.groupBy),
+    ...getWhereColumns(query.where)
   ])
 
   return Array.from(columns)
 }
 
 /**
+ * Get the columns used in the where query.
+ */
+function getWhereColumns(where: QueryParams['where']): string[] {
+  if (!where) return []
+
+  return Object.entries(where).flatMap(([key, value]) => {
+    if (key === '$and' || key === '$or') {
+      if (Array.isArray(value)) return value.flatMap(getWhereColumns)
+      return []
+    }
+
+    return [key]
+  })
+}
+
+/**
+ * Get the columns used in groupBy query.
+ */
+function getGroupByColumns(groupBy: QueryParams['groupBy']) {
+  if (!groupBy) return []
+
+  return groupBy
+}
+
+/**
+ * Get the columns used in columns query.
+ */
+function getColumnsColumns(columns: QueryParams['columns']) {
+  if (!columns) return []
+
+  return columns
+}
+
+/**
+ * Get the columns used in orderBy query.
+ */
+function getOrderByColumns(orderBy: QueryParams['orderBy']) {
+  if (!orderBy) return []
+
+  return orderBy.map(column => column.replace(/^-/, ''))
+}
+
+/**
  * Get the necessary joins from the query parameters.
  */
 export function getJoinsFromQuery<S extends Schema, T extends TableNames<S>>(schema: S, table: T, query: QueryParams<S, T>) {
-  const relations = schema[table]?.relations
+  const joins = new Map<string, RelationDefinition>()
 
-  if (!relations) return []
+  const columns = getQueriedColumns(query)
 
-  const joins = new Map<TableNames<S>, TableRelations<S, TableNames<S>>[string]>()
+  for (const column of columns) {
+    column.split('.').reduce((acc, part) => {
+      const relation = acc?.[part as keyof typeof acc] as RelationDefinition | undefined
 
-  getAllColumns(query).forEach((column) => {
-    return column.split('.').reduce((acc, part) => {
-      const relation = acc?.[part as keyof typeof acc] as TableRelations<S, TableNames<S>>[string] | undefined
+      if (!relation) return acc
 
-      if (relation && 'table' in relation) {
-        joins.set(relation.table, relation)
-        return schema[relation.table]?.relations
-      }
+      joins.set(relation.table, relation)
 
-      return acc
-    }, relations)
-  })
+      return schema[relation.table]?.relations
+    }, schema[table]?.relations)
+  }
 
   return joins
 }
@@ -54,7 +86,7 @@ export function getJoinsFromQuery<S extends Schema, T extends TableNames<S>>(sch
  * Normalize columns in a query by returning their full path (table.column).
  */
 export function normalizeColumns<S extends Schema, T extends TableNames<S>>(schema: S, table: T, columns: FieldName<S, T>[]) {
-  return columns.map(column => normalizeColumn(schema, table, column))
+  return columns?.map(column => normalizeColumn(schema, table, column))
 }
 
 /**
@@ -75,9 +107,9 @@ export function normalizeColumn<S extends Schema, T extends TableNames<S>>(schem
 export function normalizeOrderBy<S extends Schema, T extends TableNames<S>>(schema: S, table: T, columns: `${'' | '-'}${FieldName<S, T>}`[]) {
   return columns.map((column) => {
     if (column.startsWith('-')) {
-      return '-' + normalizeColumn(schema, table, column.slice(1) as FieldName<S, T>)
+      return [normalizeColumn(schema, table, column.slice(1) as FieldName<S, T>), 'desc'] as const
     }
-    return normalizeColumn(schema, table, column as FieldName<S, T>)
+    return [normalizeColumn(schema, table, column as FieldName<S, T>), 'asc'] as const
   })
 }
 
@@ -87,7 +119,7 @@ export function normalizeOrderBy<S extends Schema, T extends TableNames<S>>(sche
 export function buildWhereQuery<S extends Schema, T extends TableNames<S>>(schema: S, table: T, where: QueryParams<S, T>['where']) {
   if (!where) return {}
 
-  return (qb: QueryBuilder) => {
+  return (qb: knex.Knex.QueryBuilder) => {
     Object.entries(where).forEach(([key, value]) => {
       if (key === '$and' && Array.isArray(value) && value.length > 0) {
         qb.andWhere((qb) => {
@@ -120,21 +152,21 @@ export function buildWhereQuery<S extends Schema, T extends TableNames<S>>(schem
 /**
  * Build necessary joins from the query parameters.
  */
-export function buildJoins<S extends Schema, T extends TableNames<S>>(schema: S, table: T, query: QueryParams<S, T>) {
+export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema: S, table: T, query: QueryParams<S, T>, builder: knex.Knex.QueryBuilder) {
   const joins = getJoinsFromQuery(schema, table, query)
 
-  return (qb: QueryBuilder) => {
-    joins.forEach((relation) => {
-      if (relation.through) {
-        const throughRelation = schema[relation.through]?.relations?.[relation.toKey] as TableRelations<S, TableNames<S>>[string]
-        if (!throughRelation) throw new Error(`Through relation not found: ${relation.through}.${relation.toKey}`)
-        qb.leftJoin(relation.through, `${throughRelation.table}.${relation.fromKey}`, '=', `${relation.through}.${relation.toKey}`)
-        qb.leftJoin(relation.table, `${relation.through}.${relation.throughKey}`, '=', `${relation.table}.${relation.fromKey}`)
-      }
-      else {
-        qb.leftJoin(relation.table, `${table}.${relation.fromKey}`, '=', `${relation.table}.${relation.toKey}`)
-      }
-    })
+  if (!joins.size) return
+
+  for (const [_, relation] of joins) {
+    if (relation.through) {
+      const throughRelation = schema[relation.through]?.relations?.[relation.toKey] as RelationDefinition | undefined
+      if (!throughRelation) throw new Error(`Through relation not found: ${relation.through}.${relation.toKey}`)
+      builder.leftJoin(relation.through, `${throughRelation.table}.${relation.fromKey}`, '=', `${relation.through}.${relation.toKey}`)
+      builder.leftJoin(relation.table, `${relation.through}.${relation.throughKey}`, '=', `${relation.table}.${relation.fromKey}`)
+    }
+    else {
+      builder.leftJoin(relation.table, `${table}.${relation.fromKey}`, '=', `${relation.table}.${relation.toKey}`)
+    }
   }
 }
 

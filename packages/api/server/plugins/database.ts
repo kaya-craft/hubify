@@ -1,5 +1,6 @@
 import type { NitroApp } from 'nitropack'
 import schema from '#hubify/schema'
+import type { Schema } from '@hubify/api/types/database'
 
 /**
  * Update schema upon modification.

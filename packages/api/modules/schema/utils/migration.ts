@@ -6,6 +6,7 @@ import { createUnimport } from 'unimport'
 import { createResolver } from 'nuxt/kit'
 
 const jiti = createJiti(import.meta.url)
+
 const { resolve } = createResolver(import.meta.url)
 
 const unimport = createUnimport({

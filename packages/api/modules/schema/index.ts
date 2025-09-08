@@ -1,4 +1,4 @@
-import { addImportsDir, addServerImportsDir, addTemplate, addTypeTemplate, createResolver, defineNuxtModule, useLogger, useNuxt } from 'nuxt/kit'
+import { addImportsDir, addServerImportsDir, addTemplate, addTypeTemplate, createResolver, defineNuxtModule, updateRuntimeConfig, useLogger, useNuxt } from 'nuxt/kit'
 import { resolve, isAbsolute, join } from 'node:path'
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import type { Knex } from 'knex'
@@ -67,10 +67,12 @@ export default defineNuxtModule<HubifyModuleOptions>({
       }
     })
 
-    nuxt.options.runtimeConfig.hubify = {
-      db: options,
-      systemCollections: getSystemCollections(schema)
-    }
+    updateRuntimeConfig({
+      hubify: {
+        db: options,
+        systemCollections: getSystemCollections(schema)
+      }
+    })
 
     nuxt.options.runtimeConfig.public.hubify = {
       systemCollections: getSystemCollections(schema)

@@ -1,52 +1,49 @@
-import type { QueryParams, TableName } from '@hubify/restql'
-import type tables from '#hubify/schema'
 import type { NitroFetchRequest, AvailableRouterMethod } from 'nitropack/types'
 import type { FetchOptions } from 'ofetch'
-import type { Item } from '@hubify/restql/utils/helpers'
 
 type InternalApiBody = {
-  [K in TableName<typeof tables> as `/api/items/${K}`]: {
+  [K in TableNames as `/api/items/${K}`]: {
     post: {
-      body: Item<typeof tables, K>
+      body: TableItem<K>
     }
     put: {
-      body: Partial<Item<typeof tables, K>>
-      params: QueryParams<typeof tables, K>
+      body: Partial<TableItem<K>>
+      params: QueryParams<K>
     }
     delete: {
-      params: QueryParams<typeof tables, K>
+      params: QueryParams<K>
     }
     get: {
-      params: QueryParams<typeof tables, K>
+      params: QueryParams<K>
     }
   }
 } & {
-  [K in TableName<typeof tables> as `/api/items/${K}/:id`]: {
+  [K in TableNames as `/api/items/${K}/:id`]: {
     put: {
-      body: Partial<Item<typeof tables, K>>
-      params: QueryParams<typeof tables, K>
+      body: Partial<TableItem<K>>
+      params: QueryParams<K>
     }
     delete: {
-      params: QueryParams<typeof tables, K>
+      params: QueryParams<K>
     }
     get: {
-      params: QueryParams<typeof tables, K>
+      params: QueryParams<K>
     }
   }
 }
 
 type GenericEndpoints = {
-  [K in TableName<typeof tables> as `/api/items/${K}`]: {
-    post: Awaited<Item<typeof tables, K>>
-    put: Awaited<Item<typeof tables, K>[]>
-    delete: Awaited<Item<typeof tables, K>[]>
-    get: Awaited<Item<typeof tables, K>[]>
+  [K in TableNames as `/api/items/${K}`]: {
+    post: Awaited<TableItem<K>>
+    put: Awaited<TableItem<K>[]>
+    delete: Awaited<TableItem<K>[]>
+    get: Awaited<TableItem<K>[]>
   }
 } & {
-  [K in TableName<typeof tables> as `/api/items/${K}/:id`]: {
-    put: Awaited<Item<typeof tables, K>>
-    delete: Awaited<Item<typeof tables, K>>
-    get: Awaited<Item<typeof tables, K>>
+  [K in TableNames as `/api/items/${K}/:id`]: {
+    put: Awaited<TableItem<K>>
+    delete: Awaited<TableItem<K>>
+    get: Awaited<TableItem<K>>
   }
 }
 
