@@ -1,16 +1,16 @@
 import z from 'zod'
 import tables from '#hubify/schema'
-import type { ColumnName, TableName } from '@hubify/restql'
 import { asEnumArray, asObject, itemValidation, whereValidation } from '@hubify/api/lib/validation'
 import { columnTypeToZod } from '@hubify/api/lib/column-types'
-import type { TableItem } from '~/modules/schema/runtime/utils/define'
+import type { Item, TableColumnNames, TableNames } from '~/modules/schema/utils/types'
+import type schema from '#hubify/schema'
 
 /**
  * Validates the router parameters for a collection and returns the collection name.
  */
 export async function ensureValidCollection(event = useEvent()) {
   const { collection } = await getValidatedRouterParams(event, z.object({
-    collection: z.enum(Object.keys(tables) as TableName<typeof tables>[])
+    collection: z.enum(Object.keys(tables) as TableNames<typeof schema>[])
   }).parse)
 
   return collection
@@ -19,7 +19,7 @@ export async function ensureValidCollection(event = useEvent()) {
 /**
  * Validates the router parameters for a collection and an ID, returning both.
  */
-export async function ensureValidId(collection: TableName<typeof tables>, event = useEvent()) {
+export async function ensureValidId(collection: TableNames<typeof schema>, event = useEvent()) {
   const primaryKeyColumn = Object.values(tables[collection].columns).find(column => column.primaryKey)
 
   const { id } = await getValidatedRouterParams(event, z.object({
@@ -32,11 +32,11 @@ export async function ensureValidId(collection: TableName<typeof tables>, event 
 /**
  * Validates the query parameters for a collection and returns the validated parameters.
  */
-export async function ensureValidQueryParams(
-  collection: TableName<typeof tables>,
+export async function ensureValidQueryParams<T extends TableNames<typeof schema>>(
+  collection: T,
   event = useEvent()
 ) {
-  const columnNames = Object.keys(tables[collection].columns) as ColumnName<typeof tables, typeof collection>[]
+  const columnNames = Object.keys(tables[collection].columns) as TableColumnNames<typeof schema, T>[]
 
   return await getValidatedQuery(event, z.object({
     columns: asEnumArray(columnNames).optional(),
@@ -51,7 +51,7 @@ export async function ensureValidQueryParams(
 /**
  * Validates an input item for a collection and returns the validated item.
  */
-export async function ensureValidInputItem<T extends TableNames>(
+export async function ensureValidInputItem<T extends TableNames<typeof schema>>(
   collection: T,
   optional = false,
   event = useEvent()
@@ -67,7 +67,7 @@ export async function ensureValidInputItem<T extends TableNames>(
 /**
  * Validates an output item for a collection and returns the validated item.
  */
-export async function ensureValidOutputItem<T extends TableNames, I extends TableItem<T>>(
+export async function ensureValidOutputItem<T extends TableNames<typeof schema>, I extends Item<typeof schema, T>>(
   collection: T,
   item: Partial<I> | Promise<Partial<I>>
 ) {
@@ -82,7 +82,7 @@ export async function ensureValidOutputItem<T extends TableNames, I extends Tabl
 /**
  * Validates many output items for a collection and returns the validated items.
  */
-export async function ensureValidOutputItems<T extends TableNames, I extends TableItem<T>>(
+export async function ensureValidOutputItems<T extends TableNames<typeof schema>, I extends Item<typeof schema, T>>(
   collection: T,
   items: Partial<I>[] | Promise<Partial<I>[]>
 ) {

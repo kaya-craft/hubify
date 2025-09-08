@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
 
   const params = await ensureValidQueryParams(collection, event)
 
-  const { remove } = useDb()
+  const { remove } = useDatabase()
 
   return remove(collection, params).then((ids) => {
     for (const id of ids) {

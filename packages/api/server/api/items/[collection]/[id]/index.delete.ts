@@ -4,14 +4,11 @@
 export default defineEventHandler(async (event) => {
   const collection = await ensureValidCollection(event)
 
-  const [id, params] = await Promise.all([
-    ensureValidId(collection, event),
-    ensureValidQueryParams(collection, event)
-  ])
+  const id = await ensureValidId(collection, event)
 
-  const { removeOne } = useDb()
+  const { removeOne } = useDatabase()
 
-  return removeOne(collection, id, params).then((id) => {
+  return removeOne(collection, id).then((id) => {
     emitMessage(event, {
       type: 'items:deleted',
       data: { collection, id }

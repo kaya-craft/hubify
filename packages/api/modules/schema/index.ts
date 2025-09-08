@@ -1,6 +1,6 @@
 import { addImportsDir, addServerImportsDir, addTemplate, addTypeTemplate, createResolver, defineNuxtModule, useLogger, useNuxt } from 'nuxt/kit'
 import { resolve, isAbsolute, join } from 'node:path'
-import { existsSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import type { Knex } from 'knex'
 import type { Column } from 'knex-schema-inspector/dist/types/column'
 import { MigrationSource } from './utils/migration'
@@ -8,7 +8,8 @@ import { generateSchemaTypes } from './utils/schema/types'
 import { generateSchemaContent } from './utils/schema/content'
 import { createDatabaseInstance } from './utils/database'
 
-export interface HubifyModuleOptions extends Knex.Config {
+export interface HubifyModuleOptions extends Omit<Knex.Config, 'client'> {
+  client: string
   schema: string[]
 }
 
@@ -81,7 +82,14 @@ export default defineNuxtModule<HubifyModuleOptions>({
  * Update the database schema by running migrations and return the current schema.
  */
 async function updateDatabaseSchema(dirs: string[], dbConfig: Knex.Config) {
-  const { db, getSchema } = createDatabaseInstance(dbConfig)
+  if (dbConfig.connection && typeof dbConfig.connection === 'object' && 'filename' in dbConfig.connection) {
+    const dirPath = resolve(dbConfig.connection.filename, '..')
+    if (!existsSync(dirPath)) {
+      mkdirSync(dirPath, { recursive: true })
+    }
+  }
+
+  const { db, getSchema } = createDatabaseInstance(dbConfig, {})
 
   await db.migrate.latest({
     tableName: 'hubify_migrations',
@@ -90,7 +98,11 @@ async function updateDatabaseSchema(dirs: string[], dbConfig: Knex.Config) {
 
   console.log('Database migrated to the latest version.')
 
-  return await getSchema()
+  const schema = await getSchema()
+
+  await db.destroy()
+
+  return schema
 }
 
 /**

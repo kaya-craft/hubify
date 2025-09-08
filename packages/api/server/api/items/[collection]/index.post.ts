@@ -6,9 +6,9 @@ export default defineEventHandler(async (event) => {
 
   const payload = await ensureValidInputItem(collection, false, event)
 
-  const { createOne } = useDb()
+  const { createOne } = useDatabase()
 
-  return ensureValidOutputItem(collection, createOne(collection, payload)).then((item) => {
+  return createOne(collection, payload).then((item) => {
     emitMessage(event, {
       type: 'items:created',
       data: { collection, item }

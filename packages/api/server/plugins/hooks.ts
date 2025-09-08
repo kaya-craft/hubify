@@ -1,5 +1,5 @@
 export default defineNitroPlugin((nitroApp) => {
-  const { createOne } = useDb()
+  const { createOne } = useDatabase()
 
   nitroApp.hooks.hook('hubify:table:created', async ({ table }) => {
     try {

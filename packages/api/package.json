@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./nuxt.config.ts",
+    "./utils/*": "./shared/utils/*.ts",
     "./lib/*": "./shared/lib/*.ts",
     "./modules/*": "./modules/*.ts",
     "./schema/*": "./schema/*.ts",

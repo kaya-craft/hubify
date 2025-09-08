@@ -29,7 +29,18 @@ function generateTableContent(table: string, columns: Record<string, Column>) {
  * Generate relations definition (currently empty).
  */
 function toRelationsDefinition(_columns: Record<string, Column>) {
-  return {}
+  return Object.fromEntries(Object.entries(_columns).filter(([, column]) => column.foreign_key_column).map(([name, column]) => [name, toRelationDefinition(column)]))
+}
+
+/**
+ * Generate a relation definition (currently empty).
+ */
+function toRelationDefinition(column: Column) {
+  return {
+    table: column.foreign_key_table,
+    fromKey: column.name,
+    toKey: column.foreign_key_column
+  }
 }
 
 /**
