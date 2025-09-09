@@ -1,6 +1,4 @@
-import { columns } from '@hubify/api/schema/hubify/settings'
-
-export const fields = defineFieldOptions(columns, {
+export const fields = defineFields({
   id: false,
   createdAt: false,
   updatedAt: false,

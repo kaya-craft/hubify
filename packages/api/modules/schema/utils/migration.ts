@@ -1,9 +1,9 @@
-import { extname } from 'node:path'
-import { readdirSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import type { Knex } from 'knex'
 import { createJiti } from 'jiti'
 import { createUnimport } from 'unimport'
 import { createResolver } from 'nuxt/kit'
+import { listDirFiles } from './../index'
 
 const jiti = createJiti(import.meta.url)
 
@@ -13,6 +13,9 @@ const unimport = createUnimport({
   imports: [{
     from: resolve('./../runtime/utils/define'),
     name: 'defineTable'
+  }, {
+    from: resolve('./../../../../app/modules/fields/runtime/utils/define'),
+    name: 'defineFields'
   }]
 })
 
@@ -47,7 +50,10 @@ export class MigrationSource {
 
     return {
       up(knex: Knex) {
-        if (!mod.default) console.warn(`[hubify/schema] Migration ${migration.name} does not have a default export function.`)
+        if (!(typeof mod.default === 'function')) {
+          console.warn(`[hubify/schema] Migration ${migration.name} does not have a default export function.`)
+          return knex.schema
+        }
 
         return knex.schema.createTable(migration.name, table => mod.default?.(table, knex))
       },
@@ -60,37 +66,4 @@ export class MigrationSource {
       }
     }
   }
-}
-
-/**
- * Recursively lists all files in a directory and its subdirectories.
- */
-function listDirFiles(dir: string, separator: string, extensions: string[], prepend = '') {
-  const files: {
-    path: string
-    ext: string
-    name: string
-  }[] = []
-
-  const items = readdirSync(dir, { withFileTypes: true })
-
-  for (const item of items) {
-    const ext = extname(item.name)
-    const nameWithoutExt = item.name.replace(ext, '')
-    const fullPath = resolve(dir, nameWithoutExt)
-    const name = prepend ? `${prepend}${separator}${nameWithoutExt}` : nameWithoutExt
-
-    if (item.isDirectory()) {
-      files.push(...listDirFiles(fullPath, separator, extensions, name))
-    }
-    else if (item.isFile() && extensions.includes(ext)) {
-      files.push({
-        path: fullPath,
-        ext: ext,
-        name: name
-      })
-    }
-  }
-
-  return files
 }

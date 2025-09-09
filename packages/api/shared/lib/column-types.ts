@@ -1,12 +1,12 @@
 import schema from '#hubify/schema'
-import type { TableColumn, Operator } from '@hubify/restql'
-import { OPERATORS } from '@hubify/restql/utils/helpers'
+import type { ColumnDefinition, Operator } from '@hubify/api/types/database'
+import { OPERATORS } from '@hubify/api/modules/schema/utils/database/operators'
 import z from 'zod'
 
 /**
  * Default field rules based on the column type.
  */
-export function columnTypeToZod(column: TableColumn) {
+export function columnTypeToZod(column: ColumnDefinition) {
   switch (column.type) {
     case 'int8':
     case 'int4':
@@ -35,7 +35,7 @@ export function columnTypeToZod(column: TableColumn) {
 /**
  * Operators that can be applied to different column types.
  */
-export function columnTypeToOperators(column: TableColumn): Operator[] {
+export function columnTypeToOperators(column: ColumnDefinition): Operator[] {
   const values = Object.keys(OPERATORS) as Operator[]
 
   switch (column.type) {
@@ -65,7 +65,7 @@ export function columnTypeToOperators(column: TableColumn): Operator[] {
 /**
  * Column validation type.
  */
-export function columnValidation(column: TableColumn, operator: Operator) {
+export function columnValidation(column: ColumnDefinition, operator: Operator) {
   if (expectsBooleanValue(operator)) {
     return z.boolean()
   }

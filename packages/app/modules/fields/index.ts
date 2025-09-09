@@ -1,7 +1,7 @@
 import { getDirectories, listDirFiles } from '@hubify/api/modules/schema/index'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { addImportsDir, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, resolveModule, useLogger } from 'nuxt/kit'
+import { useNuxt, addImportsDir, addTypeTemplate, addServerImportsDir, addTemplate, createResolver, defineNuxtModule, resolveModule, useLogger } from 'nuxt/kit'
 
 export interface FieldsModuleOptions {
   inputs: string[]
@@ -64,6 +64,8 @@ export default defineNuxtModule<FieldsModuleOptions>({
       }
     })
 
+    generateDefineField(nuxt.options.hubify.schema)
+
     nuxt.options.nitro.alias ??= {}
     nuxt.options.nitro.alias['#hubify/inputs'] = inputsPath
     nuxt.options.nitro.alias['#hubify/displays'] = displaysPath
@@ -93,4 +95,51 @@ function createFieldsContent(fieldsDirs: string[]) {
     exports.map(e => `\t${e}`).join(',\n'),
     '}'
   ].join('\n')
+}
+
+/**
+ * Generate typescript config for fields definition.
+ */
+function generateDefineField(fieldsDirs: string[]) {
+  const files = fieldsDirs.flatMap(dir => listDirFiles(dir, '_', ['.ts', '.js'])).reverse().filter((file, index, array) => {
+    return array.findIndex(f => f.name === file.name) === index
+  })
+
+  for (const file of files) {
+    const content = [
+      'import type { TableColumns } from \'@hubify/api/types/database\'',
+      'import type { FieldOptions } from \'@hubify/app/types/fields\'',
+      'import type schema from \'./schema\'',
+      '',
+      'declare global {',
+      '\tfunction defineFields<F extends FieldOptions<TableColumns<typeof schema, \'' + file.name + '\'>>>(fields: F): F',
+      '}',
+      '\n',
+      'export {}'
+    ].join('\n')
+
+    addTypeTemplate({
+      filename: `hubify/${file.name}.imports.d.ts`,
+      getContents: () => content
+    })
+
+    addTemplate({
+      filename: `hubify/tsconfig.${file.name}.json`,
+      write: true,
+      getContents: () => JSON.stringify({
+        extends: '../tsconfig.json',
+        include: [
+          file.path + file.ext,
+          './' + file.name + '.imports.d.ts'
+        ]
+      }, null, 2)
+    })
+
+    const nuxt = useNuxt()
+    nuxt.options.typescript.sharedTsConfig ??= {}
+    nuxt.options.typescript.sharedTsConfig.references ??= []
+    nuxt.options.typescript.sharedTsConfig.references.push({
+      path: `./hubify/tsconfig.${file.name}.json`
+    })
+  }
 }

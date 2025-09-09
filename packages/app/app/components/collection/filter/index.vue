@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends TableNames">
 import { CollectionFilterContent, UModal, UPopover } from '#components'
-import type { ConditionTree, Operator } from '@hubify/restql'
+import type { ConditionTree, Operator } from '@hubify/api/types/database'
 import type { ComponentInstance } from 'vue'
 
 export type Clause<T extends TableNames> = {

@@ -1,7 +1,7 @@
 import registeredDisplays from '#hubify/displays'
 import registeredInputs from '#hubify/inputs'
 import tables from '#hubify/schema'
-import { getPrimaryKey } from '@hubify/restql/utils/helpers'
+import { getPrimaryKeyColumn } from '@hubify/api/modules/schema/utils/database/helpers'
 import type { AsyncComponentLoader } from 'vue'
 import { InputsText, DisplaysText, InputsOneToMany } from '#components'
 import { isOneToManyRelation } from '@hubify/api/lib/column-types'
@@ -58,7 +58,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Primary key of the table.
    */
   const primaryKey = computed(() => {
-    return getPrimaryKey(tables, toValue(tableName)) as TablePrimaryKey<T>
+    return getPrimaryKeyColumn(tables, toValue(tableName)) as TablePrimaryKey<T>
   })
 
   /**

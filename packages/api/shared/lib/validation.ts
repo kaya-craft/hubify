@@ -1,4 +1,3 @@
-import type { TableName } from '@hubify/restql'
 import z from 'zod'
 import tables from '#hubify/schema'
 import { columnTypeToOperators, columnTypeToZod, columnValidation } from './column-types'
@@ -6,7 +5,7 @@ import { columnTypeToOperators, columnTypeToZod, columnValidation } from './colu
 /**
  * Special validation for the `where` clause in query parameters.
  */
-export function whereValidation<T extends TableName<Schema>>(
+export function whereValidation<T extends TableNames>(
   collection: T
 ) {
   const columns = Object.entries(tables[collection].columns)

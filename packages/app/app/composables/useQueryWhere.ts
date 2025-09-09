@@ -1,8 +1,7 @@
-import type { QueryParams } from '@hubify/restql'
 import { whereValidation } from '@hubify/api/lib/validation'
 import { defu } from 'defu'
 
-export type Where<T extends TableNames> = QueryParams<Schema, T>['where']
+export type Where<T extends TableNames> = QueryParams<T>['where']
 
 export function useQueryWhere<T extends TableNames>(table: T, baseWhere?: MaybeRefOrGetter<Where<T>>) {
 /**

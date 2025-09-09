@@ -1,6 +1,6 @@
+import { extname, resolve, isAbsolute, join } from 'node:path'
+import { readdirSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { addImportsDir, addServerImportsDir, addTemplate, addTypeTemplate, createResolver, defineNuxtModule, updateRuntimeConfig, useLogger, useNuxt } from 'nuxt/kit'
-import { resolve, isAbsolute, join } from 'node:path'
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import type { Knex } from 'knex'
 import type { Column } from 'knex-schema-inspector/dist/types/column'
 import { MigrationSource } from './utils/migration'
@@ -120,4 +120,37 @@ function getSystemCollections(schema: Record<string, Record<string, Column>>) {
 export function getDirectories(schema: string[]) {
   const layers = useNuxt().options._layers.map(layer => layer.cwd)
   return [...new Set(schema.flatMap(dir => isAbsolute(dir) ? dir : layers.map(layer => resolve(layer, dir))).filter(dir => existsSync(dir)))]
+}
+
+/**
+ * Recursively lists all files in a directory and its subdirectories.
+ */
+export function listDirFiles(dir: string, separator: string, extensions: string[], prepend = '') {
+  const files: {
+    path: string
+    ext: string
+    name: string
+  }[] = []
+
+  const items = readdirSync(dir, { withFileTypes: true })
+
+  for (const item of items) {
+    const ext = extname(item.name)
+    const nameWithoutExt = item.name.replace(ext, '')
+    const fullPath = resolve(dir, nameWithoutExt)
+    const name = prepend ? `${prepend}${separator}${nameWithoutExt}` : nameWithoutExt
+
+    if (item.isDirectory()) {
+      files.push(...listDirFiles(fullPath, separator, extensions, name))
+    }
+    else if (item.isFile() && extensions.includes(ext)) {
+      files.push({
+        path: fullPath,
+        ext: ext,
+        name: name
+      })
+    }
+  }
+
+  return files
 }

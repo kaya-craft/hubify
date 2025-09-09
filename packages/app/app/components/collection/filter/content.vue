@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends TableNames">
-import type { ConditionTree, Operator } from '@hubify/restql'
+import type { ConditionTree, Operator } from '@hubify/api/types/database'
 import type { AndOrClause } from './index.vue'
 import type { DropdownMenuItem } from '@nuxt/ui'
 
@@ -56,10 +56,14 @@ function clausesArrayToObject(clauses: ConditionTreeAsArray<T>[]): ConditionTree
 function clausesObjectToArray(clauses: ConditionTree<Schema, T>, root = true) {
   const array = Object.entries(clauses).flatMap(([key, value], _, array): ConditionTreeAsArray<T>[] => {
     if (root && array.length === 1 && key === '$and') {
+      if (!isArray(value)) return []
+
       return value.flatMap(value => clausesObjectToArray(value, false)) as ConditionTreeAsArray<T>[]
     }
 
     if (key === '$and' || key === '$or') {
+      if (!isArray(value)) return []
+
       return [{ type: key, children: value.flatMap(value => clausesObjectToArray(value, false)) }] as AndOrClause<T>[]
     }
 

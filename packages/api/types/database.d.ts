@@ -1,4 +1,4 @@
-import type { OPERATORS } from './operators'
+import type { OPERATORS } from '@hubify/api/modules/schema/utils/database/operators'
 
 export interface Schema {
   [table: string]: TableDefinition
@@ -40,7 +40,7 @@ export type TableRelationNames<S extends Schema, T extends TableNames<S>> = keyo
 export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R]
 
 export type TableItem<S extends Schema, T extends TableNames<S>> = {
-  [K in TableColumnNames<S, T>]: ColumnType<S, T, K> | (K extends TableRelationNames<S, T> ? TableRelation<S, T, K> extends infer R extends { through: string }
+  [K in TableColumnNames<S, T>]: TableColumnType<S, T, K> | (K extends TableRelationNames<S, T> ? TableRelation<S, T, K> extends infer R extends { through: string }
     ? TableItem<S, R['table']>[]
     : TableItem<S, R['table']> | null
     : never)
@@ -85,19 +85,21 @@ export type PrimaryKeyColumn<S extends Schema, T extends TableNames<S>> = {
   [K in TableColumnNames<S, T>]: S[T]['columns'][K] extends { primaryKey: true } ? K : never
 }[TableColumnNames<S, T>]
 
-export type TablePrimaryKeyValue<S extends Schema, T extends TableNames<S>> = ColumnType<TableColumn<S, T, PrimaryKeyColumn<S, T>>>
+export type TablePrimaryKeyValue<S extends Schema, T extends TableNames<S>> = TableColumnType<TableColumn<S, T, PrimaryKeyColumn<S, T>>>
 
 export type Item<S extends Schema, T extends TableNames<S>> = {
-  [K in TableColumnNames<S, T>]: ColumnType<S, T, K> | (K extends TableRelationNames<S, T> ? TableRelation<S, T, K> extends infer R extends { through: string }
+  [K in TableColumnNames<S, T>]: TableColumnType<S, T, K> | (K extends TableRelationNames<S, T> ? TableRelation<S, T, K> extends infer R extends { through: string }
     ? Item<S, R['table']>[]
     : Item<S, R['table']> | null
     : never)
 }
 
-export type ColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
+export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
 
-type DataType<T extends string> = T extends 'increments' | 'integer' | 'bigInteger' | 'float' | 'decimal' ? number
+type DataType<T extends DataTypes> = T extends 'increments' | 'integer' | 'bigInteger' | 'float' | 'decimal' ? number
   : T extends 'boolean' ? boolean
     : T extends 'date' | 'datetime' | 'time' | 'timestamp' ? Date
       : T extends 'json' | 'jsonb' ? unknown
         : string | number | boolean | Date | null
+
+export type DataTypes = 'integer' | 'bigInteger' | 'float' | 'decimal' | 'boolean' | 'date' | 'datetime' | 'time' | 'timestamp' | 'text' | 'string' | 'uuid' | 'json' | 'jsonb' | 'increments'
