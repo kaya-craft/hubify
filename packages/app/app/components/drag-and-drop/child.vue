@@ -98,7 +98,6 @@ function getData(): ItemData<T> {
  */
 function resetEdge() {
   if (!edge.value) return
-  console.log('leave')
   edge.value = undefined
   emit('dragleave')
 }

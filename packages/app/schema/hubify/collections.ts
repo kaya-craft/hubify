@@ -36,6 +36,16 @@ export const fields = defineFields({
       }
     }
   },
+  displayTemplate: {
+    input: {
+      component: 'system-collection-display',
+      label: 'Display Template',
+      class: 'col-span-6',
+      props: {
+        collectionKey: 'name'
+      }
+    }
+  },
   hidden: {
     input: {
       component: 'switch',

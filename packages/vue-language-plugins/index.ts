@@ -44,6 +44,13 @@ function transformDefineOptions({
       /(?<=^(?:export\sdefault|const\s__VLS_component\s=)\s\(await\simport\([\S\s]+\)\).defineComponent\(\{)/m,
       '\nsetup: () => (__VLS_exposed),'
     )
+
+    // // For Vue generic components
+    replace(
+      codes,
+      /(?<=^return\s{}\sas\s{[\s\S]+expose\(exposed:\simport\([\S\s]+\)\.ShallowUnwrapRef<).*?(?=>)/m,
+      'typeof __VLS_exposed'
+    )
   }
 }
 

@@ -7,6 +7,7 @@ export default defineTable((table, knex) => {
   table.text('description').nullable()
   table.text('color').nullable()
   table.text('icon').nullable()
+  table.text('displayTemplate').nullable()
   table.boolean('hidden').defaultTo(false)
   table.boolean('singleton').defaultTo(false)
   table.timestamp('createdAt').defaultTo(knex.fn.now())

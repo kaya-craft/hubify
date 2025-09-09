@@ -51,7 +51,6 @@ export class MigrationSource {
     return {
       up(knex: Knex) {
         if (!(typeof mod.default === 'function')) {
-          console.warn(`[hubify/schema] Migration ${migration.name} does not have a default export function.`)
           return knex.schema
         }
 

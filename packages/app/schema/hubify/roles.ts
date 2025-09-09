@@ -4,6 +4,7 @@
 export const fields = defineFields({
   admin: {
     input: {
-      component: 'switch' }
+      component: 'switch'
+    }
   }
 })

@@ -1,9 +1,9 @@
 /// <reference types="@vitest/browser/providers/playwright" />
 import { describe, expect, it } from 'vitest'
 import 'vitest-browser-vue'
-import { CollectionFilterContent } from '#components'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { page, userEvent, type Locator } from '@vitest/browser/context'
+import { CollectionFilterContent } from '#components'
 
 mockNuxtImport('useTable', () => () => ({
   primaryKey: 'id',

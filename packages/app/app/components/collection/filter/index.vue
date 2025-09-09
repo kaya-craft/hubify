@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="T extends TableNames">
 import { CollectionFilterContent, UModal, UPopover } from '#components'
-import type { ConditionTree, Operator } from '@hubify/api/types/database'
+import type { Operator } from '@hubify/api/types/database'
 import type { ComponentInstance } from 'vue'
 
 export type Clause<T extends TableNames> = {
@@ -21,7 +21,7 @@ type Props = {
   collection: T
 }
 
-const filter = defineModel<ConditionTree<Schema, T>>()
+const filter = defineModel<ConditionTree<T>>()
 
 const { collection } = defineProps<Props>()
 

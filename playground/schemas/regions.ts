@@ -4,7 +4,6 @@ export default defineTable((table, knex) => {
   table.text('icon').nullable()
   table.timestamp('createdAt').defaultTo(knex.fn.now())
   table.timestamp('updatedAt').defaultTo(knex.fn.now())
-  table.integer('region').unsigned().references('id').inTable('regions').onDelete('SET NULL').onUpdate('CASCADE').nullable()
 })
 
 export const fields = defineFields({

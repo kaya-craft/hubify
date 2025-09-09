@@ -34,7 +34,7 @@ export type TableNames<S extends Schema> = keyof S & string
 
 export type TableColumns<S extends Schema, T extends TableNames<S>> = S[T] extends { columns: infer C } ? C : never
 export type TableColumnNames<S extends Schema, T extends TableNames<S>> = keyof TableColumns<S, T> & string
-export type TableColumn<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = TableColumns<S, T>[C]
+export type TableColumn<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = TableColumns<S, T>[C] extends infer U extends ColumnDefinition ? U : never
 
 export type TableRelations<S extends Schema, T extends TableNames<S>> = S[T] extends { relations: infer R } ? R : never
 export type TableRelationNames<S extends Schema, T extends TableNames<S>> = keyof TableRelations<S, T> & string
@@ -98,20 +98,20 @@ export type Item<S extends Schema, T extends TableNames<S>> = {
 export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
 
 type DataType<T extends DataTypes>
-    = T extends 'text' ? string
-      : T extends 'float4' ? number
-        : T extends 'boolean' ? boolean
-          : T extends 'date' ? Date
-            : T extends 'json' ? Record<string, any>
-              : T extends 'int4' ? number
-                : T extends 'int8' ? bigint
-                  : T extends 'timestamptz' ? Date
-                    : T extends 'timestamp' ? Date
-                      : T extends 'datetime' ? Date
-                        : T extends 'uuid' ? string
-                          : T extends 'varchar' ? string
-                            : T extends 'numeric' ? number
-                              : T extends 'integer' ? number
-                                : never
+  = T extends 'text' ? string
+    : T extends 'float4' ? number
+      : T extends 'boolean' ? boolean
+        : T extends 'date' ? Date
+          : T extends 'json' ? Record<string, any>
+            : T extends 'int4' ? number
+              : T extends 'int8' ? bigint
+                : T extends 'timestamptz' ? Date
+                  : T extends 'timestamp' ? Date
+                    : T extends 'datetime' ? Date
+                      : T extends 'uuid' ? string
+                        : T extends 'varchar' ? string
+                          : T extends 'numeric' ? number
+                            : T extends 'integer' ? number
+                              : never
 
 export type DataTypes = 'text' | 'float4' | 'boolean' | 'date' | 'json' | 'integer' | 'int4' | 'int8' | 'timestamptz' | 'timestamp' | 'uuid' | 'varchar' | 'numeric' | 'datetime'

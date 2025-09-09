@@ -11,20 +11,44 @@ const value = defineModel<TablePrimaryKeyValue<RelatedTable>>()
 
 const { collection, relation, displayColumn: _displayColumn } = defineProps<Props>()
 
+/**
+ * Use table composable
+ */
 const { getRelation } = useTable(collection)
 
+/**
+ * Get related table info
+ */
 const { primaryKey, name } = useTable(getRelation(relation).table)
 
-const displayColumn = computed(() => {
-  return (_displayColumn || toValue(primaryKey))
+/**
+ * Use collections composable
+ */
+const { extractDisplayColumns, getDisplay } = useCollections()
+
+/**
+ * Fallback display column
+ */
+const fallbackColumn = computed(() => {
+  return _displayColumn || toValue(primaryKey)
 })
 
+/**
+ * Columns to fetch for display
+ */
+const displayColumns = computed(() => {
+  return extractDisplayColumns(toValue(name)) ?? [toValue(fallbackColumn)]
+})
+
+/**
+ * Fetch related items
+ */
 const { data: items } = useFetch(`/api/items/${toValue(name)}`, {
   query: {
-    columns: [toValue(primaryKey), toValue(displayColumn)]
+    columns: [toValue(primaryKey), ...toValue(displayColumns)]
   },
   transform: (items: TableItem<T>[]) => items.map(item => ({
-    label: String(item[toValue(displayColumn)]),
+    label: getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn)]),
     value: item[toValue(primaryKey)]
   }))
 })

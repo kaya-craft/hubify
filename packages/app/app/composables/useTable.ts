@@ -2,9 +2,8 @@ import registeredDisplays from '#hubify/displays'
 import registeredInputs from '#hubify/inputs'
 import fields from '#hubify/fields'
 import tables from '#hubify/schema'
-import { getPrimaryKeyColumn } from '@hubify/api/modules/schema/utils/database/helpers'
 import type { AsyncComponentLoader } from 'vue'
-import { InputsText, DisplaysText, InputsOneToMany } from '#components'
+import { getPrimaryKeyColumn } from '@hubify/api/modules/schema/utils/database/helpers'
 import { isOneToManyRelation } from '@hubify/api/lib/column-types'
 import type { TableFieldOption, TableFieldOptions } from '@@/types/fields'
 
@@ -166,15 +165,15 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     if (!input?.component) {
       const collection = toValue(tableName)
       if (isOneToManyRelation(collection, column)) {
-        return h(InputsOneToMany, {
+        return h(resolveComponent('InputsSystemOneToMany'), {
+          inheritAttrs: false,
           class: input?.class,
           collection,
-          // @ts-expect-error - Some collections might not have relations.
           relation: column
         })
       }
 
-      return h(InputsText, { class: input?.class })
+      return h(resolveComponent('InputsText'), { class: input?.class })
     }
 
     const component = registeredInputs[input.component as keyof typeof registeredInputs]
@@ -190,7 +189,19 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (display === false) return
 
-    if (!display?.component) return h(DisplaysText, { class: display?.class })
+    if (!display?.component) {
+      const collection = toValue(tableName)
+
+      if (isOneToManyRelation(collection, column)) {
+        return h(resolveComponent('DisplaysSystemOneToMany'), {
+          class: display?.class,
+          collection,
+          relation: column
+        })
+      }
+
+      return h(resolveComponent('DisplaysText'), { class: display?.class })
+    }
 
     const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
 

@@ -20,6 +20,12 @@ async function onSubmit(event: TableFormSubmitEvent<T>) {
   await submit(event)
   emit('success', event, !event.target)
 }
+
+defineShortcuts({
+  meta_s: () => {
+    form.value?.submit()
+  }
+})
 </script>
 
 <template>
