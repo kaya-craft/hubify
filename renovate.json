@@ -1,0 +1,27 @@
+{
+  "extends": [
+    "github>renovatebot/presets:monorepo",
+    "github>renovatebot/presets:pnpm"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["pnpm"],
+      "enabled": true
+    },
+    {
+      "description": "Automerge devDependencies",
+      "matchDepTypes": ["devDependencies"],
+      "automerge": true
+    },
+    {
+      "description": "Group minor and patch updates",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "minor and patch updates"
+    }
+  ],
+  "automerge": false,
+  "labels": ["dependencies", "renovate"],
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 5,
+  "schedule": ["before 5am every weekday"]
+}
