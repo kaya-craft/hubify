@@ -38,7 +38,7 @@ export type TableColumn<S extends Schema, T extends TableNames<S>, C extends Tab
 
 export type TableRelations<S extends Schema, T extends TableNames<S>> = S[T] extends { relations: infer R } ? R : never
 export type TableRelationNames<S extends Schema, T extends TableNames<S>> = keyof TableRelations<S, T> & string
-export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R]
+export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R] extends infer U extends RelationDefinition ? U : never
 
 export type TableItem<S extends Schema, T extends TableNames<S>> = {
   [K in TableColumnNames<S, T>]: TableColumnType<S, T, K> | (K extends TableRelationNames<S, T> ? TableRelation<S, T, K> extends infer R extends { through: string }

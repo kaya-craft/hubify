@@ -18,7 +18,8 @@ export const fields = defineFields({
     input: {
       component: 'color-picker',
       label: 'Color',
-      class: 'col-span-6'
+      class: 'col-span-6',
+      rules: rules => rules
     },
     display: {
       component: 'color'
@@ -40,6 +41,7 @@ export const fields = defineFields({
       component: 'switch',
       label: 'Hidden',
       class: 'col-span-6',
+      rules: rules => rules,
       props: {
         description: 'If true, the collection will not be displayed in the UI.'
       }

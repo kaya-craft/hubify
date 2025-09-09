@@ -89,13 +89,13 @@ function expectsBooleanValue(operator: Operator) {
 /**
  * Check if a column is a one-to-many relation.
  */
-export function isOneToManyRelation<T extends TableNames, R extends TableRelationNames<T>>(table: T, relation: R) {
+export function isOneToManyRelation<T extends TableNames, R extends TableColumnNames<T>>(table: T, relation: R) {
   return 'relations' in schema[table] && relation in schema[table].relations && (relation in schema[table].columns)
 }
 
 /**
  * Check if a column is a many-to-one relation.
  */
-export function isManyToOneRelation<T extends TableNames, R extends TableRelationNames<T>>(table: T, relation: R) {
+export function isManyToOneRelation<T extends TableNames, R extends TableColumnNames<T>>(table: T, relation: R) {
   return 'relations' in schema[table] && relation in schema[table].relations && !(relation in schema[table].columns)
 }

@@ -6,7 +6,7 @@ import type { Schema } from '@hubify/api/types/database'
  * Update schema upon modification.
  */
 export default defineNitroPlugin(async (nitroApp) => {
-  if (needsInitialSeed(schema)) {
+  if (await needsInitialSeed(schema)) {
     await seedDatabase()
   }
 
@@ -44,40 +44,51 @@ async function updateHubifyCollections(nitroApp: NitroApp) {
 /**
  * Check if the database needs initial seeding.
  */
-function needsInitialSeed(currentSchema: Schema | null) {
+async function needsInitialSeed(currentSchema: Schema | null) {
   if (!currentSchema) return true
 
   const { hubify } = useRuntimeConfig()
 
-  return hubify.systemCollections.some(collection => !(collection in currentSchema))
+  if (hubify.systemCollections.some(collection => !(collection in currentSchema))) return true
+
+  const { find } = useDatabase()
+
+  return find('hubify_users', {
+    where: {
+      'role.admin': {
+        $eq: true
+      }
+    },
+    limit: 1
+  }).then(users => users.length === 0)
 }
 
 /**
  * Seed the database with initial data.
  */
 async function seedDatabase() {
-  const { db } = useDatabase()
+  const { db, createOne } = useDatabase()
 
   try {
-    await db.transaction(async () => {
-      const role = await db('hubify_roles').insert({
-        name: 'Administrator',
-        admin: true,
-        description: 'Full access to the system',
-        icon: 'heroicons:shield-check'
-      }).first()
+    console.info('Seeding the database with initial data...')
 
-      if (!role) throw new Error('Failed to create the Administrator role')
-
-      await db('hubify_users').insert({
-        firstname: 'Admin',
-        email: 'admin@example.com',
-        password: await hashPassword('password'),
-        role: role
-      })
-
-      console.info('Database seeded with initial data')
+    const role = await createOne('hubify_roles', {
+      name: 'Administrator',
+      admin: true,
+      description: 'Full access to the system',
+      icon: 'heroicons:shield-check'
     })
+
+    if (!role) throw new Error('Failed to create the Administrator role')
+
+    await db('hubify_users').insert({
+      firstname: 'Admin',
+      email: 'admin@example.com',
+      password: await hashPassword('password'),
+      role: role.id
+    })
+
+    console.info('Database seeded with initial data')
   }
   catch (error) {
     console.error('Failed to seed the database:', error)

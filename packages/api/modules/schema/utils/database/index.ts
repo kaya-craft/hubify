@@ -1,4 +1,4 @@
-import { knex, type Knex } from 'knex'
+import knex, { type Knex } from 'knex'
 import { SchemaInspector } from 'knex-schema-inspector'
 import type { Column } from 'knex-schema-inspector/dist/types/column'
 import type { Schema, TableNames, QueryParams, TablePrimaryKeyValue, TableItem } from '@hubify/api/types/database'
@@ -97,6 +97,7 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
     const builder = db(table)
       .insert(data)
       .returning('*')
+      .then(res => res[0])
 
     return builder as knex.Knex.QueryBuilder<{}, TableItem<S, T>>
   }
