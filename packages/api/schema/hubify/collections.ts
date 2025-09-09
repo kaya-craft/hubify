@@ -54,6 +54,15 @@ export const columns = defineTableColumns({
     notNull: false,
     default: false
   },
+
+  /**
+   * Display template for the collection.
+   */
+  displayTemplate: {
+    type: 'text',
+    notNull: false
+  },
+
   /**
    * Timestamp when the collection was created.
    */

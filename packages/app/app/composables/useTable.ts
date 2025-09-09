@@ -3,7 +3,7 @@ import registeredInputs from '#hubify/inputs'
 import tables from '#hubify/schema'
 import { getPrimaryKey } from '@hubify/restql/utils/helpers'
 import type { AsyncComponentLoader } from 'vue'
-import { InputsText, DisplaysText, InputsOneToMany } from '#components'
+import { InputsText, DisplaysText, DisplaysSystemOneToMany, InputsSystemOneToMany } from '#components'
 import { isOneToManyRelation } from '@hubify/api/lib/column-types'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
@@ -163,7 +163,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (!input?.component) {
       if (isOneToManyRelation(toValue(tableName), column)) {
-        return h(InputsOneToMany, {
+        return h(InputsSystemOneToMany, {
+          inheritAttrs: false,
           class: input?.class,
           collection: toValue(tableName),
           relation: column
@@ -186,7 +187,17 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (display === false) return
 
-    if (!display?.component) return h(DisplaysText, { class: display?.class })
+    if (!display?.component) {
+      if (isOneToManyRelation(toValue(tableName), column)) {
+        return h(DisplaysSystemOneToMany, {
+          class: display?.class,
+          collection: toValue(tableName),
+          relation: column
+        })
+      }
+
+      return h(DisplaysText, { class: display?.class })
+    }
 
     const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
 

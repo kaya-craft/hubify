@@ -11,10 +11,6 @@ export const columns = defineTableColumns({
     type: 'text',
     notNull: false
   },
-  region: {
-    type: 'integer',
-    notNull: false
-  },
   createdAt: {
     type: 'timestamp',
     default: 'CURRENT_TIMESTAMP'
@@ -66,9 +62,9 @@ export const fields = defineFieldOptions(columns, {
 })
 
 export const relations = defineTableRelations({
-  region: {
-    table: 'regions',
-    fromKey: 'id',
+  countries: {
+    table: 'countries',
+    fromKey: 'region',
     toKey: 'id'
   }
 })

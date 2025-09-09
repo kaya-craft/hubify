@@ -235,7 +235,7 @@ export function normalizeOperationValue<V>(value: V, type?: ColumnTypes): Normal
   switch (type) {
     case 'text':
     case 'varchar':
-      return `'${value}'` as Normalize<V>
+      return `'${String(value).replace('\'', '\'\'')}'` as Normalize<V>
     case 'boolean':
       return (value ? 'TRUE' : 'FALSE') as Normalize<V>
     case 'date':
