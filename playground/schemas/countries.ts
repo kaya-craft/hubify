@@ -1,27 +1,12 @@
-export const columns = defineTableColumns({
-  id: {
-    type: 'integer',
-    primaryKey: true
-  },
-  name: {
-    type: 'text',
-    notNull: true
-  },
-  icon: {
-    type: 'text',
-    notNull: false
-  },
-  createdAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
-  },
-  updatedAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
-  }
+export default defineTable((table, knex) => {
+  table.increments('id').primary()
+  table.text('name').notNullable()
+  table.text('icon').nullable()
+  table.timestamp('createdAt').defaultTo(knex.fn.now())
+  table.timestamp('updatedAt').defaultTo(knex.fn.now())
 })
 
-export const fields = defineFieldOptions(columns, {
+export const fields = defineFields({
   id: {
     input: false,
     display: {

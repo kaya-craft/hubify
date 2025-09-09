@@ -6,3 +6,5 @@ import type { Knex } from 'knex'
 export function defineTable(cb: (table: Knex.CreateTableBuilder, knex: Knex) => void) {
   return cb
 }
+
+export * from './types.d'

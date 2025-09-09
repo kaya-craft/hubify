@@ -112,7 +112,7 @@ function generateDefineField(fieldsDirs: string[]) {
       'import type schema from \'./schema\'',
       '',
       'declare global {',
-      '\tfunction defineFields<F extends FieldOptions<TableColumns<typeof schema, \'' + file.name + '\'>>>(fields: F): F',
+      '\tfunction defineFields<F extends FieldOptions<\'' + file.name + '\', TableColumns<typeof schema, \'' + file.name + '\'>>>(fields: F = {} as F): F',
       '}',
       '\n',
       'export {}'

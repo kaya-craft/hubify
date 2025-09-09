@@ -1,30 +1,9 @@
+/**
+ * Define the fields for the hubify_roles collection. Types are automatically inferred!
+ */
 export const fields = defineFields({
-  id: false,
-
-  name: {
-    order: 1,
+  admin: {
     input: {
-      component: 'text',
-      class: 'col-span-6'
-    }
-  },
-
-  icon: {
-    order: 2,
-    input: {
-      component: 'icon-picker',
-      class: 'col-span-6'
-    },
-    display: {
-      component: 'icon'
-    }
-  },
-
-  description: {
-    order: 3,
-    input: {
-      component: 'text',
-      class: 'w-full'
-    }
+      component: 'switch' }
   }
 })

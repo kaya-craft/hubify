@@ -21,7 +21,7 @@ export async function ensureValidId<T extends TableNames>(collection: T, event =
   const primaryKeyColumn = Object.values(tables[collection].columns).find(column => column.primaryKey)
 
   const { id } = await getValidatedRouterParams(event, z.object({
-    id: columnTypeToZod(primaryKeyColumn)
+    id: columnTypeToZod(primaryKeyColumn.type)
   }).parse)
 
   return id

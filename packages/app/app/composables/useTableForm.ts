@@ -3,11 +3,11 @@ import type z from 'zod'
 import { itemValidation } from '@hubify/api/lib/validation'
 
 export type TableFormState<T extends TableNames> = {
-  [C in TableColumnNames<T>]: TableFieldOptionValue<T, C> | undefined
+  [C in TableColumnNames<T>]: TableColumnType<T, C> | undefined
 } extends infer U extends object ? U : never
 
 export type TableFormSchema<T extends TableNames> = z.ZodObject<{
-  [C in TableColumnNames<T>]: z.ZodType<TableFieldOptionValue<T, C> | undefined>
+  [C in TableColumnNames<T>]: z.ZodType<TableColumnType<T, C> | undefined>
 }>
 
 export type TableFormSubmitEvent<T extends TableNames> = FormSubmitEvent<z.Infer<TableFormSchema<T>>>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { OPERATORS } from '@hubify/api/modules/schema/utils/database/operators'
 
 export interface Schema {
@@ -14,7 +15,7 @@ export interface TableDefinition {
 }
 
 export interface ColumnDefinition {
-  type: string
+  type: DataTypes
   primaryKey?: boolean
   notNull?: boolean
   unique?: boolean
@@ -96,10 +97,21 @@ export type Item<S extends Schema, T extends TableNames<S>> = {
 
 export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
 
-type DataType<T extends DataTypes> = T extends 'increments' | 'integer' | 'bigInteger' | 'float' | 'decimal' ? number
-  : T extends 'boolean' ? boolean
-    : T extends 'date' | 'datetime' | 'time' | 'timestamp' ? Date
-      : T extends 'json' | 'jsonb' ? unknown
-        : string | number | boolean | Date | null
+type DataType<T extends DataTypes>
+    = T extends 'text' ? string
+      : T extends 'float4' ? number
+        : T extends 'boolean' ? boolean
+          : T extends 'date' ? Date
+            : T extends 'json' ? Record<string, any>
+              : T extends 'int4' ? number
+                : T extends 'int8' ? bigint
+                  : T extends 'timestamptz' ? Date
+                    : T extends 'timestamp' ? Date
+                      : T extends 'datetime' ? Date
+                        : T extends 'uuid' ? string
+                          : T extends 'varchar' ? string
+                            : T extends 'numeric' ? number
+                              : T extends 'integer' ? number
+                                : never
 
-export type DataTypes = 'integer' | 'bigInteger' | 'float' | 'decimal' | 'boolean' | 'date' | 'datetime' | 'time' | 'timestamp' | 'text' | 'string' | 'uuid' | 'json' | 'jsonb' | 'increments'
+export type DataTypes = 'text' | 'float4' | 'boolean' | 'date' | 'json' | 'integer' | 'int4' | 'int8' | 'timestamptz' | 'timestamp' | 'uuid' | 'varchar' | 'numeric' | 'datetime'

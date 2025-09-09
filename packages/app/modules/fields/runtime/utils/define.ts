@@ -1,10 +1,10 @@
-import type { ColumnDefinition, DataTypes } from '@hubify/api/types/database'
+import type { DataTypes } from '@hubify/api/types/database'
 import type { FieldOptions } from '@hubify/app/types/fields'
 
 /**
  * Define column options for the specified columns.
  */
-export function defineFields<const O extends FieldOptions<Record<string, ColumnDefinition>>>(options: O): O {
+export function defineFields<O extends FieldOptions<TableNames, TableColumns<TableNames>>>(options: O = {} as O): O {
   return options
 }
 

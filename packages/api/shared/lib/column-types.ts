@@ -1,35 +1,30 @@
 import schema from '#hubify/schema'
-import type { ColumnDefinition, Operator } from '@hubify/api/types/database'
+import type { ColumnDefinition, DataTypes, Operator } from '@hubify/api/types/database'
 import { OPERATORS } from '@hubify/api/modules/schema/utils/database/operators'
 import z from 'zod'
+
+const typesToZod = {
+  int8: z.coerce.number().int(),
+  int4: z.coerce.number().int(),
+  numeric: z.coerce.number().int(),
+  integer: z.coerce.number().int(),
+  float4: z.coerce.number(),
+  text: z.string(),
+  varchar: z.string(),
+  uuid: z.uuid(),
+  timestamp: z.coerce.date(),
+  date: z.coerce.date(),
+  timestamptz: z.coerce.date(),
+  boolean: z.coerce.boolean(),
+  json: z.any(),
+  datetime: z.coerce.date()
+} satisfies Record<DataTypes, z.ZodTypeAny>
 
 /**
  * Default field rules based on the column type.
  */
-export function columnTypeToZod(column: ColumnDefinition) {
-  switch (column.type) {
-    case 'int8':
-    case 'int4':
-    case 'numeric':
-    case 'integer':
-      return z.coerce.number().int()
-    case 'float4':
-      return z.coerce.number()
-    case 'text':
-    case 'varchar':
-      return z.string()
-    case 'uuid':
-      return z.uuid()
-    case 'timestamp':
-    case 'date':
-    case 'timestamptz':
-      return z.coerce.date()
-    case 'boolean':
-      return z.coerce.boolean()
-    case 'json':
-    default:
-      return z.any() // Fallback for unsupported types
-  }
+export function columnTypeToZod<T extends DataTypes>(type: T) {
+  return typesToZod[type] ?? z.any()
 }
 
 /**
@@ -71,10 +66,10 @@ export function columnValidation(column: ColumnDefinition, operator: Operator) {
   }
 
   if (expectsArrayValue(operator)) {
-    return z.array(columnTypeToZod(column))
+    return z.array(columnTypeToZod(column.type))
   }
 
-  return columnTypeToZod(column)
+  return columnTypeToZod(column.type)
 }
 
 /**

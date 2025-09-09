@@ -1,14 +1,17 @@
-import type { ColumnDefinition } from '@hubify/api/types/database'
+import type { columnTypeToZod } from '@hubify/api/lib/column-types'
 import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
-import type { ZodType } from 'zod'
+import type { TableNames, TableColumnNames, TableColumns, TableColumn, TableColumnType } from '#imports'
+import type { DataTypes } from '@hubify/api/types/database'
+
+type ColumnToZod<T extends TableNames, C extends TableColumnNames<T>> = TableColumn<T, C>['type'] extends infer CT extends DataTypes ? ReturnType<typeof columnTypeToZod<CT>> : never
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type Input = {
+export type Input<T extends TableNames, C extends TableColumnNames<T>> = {
   component?: string
   props?: Record<string, any>
   class?: string
   label?: string
-  rules?: (defaultRules: ZodType<any>) => ZodType<any>
+  rules?: (defaultRules: ColumnToZod<T, C>) => ZodType<any>
 }
 
 export type Display = {
@@ -18,22 +21,22 @@ export type Display = {
   label?: string
 }
 
-export type FieldOption = false | {
+export type FieldOption<T extends TableNames, C extends TableColumnNames<T>> = false | {
   order?: number
   label?: string
-  input?: Input | false
+  input?: Input<T, C> | false
   display?: Display | false
 }
 
-export type FieldOptions<C extends Record<string, ColumnDefinition>> = {
-  [K in keyof C]?: C[K]['type'] extends keyof FieldOptionByDataTypes
-    ? FieldOptionByDataTypes[C[K]['type']] extends infer I ? I extends boolean ? I : I & Omit<Exclude<FieldOption, boolean>, keyof I> : never
-    : FieldOption
+export type FieldOptions<T extends TableNames, C extends TableColumns<T>> = {
+  [K in keyof C]?: C[K]['type'] extends keyof FieldOptionByDataTypes<T, K>
+    ? FieldOptionByDataTypes<T, K>[C[K]['type']] extends infer I ? I extends boolean ? I : I & Omit<Exclude<FieldOption<T, K>, boolean>, keyof I> : never
+    : FieldOption<T, K>
 }
 
-export type TableFieldOptions<T extends TableNames> = FieldOptions<TableColumns<T>>
+export type TableFieldOptions<T extends TableNames> = FieldOptions<T, TableColumns<T>>
 
-export type TableFieldOption<T extends TableNames, C extends TableColumnNames<T>> = TableFieldOptions<T>[C] extends infer U extends FieldOption ? U : never
+export type TableFieldOption<T extends TableNames, C extends TableColumnNames<T>> = TableFieldOptions<T>[C] extends infer U extends FieldOption<T, C> ? U : never
 
 export type TableFieldOptionValue<T extends TableNames, C extends TableColumnNames<T>> = TableColumnType<T, C>
 
@@ -74,21 +77,21 @@ type DisplayByDataTypes = {
   }[keyof DisplayComponents]
 }
 
-type InputByDataTypes = {
+type InputByDataTypes<T extends TableNames, C extends TableColumnNames<T>> = {
   [K in InputComponentDataTypes]: {
     [P in keyof InputComponents]: K extends ComponentDataTypes<InputComponents[P]> ? false | {
       component: P
       props?: Simplify<ComponentProps<InputComponents[P]>>
       class?: string
       label?: string
-      rules?: (defaultRules: ZodType<any>) => ZodType<any>
+      rules?: (defaultRules: ColumnToZod<T, C>) => ZodType<any>
     } : never
   }[keyof InputComponents]
 }
 
-type FieldOptionByDataTypes = {
+type FieldOptionByDataTypes<T extends TableNames, C extends TableColumnNames<T>> = {
   [K in InputComponentDataTypes | DisplayComponentDataTypes]: false | {
-    input?: K extends InputComponentDataTypes ? InputByDataTypes[K] : Input | false
+    input?: K extends InputComponentDataTypes ? InputByDataTypes<T, C>[K] : Input | false
     display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] : Display | false
   }
 }

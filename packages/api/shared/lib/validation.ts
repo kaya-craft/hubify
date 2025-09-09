@@ -45,7 +45,7 @@ export function itemValidation<T extends TableNames>(collection: T, options: Ite
     Object.entries(columns).map(([name, column]) => {
       if (!options.includePrimaryKey && column.primaryKey) return
 
-      const rule = columnTypeToZod(column)
+      const rule = columnTypeToZod(column.type)
 
       if (!column.notNull) {
         return [name, rule.optional().nullable()]
