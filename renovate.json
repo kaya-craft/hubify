@@ -1,8 +1,4 @@
 {
-  "extends": [
-    "github>renovatebot/presets:monorepo",
-    "github>renovatebot/presets:pnpm"
-  ],
   "packageRules": [
     {
       "matchManagers": ["pnpm"],
