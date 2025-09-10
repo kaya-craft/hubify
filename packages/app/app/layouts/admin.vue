@@ -20,18 +20,6 @@ const { t } = useI18n()
 const localeRoute = useLocaleRoute()
 
 /**
- * Current page title.
- */
-const currentPageTitle = useTitle()
-
-/**
- * Check if there are notifications.
- */
-const hasNotifications = computed(() => {
-  return false
-})
-
-/**
  * List of settings links for the admin dashboard.
  */
 const settings = computed<NavigationMenuItem[]>(() =>
@@ -63,6 +51,25 @@ const settings = computed<NavigationMenuItem[]>(() =>
  * List of collections.
  */
 const { collections } = useCollections()
+
+/**
+   * Locale path.
+   */
+const localePath = useLocalePath()
+
+/**
+ * Format collections for navigation menu.
+ */
+const meniItems = computed(() => {
+  return toValue(collections)?.map(collection => ({
+    label: collection.name,
+    icon: collection.icon || 'i-lucide-folder',
+    color: collection.color || 'bg-gray-500',
+    description: collection.description,
+    displayTemplate: collection.displayTemplate,
+    to: localePath({ name: 'admin-items-collection', params: { collection: collection.name } })
+  }) as NavigationMenuItem)
+})
 </script>
 
 <template>
@@ -84,12 +91,27 @@ const { collections } = useCollections()
           />
           <UNavigationMenu
             :collapsed="collapsed"
-            :items="collections"
+            :items="meniItems"
             orientation="vertical"
             tooltip
             popover
             :ui="{ list: 'flex flex-col gap-2' }"
-          />
+          >
+            <template #item="{ item }">
+              <div
+                :style="`color: ${item.color}`"
+                class="flex items-center gap-2"
+              >
+                <UIcon
+                  :name="item.icon"
+                  class="size-5"
+                />
+                <p class="text-md capitalize">
+                  {{ item.label }}
+                </p>
+              </div>
+            </template>
+          </UNavigationMenu>
           <div class="flex-1" />
           <UNavigationMenu
             :collapsed="collapsed"
@@ -105,47 +127,7 @@ const { collections } = useCollections()
         </template>
       </UDashboardSidebar>
 
-      <UDashboardPanel>
-        <template #header>
-          <UDashboardNavbar
-            :title="currentPageTitle || ''"
-            :ui="{ right: 'gap-3' }"
-          >
-            <template #leading>
-              <UDashboardSidebarCollapse />
-            </template>
-
-            <template #right>
-              <UTooltip
-                :text="t('app.notifications')"
-                :shortcuts="['N']"
-              >
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  square
-                  @click="state.notifications = true"
-                >
-                  <UChip
-                    color="error"
-                    :show="hasNotifications"
-                    inset
-                  >
-                    <UIcon
-                      name="i-lucide-bell"
-                      class="size-5 shrink-0"
-                    />
-                  </UChip>
-                </UButton>
-              </UTooltip>
-            </template>
-          </UDashboardNavbar>
-        </template>
-
-        <template #body>
-          <NuxtPage />
-        </template>
-      </UDashboardPanel>
+      <NuxtPage />
     </UDashboardGroup>
   </UApp>
 </template>
