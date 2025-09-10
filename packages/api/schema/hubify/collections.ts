@@ -1,15 +1,32 @@
+import { defineCollection, withDefaults } from '#hubify'
+
 /**
- * Migration for creating the `hubify_collections` table.
+ * Collection schema definition for "collections" table.
  */
-export default defineTable((table, knex) => {
-  table.increments('id').primary()
-  table.text('name').notNullable()
-  table.text('description').nullable()
-  table.text('color').nullable()
-  table.text('icon').nullable()
-  table.text('displayTemplate').nullable()
-  table.boolean('hidden').defaultTo(false)
-  table.boolean('singleton').defaultTo(false)
-  table.timestamp('createdAt').defaultTo(knex.fn.now())
-  table.timestamp('updatedAt').defaultTo(knex.fn.now())
+export default defineCollection({
+  columns: withDefaults({
+    name: {
+      type: 'string'
+    },
+    description: {
+      type: 'text'
+    },
+    color: {
+      type: 'string'
+    },
+    icon: {
+      type: 'string'
+    },
+    displayTemplate: {
+      type: 'text'
+    },
+    hidden: {
+      type: 'boolean',
+      default: false
+    },
+    singleton: {
+      type: 'boolean',
+      default: false
+    }
+  })
 })

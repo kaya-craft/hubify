@@ -1,47 +1,35 @@
 import { vi } from 'vitest'
-import { createDatabaseInstance } from '../modules/schema/utils/database'
+import { createDatabaseInstance } from '@hubify/api/lib/database/index'
+import { defineCollection, withDefaults } from '../modules/schema/utils/collections'
 
 /**
  * Create a fake schema.
  */
 export const schema = {
-  hubify_users: {
-    columns: {
-      id: { type: 'increments', primaryKey: true },
+  hubify_users: defineCollection({
+    columns: withDefaults({
       name: { type: 'text' },
-      role: { type: 'integer', notNull: true }
-    },
-    relations: {
-      role: { table: 'hubify_roles', fromKey: 'role', toKey: 'id' }
-    }
-  },
-  hubify_roles: {
-    columns: {
-      id: { type: 'increments', primaryKey: true },
+      role: { type: 'one-to-many', table: 'hubify_roles' }
+    })
+  }),
+  hubify_roles: defineCollection({
+    columns: withDefaults({
       name: { type: 'text' },
-      admin: { type: 'boolean', notNull: true }
-    },
-    relations: {
-      permissions: { table: 'hubify_permissions', fromKey: 'id', toKey: 'role_id', through: 'hubify_roles_permissions', throughKey: 'permission_id' }
-    }
-  },
-  hubify_permissions: {
-    columns: {
-      id: { type: 'increments', primaryKey: true },
-      name: { type: 'string', notNull: true }
-    }
-  },
-  hubify_roles_permissions: {
-    columns: {
-      id: { type: 'increments', primaryKey: true },
-      role_id: { type: 'integer', notNull: true },
-      permission_id: { type: 'integer', notNull: true }
-    },
-    relations: {
-      role_id: { table: 'hubify_roles', fromKey: 'role_id', toKey: 'id' },
-      permission_id: { table: 'hubify_permissions', fromKey: 'permission_id', toKey: 'id' }
-    }
-  }
+      admin: { type: 'boolean', nullable: false, default: false },
+      permissions: { type: 'many-to-many', table: 'hubify_permissions', through: 'hubify_roles_permissions', throughKey: 'role_id' }
+    })
+  }),
+  hubify_permissions: defineCollection({
+    columns: withDefaults({
+      name: { type: 'text' }
+    })
+  }),
+  hubify_roles_permissions: defineCollection({
+    columns: withDefaults({
+      role_id: { type: 'one-to-many', table: 'hubify_roles' },
+      permission_id: { type: 'one-to-many', table: 'hubify_permissions' }
+    })
+  })
 } as const
 
 /**

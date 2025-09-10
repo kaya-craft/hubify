@@ -1,5 +1,5 @@
 import type { knex } from 'knex'
-import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition } from '@hubify/api/types/database'
+import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition } from './types'
 import { OPERATORS } from './operators'
 
 /**
@@ -69,14 +69,14 @@ export function getJoinsFromQuery<S extends Schema, T extends TableNames<S>>(sch
 
   for (const column of columns) {
     column.split('.').reduce((acc, part) => {
-      const relation = acc?.[part as keyof typeof acc] as RelationDefinition | undefined
+      const column = acc?.[part as keyof typeof acc]
 
-      if (!relation) return acc
+      if (!isRelation(column)) return acc
 
-      joins.set(relation.table, relation)
+      joins.set(part, column)
 
-      return schema[relation.table]?.relations
-    }, schema[table]?.relations)
+      return schema[column.table]?.columns
+    }, schema[table]?.columns)
   }
 
   return joins
@@ -94,8 +94,9 @@ export function normalizeColumns<S extends Schema, T extends TableNames<S>>(sche
  */
 export function normalizeColumn<S extends Schema, T extends TableNames<S>>(schema: S, table: T, column: FieldName<S, T>): string {
   return column.split('.').reduce((_, part, index, array) => {
-    if (schema[table]?.relations?.[part] && index < array.length - 1) {
-      table = schema[table]?.relations?.[part]?.table as T
+    const column = schema[table]?.columns?.[part]
+    if (isRelation(column) && index < array.length - 1) {
+      table = column.table as T
     }
     return table + '.' + part
   }, '')
@@ -157,15 +158,24 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
 
   if (!joins.size) return
 
-  for (const [_, relation] of joins) {
-    if (relation.through) {
-      const throughRelation = schema[relation.through]?.relations?.[relation.toKey] as RelationDefinition | undefined
-      if (!throughRelation) throw new Error(`Through relation not found: ${relation.through}.${relation.toKey}`)
-      builder.leftJoin(relation.through, `${throughRelation.table}.${relation.fromKey}`, '=', `${relation.through}.${relation.toKey}`)
-      builder.leftJoin(relation.table, `${relation.through}.${relation.throughKey}`, '=', `${relation.table}.${relation.fromKey}`)
+  for (const [fromKey, relation] of joins) {
+    if (relation.type === 'many-to-many') {
+      const [throughForeignKey, throughRelation] = Object.entries(schema[relation.through]?.columns ?? {}).find(([_, col]) => {
+        return isRelation(col) && col.table === relation.table
+      }) || []
+      if (!isRelation(throughRelation)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
+      const throughLocalKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, throughRelation.table)
+
+      const throughRelation2 = schema[relation.through]?.columns?.[relation.throughKey]
+      if (!isRelation(throughRelation2)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
+      const relationLocalKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, throughRelation2.table)
+
+      builder.leftJoin(relation.through, `${throughRelation2.table}.${relationLocalKey}`, '=', `${relation.through}.${relation.throughKey}`)
+      builder.leftJoin(relation.table, `${relation.through}.${throughForeignKey}`, '=', `${throughRelation.table}.${throughLocalKey}`)
     }
     else {
-      builder.leftJoin(relation.table, `${table}.${relation.fromKey}`, '=', `${relation.table}.${relation.toKey}`)
+      const foreignKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, relation.table)
+      builder.leftJoin(relation.table, `${table}.${fromKey}`, '=', `${relation.table}.${foreignKey}`)
     }
   }
 }
@@ -177,9 +187,30 @@ export function getPrimaryKeyColumn<S extends Schema, T extends TableNames<S>>(s
   const columns = schema[table]?.columns
   if (!columns) throw new Error(`Table not found in schema: ${table}`)
 
-  const primaryKeyColumn = Object.entries(columns).find(([_, col]) => col.primaryKey)
+  const primaryKeyColumn = Object.entries(columns).find(([_, col]) => 'primary' in col && col.primary)
 
   if (!primaryKeyColumn) throw new Error(`Primary key column not found for table: ${table}`)
 
   return primaryKeyColumn[0] as FieldName<S, T>
+}
+
+/**
+ * Wrap the builder to return a single item instead of an array.
+ */
+export function wrapSingleResult<B extends knex.Knex.QueryBuilder>(builder: B) {
+  const then = builder.then.bind(builder)
+
+  builder.then = function (resolve, reject) {
+    if (!resolve) return then(resolve, reject)
+    return then(rows => resolve(rows[0]), reject)
+  }
+
+  return builder
+}
+
+/**
+ * Check if a column definition is a relation.
+ */
+function isRelation(column: unknown): column is RelationDefinition {
+  return typeof column === 'object' && column !== null && 'table' in column && 'type' in column && (column.type === 'one-to-one' || column.type === 'one-to-many' || column.type === 'many-to-one' || column.type === 'many-to-many')
 }

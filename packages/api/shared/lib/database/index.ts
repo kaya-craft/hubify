@@ -1,8 +1,8 @@
 import knex, { type Knex } from 'knex'
 import { SchemaInspector } from 'knex-schema-inspector'
 import type { Column } from 'knex-schema-inspector/dist/types/column'
-import type { Schema, TableNames, QueryParams, TablePrimaryKeyValue, TableItem } from '@hubify/api/types/database'
-import { normalizeOrderBy, normalizeColumns, buildWhereQuery, addJoinQueries, getPrimaryKeyColumn } from './helpers'
+import type { Schema, TableNames, QueryParams, TablePrimaryKeyValue, TableItem } from './types'
+import { normalizeOrderBy, normalizeColumns, buildWhereQuery, addJoinQueries, getPrimaryKeyColumn, wrapSingleResult } from './helpers'
 import { isArray, isNumber } from '@hubify/api/utils/types'
 
 /**
@@ -170,18 +170,4 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
     removeOne,
     remove
   }
-}
-
-/**
- * Wrap the builder to return a single item instead of an array.
- */
-export function wrapSingleResult<B extends knex.Knex.QueryBuilder>(builder: B) {
-  const then = builder.then.bind(builder)
-
-  builder.then = function (resolve, reject) {
-    if (!resolve) return then(resolve, reject)
-    return then(rows => resolve(rows[0]), reject)
-  }
-
-  return builder
 }

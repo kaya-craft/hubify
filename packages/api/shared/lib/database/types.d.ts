@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { OPERATORS } from '@hubify/api/modules/schema/utils/database/operators'
+import type { OPERATORS } from './operators'
+import type { DATA_TYPES } from './data-types'
 
 export interface Schema {
   [table: string]: TableDefinition
@@ -9,26 +10,37 @@ export interface TableDefinition {
   columns: {
     [column: string]: ColumnDefinition
   }
-  relations?: {
-    [relation: string]: RelationDefinition
-  }
 }
 
-export interface ColumnDefinition {
-  type: DataTypes
-  primaryKey?: boolean
-  notNull?: boolean
+type BaseColumnDefinition = {
+  nullable?: boolean
   unique?: boolean
   default?: unknown
 }
 
-export interface RelationDefinition {
+type BaseRelationDefinition = {
   table: string
-  fromKey: string
-  toKey: string
-  through?: string
-  throughKey?: string
+  onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT'
+  onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT'
 }
+
+export type ColumnDefinition = BaseColumnDefinition & ({
+  type: DataTypes
+  primary?: boolean
+  autoIncrement?: boolean
+} | RelationDefinition)
+
+export type OneRelationTypes = 'one-to-one' | 'one-to-many' | 'many-to-one'
+export type ManyRelationTypes = 'many-to-many'
+
+export type RelationDefinition = BaseRelationDefinition & ({
+  type: OneRelationTypes
+  foreignKey?: string
+} | {
+  type: ManyRelationTypes
+  through: string
+  throughKey: string
+})
 
 export type TableNames<S extends Schema> = keyof S & string
 
@@ -97,21 +109,13 @@ export type Item<S extends Schema, T extends TableNames<S>> = {
 
 export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
 
-type DataType<T extends DataTypes>
-  = T extends 'text' ? string
-    : T extends 'float4' ? number
-      : T extends 'boolean' ? boolean
-        : T extends 'date' ? Date
-          : T extends 'json' ? Record<string, any>
-            : T extends 'int4' ? number
-              : T extends 'int8' ? bigint
-                : T extends 'timestamptz' ? Date
-                  : T extends 'timestamp' ? Date
-                    : T extends 'datetime' ? Date
-                      : T extends 'uuid' ? string
-                        : T extends 'varchar' ? string
-                          : T extends 'numeric' ? number
-                            : T extends 'integer' ? number
-                              : never
+type DataType<T extends DataTypes> = T extends typeof DATA_TYPES[infer U]
+  ? U extends 'number' ? number
+    : U extends 'string' ? string
+      : U extends 'boolean' ? boolean
+        : U extends 'date' ? Date | string
+          : U extends 'json' ? any
+            : U extends 'bigint' ? bigint | string
+              : never : never
 
-export type DataTypes = 'text' | 'float4' | 'boolean' | 'date' | 'json' | 'integer' | 'int4' | 'int8' | 'timestamptz' | 'timestamp' | 'uuid' | 'varchar' | 'numeric' | 'datetime'
+export type DataTypes = typeof DATA_TYPES[keyof typeof DATA_TYPES][number]
