@@ -19,7 +19,7 @@ export default defineCollection({
       type: 'text'
     },
     user: {
-      type: 'many-to-one',
+      type: 'one-to-many',
       table: 'hubify_users',
       foreignKey: 'id',
       onDelete: 'CASCADE',

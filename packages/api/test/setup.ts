@@ -1,11 +1,12 @@
 import { vi } from 'vitest'
 import { createDatabaseInstance } from '@hubify/api/lib/database/index'
 import { defineCollection, withDefaults } from '../modules/schema/utils/collections'
+import { normalizeSchema } from '../modules/schema/utils/normalizeSchema'
 
 /**
  * Create a fake schema.
  */
-export const schema = {
+export const schema = normalizeSchema({
   hubify_users: defineCollection({
     fields: withDefaults({
       name: { type: 'text' },
@@ -30,7 +31,7 @@ export const schema = {
       permission_id: { type: 'one-to-many', table: 'hubify_permissions' }
     })
   })
-} as const
+})
 
 /**
  * Create a database instance.
@@ -39,8 +40,7 @@ export const instance = createDatabaseInstance({
   client: 'better-sqlite3',
   connection: {
     filename: ':memory:'
-  },
-  useNullAsDefault: true
+  }
 }, schema)
 
 vi.mock('#hubify/schema', () => ({

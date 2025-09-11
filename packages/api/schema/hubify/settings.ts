@@ -6,7 +6,7 @@ import { defineCollection, withDefaults } from '#hubify'
 export default defineCollection({
   fields: withDefaults({
     projectName: {
-      type: 'string'
+      type: 'varchar'
     },
     projectDescription: {
       type: 'text',

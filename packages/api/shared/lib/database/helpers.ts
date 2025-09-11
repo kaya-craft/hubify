@@ -164,11 +164,11 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
         return isRelation(col) && col.table === relation.table
       }) || []
       if (!isRelation(throughRelation)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
-      const throughLocalKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, throughRelation.table)
+      const throughLocalKey = getRelationForeignKey(schema, throughRelation.table, relation)
 
       const throughRelation2 = schema[relation.through]?.fields?.[relation.throughKey]
       if (!isRelation(throughRelation2)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
-      const relationLocalKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, throughRelation2.table)
+      const relationLocalKey = getRelationForeignKey(schema, throughRelation2.table, relation)
 
       builder.leftJoin(relation.through, `${throughRelation2.table}.${relationLocalKey}`, '=', `${relation.through}.${relation.throughKey}`)
       builder.leftJoin(relation.table, `${relation.through}.${throughForeignKey}`, '=', `${throughRelation.table}.${throughLocalKey}`)
@@ -195,6 +195,13 @@ export function getPrimaryKeyColumn<S extends Schema, T extends TableNames<S>>(s
 }
 
 /**
+ * Get the foreign key field of a relation.
+ */
+export function getRelationForeignKey<S extends Schema, T extends TableNames<S>, R extends RelationDefinition>(schema: S, table: T, relation: R) {
+  return 'foreignKey' in relation && typeof relation.foreignKey !== 'undefined' ? relation.foreignKey : getPrimaryKeyColumn(schema, table)
+}
+
+/**
  * Wrap the builder to return a single item instead of an array.
  */
 export function wrapSingleResult<B extends knex.Knex.QueryBuilder>(builder: B) {
@@ -211,6 +218,13 @@ export function wrapSingleResult<B extends knex.Knex.QueryBuilder>(builder: B) {
 /**
  * Check if a field definition is a relation.
  */
-function isRelation(field: unknown): field is RelationDefinition {
+export function isRelation(field: unknown): field is RelationDefinition {
   return typeof field === 'object' && field !== null && 'table' in field && 'type' in field && (field.type === 'one-to-one' || field.type === 'one-to-many' || field.type === 'many-to-one' || field.type === 'many-to-many')
+}
+
+/**
+ * Check if a field definition is a many-to-many relation.
+ */
+export function isManyToManyRelation(field: unknown): field is RelationDefinition & { type: 'many-to-many' } {
+  return isRelation(field) && field.type === 'many-to-many'
 }

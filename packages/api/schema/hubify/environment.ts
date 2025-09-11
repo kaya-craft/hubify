@@ -6,7 +6,7 @@ import { defineCollection, withDefaults } from '#hubify'
 export default defineCollection({
   fields: withDefaults({
     key: {
-      type: 'string',
+      type: 'varchar',
       unique: true
     },
     value: {

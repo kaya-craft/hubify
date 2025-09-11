@@ -37,7 +37,7 @@ export default defineNuxtModule<HubifyModuleOptions>({
       getContents: () => generateSchemaContent(options.schema)
     })
 
-    setupAliases(localResolve('./utils/collections'), schema)
+    setupAliases(localResolve('./utils'), schema)
 
     const dirs = getSchemaDirectories(options.schema)
 
@@ -103,29 +103,30 @@ async function generateSchemaContent(dirs: string[]) {
   const collections = Array.from(new Set(files.map(f => f.collection))).sort()
 
   const imports: string[] = []
-  const exports: string[] = []
+  const items: string[] = []
 
   for (const name of collections) {
     const match = files.filter(file => file.collection === name)
 
     if (match.length > 1) {
       imports.push(...match.map((file, index) => `import ${name}_${index} from '${file.path}'`))
-      exports.push(`export const ${name} = Object.assign({}, ${match.map((_, index) => `${name}_${index}`).join(', ')})`)
+      items.push(`\t${name}: Object.assign({}, ${match.map((_, index) => `${name}_${index}`).join(', ')}))`)
     }
     else {
-      imports.push(`import ${name} from '${match[0]!.path}'`)
-      exports.push(`export { default as ${name} } from '${match[0]!.path}'`)
+      imports.push(`import ${name}_base from '${match[0]!.path}'`)
+      items.push(`\t${name}: ${name}_base`)
     }
   }
 
   return [
+    'import { normalizeSchema } from \'#hubify\'',
     ...imports,
     '',
-    ...exports,
+    'const schema = normalizeSchema({\n' + items.join(',\n') + '\n})',
     '',
-    'export default {',
-    collections.map(name => `\t${name},`).join('\n'),
-    '}'
+    ...collections.map(name => `export const ${name} = schema.${name}`),
+    '',
+    'export default schema'
   ].join('\n')
 }
 

@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { DataType, DataTypes } from './data-types'
 import type { OPERATORS } from './operators'
-import type { DATA_TYPES } from './data-types'
 
 export interface Schema {
   [table: string]: TableDefinition
 }
 
 export interface TableDefinition {
+  name?: string
   fields: {
     [field: string]: FieldDefinition
   }
@@ -16,13 +16,18 @@ type BaseColumnDefinition = {
   nullable?: boolean
   unique?: boolean
   default?: unknown
+  length?: number
+  precision?: number
+  scale?: number
 }
 
 type BaseRelationDefinition = BaseColumnDefinition & {
   table: string
-  onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT'
-  onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT'
+  onDelete?: RelationAction
+  onUpdate?: RelationAction
 }
+
+export type RelationAction = 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION' | 'SET DEFAULT' | null
 
 export type ColumnDefinition = BaseColumnDefinition & {
   type: DataTypes
@@ -30,7 +35,7 @@ export type ColumnDefinition = BaseColumnDefinition & {
   autoIncrement?: boolean
 }
 
-export type OneRelationTypes = 'one-to-one' | 'one-to-many' | 'many-to-one'
+export type OneRelationTypes = 'one-to-many'
 export type ManyRelationTypes = 'many-to-many'
 
 export type RelationDefinition = BaseRelationDefinition & ({
@@ -125,17 +130,4 @@ type Simplify<T> = { [K in keyof T]: T[K] } & {}
 
 export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
 
-type DataType<T extends DataTypes> = DataTypeGroup<T> extends infer U
-  ? U extends 'number' ? number
-    : U extends 'string' ? string
-      : U extends 'boolean' ? boolean
-        : U extends 'date' ? Date | string
-          : U extends 'json' ? any
-            : U extends 'bigint' ? bigint | string
-              : never : never
-
-export type DataTypeGroup<T extends DataTypes> = {
-  [K in keyof typeof DATA_TYPES]: T extends (typeof DATA_TYPES)[K][number] ? K : never
-}[keyof typeof DATA_TYPES]
-
-export type DataTypes = typeof DATA_TYPES[keyof typeof DATA_TYPES][number]
+export * from './data-types'

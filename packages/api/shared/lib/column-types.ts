@@ -1,6 +1,6 @@
 import schema from '#hubify/schema'
-import type { ColumnDefinition, DataTypes, Operator } from '@hubify/api/types/database'
-import { OPERATORS } from '@hubify/api/modules/schema/utils/database/operators'
+import type { ColumnDefinition, DataTypes, Operator } from '@hubify/api/lib/database/types.d'
+import { OPERATORS } from './database/operators'
 import z from 'zod'
 
 const typesToZod = {

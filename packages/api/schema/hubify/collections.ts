@@ -6,16 +6,16 @@ import { defineCollection, withDefaults } from '#hubify'
 export default defineCollection({
   fields: withDefaults({
     name: {
-      type: 'string'
+      type: 'varchar'
     },
     description: {
       type: 'text'
     },
     color: {
-      type: 'string'
+      type: 'varchar'
     },
     icon: {
-      type: 'string'
+      type: 'varchar'
     },
     displayTemplate: {
       type: 'text'

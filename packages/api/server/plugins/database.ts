@@ -1,13 +1,17 @@
 import type { NitroApp } from 'nitropack'
 import schema from '#hubify/schema'
-import type { Schema } from '@hubify/api/types/database'
+import { runMigrations } from '@hubify/api/lib/database/migration'
 
 /**
  * Update schema upon modification.
  */
 export default defineNitroPlugin(async (nitroApp) => {
-  if (await needsInitialSeed(schema)) {
-    await seedDatabase()
+  const { db } = useDatabase()
+
+  await runMigrations(db, schema)
+
+  if (await needsAdminUser()) {
+    await createAdminUser()
   }
 
   await updateHubifyCollections(nitroApp)
@@ -20,7 +24,7 @@ async function updateHubifyCollections(nitroApp: NitroApp) {
   const { find } = useDatabase()
 
   const collections = await find('hubify_collections', {
-    columns: ['name'],
+    fields: ['name'],
     where: {
       name: {
         $nstartsWith: 'hubify_'
@@ -44,13 +48,7 @@ async function updateHubifyCollections(nitroApp: NitroApp) {
 /**
  * Check if the database needs initial seeding.
  */
-async function needsInitialSeed(currentSchema: Schema | null) {
-  if (!currentSchema) return true
-
-  const { hubify } = useRuntimeConfig()
-
-  if (hubify.systemCollections.some(collection => !(collection in currentSchema))) return true
-
+async function needsAdminUser() {
   const { find } = useDatabase()
 
   return find('hubify_users', {
@@ -66,7 +64,7 @@ async function needsInitialSeed(currentSchema: Schema | null) {
 /**
  * Seed the database with initial data.
  */
-async function seedDatabase() {
+async function createAdminUser() {
   const { db, createOne } = useDatabase()
 
   try {

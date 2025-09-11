@@ -6,14 +6,14 @@ import { defineCollection, withDefaults } from '#hubify'
 export default defineCollection({
   fields: withDefaults({
     name: {
-      type: 'string'
+      type: 'varchar'
     },
     description: {
       type: 'text',
       nullable: true
     },
     icon: {
-      type: 'string',
+      type: 'varchar',
       default: 'heroicons:shield-check'
     },
     admin: {

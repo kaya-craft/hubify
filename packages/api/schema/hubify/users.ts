@@ -7,22 +7,22 @@ import { defineCollection, withDefaults } from '#hubify'
 export default defineCollection({
   fields: withDefaults({
     email: {
-      type: 'string',
+      type: 'varchar',
       unique: true
     },
     password: {
-      type: 'string'
+      type: 'varchar'
     },
     firstname: {
-      type: 'string',
+      type: 'varchar',
       nullable: true
     },
     lastname: {
-      type: 'string',
+      type: 'varchar',
       nullable: true
     },
     role: {
-      type: 'many-to-one',
+      type: 'one-to-many',
       table: 'hubify_roles',
       onDelete: 'SET NULL',
       onUpdate: 'CASCADE',

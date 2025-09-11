@@ -15,11 +15,11 @@ export function withTimestamps<const T extends CollectionDefinition['fields']>(f
     ...fields,
     createdAt: {
       type: 'datetime',
-      default: 'now'
+      default: '{CURRENT_TIMESTAMP}'
     },
     updatedAt: {
       type: 'datetime',
-      default: 'now'
+      default: '{CURRENT_TIMESTAMP}'
     }
   } satisfies CollectionDefinition['fields']
 }

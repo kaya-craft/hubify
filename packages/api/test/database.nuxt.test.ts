@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { instance } from './setup'
+import { getCurrentSchema, runMigrations } from '@hubify/api/lib/database/migration'
+import schema from '#hubify/schema'
+import { normalizeSchema } from '../modules/schema/utils'
+import type { Schema } from '@hubify/api/lib/database/types.d'
 
 describe('database', () => {
   it('should write correct find query', async () => {
@@ -81,4 +85,69 @@ describe('database', () => {
 
     expect(query).toBe('delete from `hubify_users` where (`hubify_users`.`role` = 1)')
   })
+
+  it ('should run migrations correctly', async () => {
+    const migrations = await runMigrations(instance.db, schema)
+    expect(migrations).toBe(4)
+
+    expect(await instance.getTableNames()).toEqual(expect.arrayContaining([
+      'hubify_users',
+      'hubify_roles',
+      'hubify_permissions',
+      'hubify_roles_permissions'
+    ]))
+
+    const newSchema = normalizeSchema({
+      ...schema,
+      hubify_profiles: {
+        name: 'hubify_profiles',
+        fields: {
+          id: {
+            type: 'integer',
+            primary: true,
+            autoIncrement: true
+          },
+          bio: {
+            type: 'text',
+            nullable: true
+          },
+          user: {
+            type: 'one-to-many',
+            table: 'hubify_users'
+          }
+        }
+      }
+    })
+
+    const newMigrations = await runMigrations(instance.db, newSchema)
+    expect(newMigrations).toBe(1)
+
+    expect(await instance.getTableNames()).toEqual(expect.arrayContaining([
+      'hubify_users',
+      'hubify_roles',
+      'hubify_permissions',
+      'hubify_roles_permissions',
+      'hubify_profiles'
+    ]))
+
+    const currentSchema = await getCurrentSchema(instance.db)
+
+    expect(cleanSchema(currentSchema)).toEqual(cleanSchema(newSchema))
+  })
 })
+
+// Remove the default values as they won't match the ones returned by getCurrentSchema
+// e.g. '{CURRENT_TIMESTAMP}' becomes 'CURRENT_TIMESTAMP'
+// Also remove many-to-many relations as they are not represented in the database schema
+function cleanSchema<T extends Schema>(schema: T) {
+  return Object.fromEntries(Object.entries(schema).map(([tableName, tableDef]) => [
+    tableName,
+    {
+      ...tableDef,
+      fields: Object.fromEntries(Object.entries(tableDef.fields).filter(([_, fieldDef]) => fieldDef.type !== 'many-to-many').map(([fieldName, fieldDef]) => [
+        fieldName,
+        Object.fromEntries(Object.entries(fieldDef).filter(([key, _]) => key !== 'default'))
+      ]))
+    }
+  ])) as T
+}
