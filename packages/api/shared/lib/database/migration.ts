@@ -207,8 +207,6 @@ export async function getCurrentSchema(knex: Knex) {
           primary: column.is_primary_key ?? false,
           autoIncrement: column.has_auto_increment ?? false
         }
-
-        console.log(column.is_generated)
       }
     }
 
