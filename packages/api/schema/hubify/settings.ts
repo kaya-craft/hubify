@@ -4,7 +4,7 @@ import { defineCollection, withDefaults } from '#hubify'
  * Migration for creating the `hubify_settings` table.
  */
 export default defineCollection({
-  columns: withDefaults({
+  fields: withDefaults({
     projectName: {
       type: 'string'
     },

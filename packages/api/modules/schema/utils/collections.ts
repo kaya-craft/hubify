@@ -3,16 +3,16 @@ import type { TableDefinition } from '@hubify/api/lib/database/types.d'
 /**
  * Define a collection schema.
  */
-export function defineCollection<T extends CollectionDefinition>(definition: T) {
+export function defineCollection<const T extends CollectionDefinition>(definition: T) {
   return definition
 }
 
 /**
  * Add timestamps to a collection definition.
  */
-export function withTimestamps<T extends CollectionDefinition['columns']>(columns: T) {
+export function withTimestamps<const T extends CollectionDefinition['fields']>(fields: T) {
   return {
-    ...columns,
+    ...fields,
     createdAt: {
       type: 'datetime',
       default: 'now'
@@ -21,41 +21,41 @@ export function withTimestamps<T extends CollectionDefinition['columns']>(column
       type: 'datetime',
       default: 'now'
     }
-  } satisfies CollectionDefinition['columns']
+  } satisfies CollectionDefinition['fields']
 }
 
 /**
  * Add default numeric ID to a collection definition.
  */
-export function withId<T extends CollectionDefinition['columns']>(columns: T) {
+export function withId<const T extends CollectionDefinition['fields']>(fields: T) {
   return {
     id: {
       type: 'integer',
       primary: true,
       autoIncrement: true
     },
-    ...columns
-  } satisfies CollectionDefinition['columns']
+    ...fields
+  } satisfies CollectionDefinition['fields']
 }
 
 /**
  * Add default string ID to a collection definition.
  */
-export function withUuid<T extends CollectionDefinition['columns']>(columns: T) {
+export function withUuid<const T extends CollectionDefinition['fields']>(fields: T) {
   return {
     id: {
       type: 'uuid',
       primary: true
     },
-    ...columns
-  } satisfies CollectionDefinition['columns']
+    ...fields
+  } satisfies CollectionDefinition['fields']
 }
 
 /**
- * Add default columns to a collection definition.
+ * Add default fields to a collection definition.
  */
-export function withDefaults<T extends CollectionDefinition['columns']>(columns: T) {
-  return withId(withTimestamps(columns))
+export function withDefaults<const T extends CollectionDefinition['fields']>(fields: T) {
+  return withId(withTimestamps(fields))
 }
 
 export interface CollectionDefinition extends TableDefinition {

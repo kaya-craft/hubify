@@ -4,12 +4,12 @@ import { instance } from './setup'
 describe('database', () => {
   it('should write correct find query', async () => {
     const query = instance.find('hubify_users', {
-      columns: ['id', 'role.admin', 'role.permissions.name'],
+      fields: ['id', 'role.admin', 'role.permissions.name'],
       where: {
-        'role.id': {
+        role: {
           $eq: 1
         },
-        '$and': [{
+        $and: [{
           'role.permissions.name': {
             $contains: 'manage'
           },
@@ -17,12 +17,12 @@ describe('database', () => {
             $eq: true
           }
         }],
-        '$or': [{
-          'role.id': {
+        $or: [{
+          role: {
             $lt: 10
           }
         }, {
-          'role.id': {
+          role: {
             $gt: 20
           }
         }]
@@ -33,12 +33,12 @@ describe('database', () => {
       offset: 20
     }).toQuery()
 
-    expect(query).toBe('select `hubify_users`.`id`, `hubify_roles`.`admin`, `hubify_permissions`.`name` from `hubify_users` left join `hubify_roles` on `hubify_users`.`role` = `hubify_roles`.`id` left join `hubify_roles_permissions` on `hubify_roles`.`id` = `hubify_roles_permissions`.`role_id` left join `hubify_permissions` on `hubify_roles_permissions`.`permission_id` = `hubify_permissions`.`id` where (`hubify_roles`.`id` = 1 and ((`hubify_permissions`.`name` like \'%manage%\' and `hubify_roles`.`admin` = true)) and ((`hubify_roles`.`id` < 10) or (`hubify_roles`.`id` > 20))) group by `hubify_roles`.`id` order by `hubify_users`.`id` desc, `hubify_roles`.`admin` asc limit 10 offset 20')
+    expect(query).toBe('select `hubify_users`.`id`, `hubify_roles`.`admin`, `hubify_permissions`.`name` from `hubify_users` left join `hubify_roles` on `hubify_users`.`role` = `hubify_roles`.`id` left join `hubify_roles_permissions` on `hubify_roles`.`id` = `hubify_roles_permissions`.`role_id` left join `hubify_permissions` on `hubify_roles_permissions`.`permission_id` = `hubify_permissions`.`id` where (`hubify_users`.`role` = 1 and ((`hubify_permissions`.`name` like \'%manage%\' and `hubify_roles`.`admin` = true)) and ((`hubify_users`.`role` < 10) or (`hubify_users`.`role` > 20))) group by `hubify_roles`.`id` order by `hubify_users`.`id` desc, `hubify_roles`.`admin` asc limit 10 offset 20')
   })
 
   it('should write correct findOne query', async () => {
     const query = instance.findOne('hubify_users', 1, {
-      columns: ['id', 'role.admin', 'role.permissions.name']
+      fields: ['id', 'role.admin', 'role.permissions.name']
     }).toQuery()
 
     expect(query).toBe('select `hubify_users`.`id`, `hubify_roles`.`admin`, `hubify_permissions`.`name` from `hubify_users` left join `hubify_roles` on `hubify_users`.`role` = `hubify_roles`.`id` left join `hubify_roles_permissions` on `hubify_roles`.`id` = `hubify_roles_permissions`.`role_id` left join `hubify_permissions` on `hubify_roles_permissions`.`permission_id` = `hubify_permissions`.`id` where `id` = 1 limit 1')

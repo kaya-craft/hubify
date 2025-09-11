@@ -2,7 +2,7 @@ import knex, { type Knex } from 'knex'
 import { SchemaInspector } from 'knex-schema-inspector'
 import type { Column } from 'knex-schema-inspector/dist/types/column'
 import type { Schema, TableNames, QueryParams, TablePrimaryKeyValue, TableItem } from './types'
-import { normalizeOrderBy, normalizeColumns, buildWhereQuery, addJoinQueries, getPrimaryKeyColumn, wrapSingleResult } from './helpers'
+import { normalizeOrderBy, normalizeFields, buildWhereQuery, addJoinQueries, getPrimaryKeyColumn, wrapSingleResult } from './helpers'
 import { isArray, isNumber } from '@hubify/api/utils/types'
 
 /**
@@ -51,7 +51,7 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
    */
   function find<T extends TableNames<S>>(table: T, query: QueryParams<S, T> = {}) {
     const builder = db(table)
-      .select(normalizeColumns(schema, table, query.columns || ['*']))
+      .select(normalizeFields(schema, table, query.fields || ['*']))
       .where(buildWhereQuery(schema, table, query.where))
 
     if (isNumber(query.limit)) {
@@ -63,7 +63,7 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
     }
 
     if (isArray(query.groupBy)) {
-      builder.groupBy(normalizeColumns(schema, table, query.groupBy))
+      builder.groupBy(normalizeFields(schema, table, query.groupBy))
     }
 
     if (isArray(query.orderBy)) {
@@ -93,7 +93,7 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
   /**
    * Create an item in a table.
    */
-  function createOne<T extends TableNames<S>>(table: T, data: Partial<TableItem<S, T>>) {
+  function createOne<T extends TableNames<S>>(table: T, data: Partial<TableItem<S, T, false>>) {
     const builder = db(table)
       .insert(data)
       .returning('*')
@@ -104,7 +104,7 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
   /**
    * Update an item in a table.
    */
-  function updateOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, data: Partial<TableItem<S, T>>) {
+  function updateOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, data: Partial<TableItem<S, T, false>>) {
     const key = getPrimaryKeyColumn(schema, table)
 
     const builder = db(table)
@@ -118,7 +118,7 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
   /**
    * Update multiple items in a table.
    */
-  function update<T extends TableNames<S>>(table: T, data: Partial<TableItem<S, T>>, where: QueryParams<S, T>['where']) {
+  function update<T extends TableNames<S>>(table: T, data: Partial<TableItem<S, T, false>>, where: QueryParams<S, T>['where']) {
     const key = getPrimaryKeyColumn(schema, table)
 
     const builder = db(table)

@@ -7,25 +7,25 @@ import { defineCollection, withDefaults } from '../modules/schema/utils/collecti
  */
 export const schema = {
   hubify_users: defineCollection({
-    columns: withDefaults({
+    fields: withDefaults({
       name: { type: 'text' },
       role: { type: 'one-to-many', table: 'hubify_roles' }
     })
   }),
   hubify_roles: defineCollection({
-    columns: withDefaults({
+    fields: withDefaults({
       name: { type: 'text' },
       admin: { type: 'boolean', nullable: false, default: false },
       permissions: { type: 'many-to-many', table: 'hubify_permissions', through: 'hubify_roles_permissions', throughKey: 'role_id' }
     })
   }),
   hubify_permissions: defineCollection({
-    columns: withDefaults({
+    fields: withDefaults({
       name: { type: 'text' }
     })
   }),
   hubify_roles_permissions: defineCollection({
-    columns: withDefaults({
+    fields: withDefaults({
       role_id: { type: 'one-to-many', table: 'hubify_roles' },
       permission_id: { type: 'one-to-many', table: 'hubify_permissions' }
     })

@@ -7,8 +7,8 @@ export interface Schema {
 }
 
 export interface TableDefinition {
-  columns: {
-    [column: string]: ColumnDefinition
+  fields: {
+    [field: string]: FieldDefinition
   }
 }
 
@@ -18,17 +18,17 @@ type BaseColumnDefinition = {
   default?: unknown
 }
 
-type BaseRelationDefinition = {
+type BaseRelationDefinition = BaseColumnDefinition & {
   table: string
   onDelete?: 'CASCADE' | 'SET NULL' | 'RESTRICT'
   onUpdate?: 'CASCADE' | 'SET NULL' | 'RESTRICT'
 }
 
-export type ColumnDefinition = BaseColumnDefinition & ({
+export type ColumnDefinition = BaseColumnDefinition & {
   type: DataTypes
   primary?: boolean
   autoIncrement?: boolean
-} | RelationDefinition)
+}
 
 export type OneRelationTypes = 'one-to-one' | 'one-to-many' | 'many-to-one'
 export type ManyRelationTypes = 'many-to-many'
@@ -42,28 +42,47 @@ export type RelationDefinition = BaseRelationDefinition & ({
   throughKey: string
 })
 
+export type FieldDefinition = ColumnDefinition | RelationDefinition
+
 export type TableNames<S extends Schema> = keyof S & string
 
-export type TableColumns<S extends Schema, T extends TableNames<S>> = S[T] extends { columns: infer C } ? C : never
-export type TableColumnNames<S extends Schema, T extends TableNames<S>> = keyof TableColumns<S, T> & string
-export type TableColumn<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = TableColumns<S, T>[C] extends infer U extends ColumnDefinition ? U : never
+export type TableFields<S extends Schema, T extends TableNames<S>> = S[T] extends { fields: infer F } ? F : never
+export type TableFieldNames<S extends Schema, T extends TableNames<S>> = keyof TableFields<S, T> & string
 
-export type TableRelations<S extends Schema, T extends TableNames<S>> = S[T] extends { relations: infer R } ? R : never
-export type TableRelationNames<S extends Schema, T extends TableNames<S>> = keyof TableRelations<S, T> & string
-export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R] extends infer U extends RelationDefinition ? U : never
+export type TableColumnNames<S extends Schema, T extends TableNames<S>> = {
+  [K in keyof TableFields<S, T>]: TableFields<S, T>[K] extends ColumnDefinition ? K : never
+}[keyof TableFields<S, T>] & string
 
-export type TableItem<S extends Schema, T extends TableNames<S>> = {
-  [K in TableColumnNames<S, T>]: TableColumnType<S, T, K> | (K extends TableRelationNames<S, T> ? TableRelation<S, T, K> extends infer R extends { through: string }
-    ? TableItem<S, R['table']>[]
-    : TableItem<S, R['table']> | null
-    : never)
-}
+export type TableRelationNames<S extends Schema, T extends TableNames<S>> = {
+  [K in keyof TableFields<S, T>]: TableFields<S, T>[K] extends RelationDefinition ? K : never
+}[keyof TableFields<S, T>] & string
+
+export type TableColumns<S extends Schema, T extends TableNames<S>> = Pick<TableFields<S, T>, TableColumnNames<S, T>>
+
+export type TableColumn<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = TableColumns<S, T>[C]
+
+export type TableRelations<S extends Schema, T extends TableNames<S>> = Pick<TableFields<S, T>, TableRelationNames<S, T>>
+export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R]
+
+export type TableItem<S extends Schema, T extends TableNames<S>, Deep = true> = Simplify<{
+  [K in TableFieldNames<S, T>]: K extends TableRelationNames<S, T>
+    ? TableRelation<S, T, K> extends infer Relation
+      ? Relation extends { type: OneRelationTypes }
+        ? TableColumnType<S, Relation['table'], RelationForeignKey<S, T, K>> | (Deep extends true ? Item<S, Relation['table']> | null : never)
+        : Relation extends { type: ManyRelationTypes }
+          ? Deep extends true ? Item<S, Relation['table']>[] : never
+          : never
+      : never
+    : K extends TableColumnNames<S, T>
+      ? TableColumnType<S, T, K>
+      : never
+}>
 
 export interface QueryParams<S extends Schema = Schema, T extends TableNames<S> = TableNames<S>> {
-  columns?: FieldName<S, T>[]
+  fields?: FieldName<S, T>[]
   where?: ConditionTree<S, T>
-  orderBy?: `${'' | '-'}${FieldName<S, T>}`[]
-  groupBy?: FieldName<S, T>[]
+  orderBy?: `${'' | '-'}${FieldName<S, T, T, false>}`[]
+  groupBy?: FieldName<S, T, T, false>[]
   limit?: number
   offset?: number
 }
@@ -75,15 +94,15 @@ export type ConditionTree<S extends Schema, T extends TableNames<S>> = {
   $or?: ConditionTree<S, T>[]
 }
 
-type RelatedFieldName<S extends Schema, T extends TableNames<S>, RootTable = T> = TableRelationNames<S, T> extends infer Names ? {
+export type RelatedFieldName<S extends Schema, T extends TableNames<S>, RootTable = T, Placeholder = true> = TableRelationNames<S, T> extends infer Names ? {
   [K in Names]: TableRelation<S, T, K>['table'] extends infer RelatedTable
     ? RelatedTable extends RootTable
       ? never
-      : `${K}.${FieldName<S, RelatedTable, RootTable>}`
+      : `${K}.${FieldName<S, RelatedTable, RootTable, Placeholder>}` | (TableRelation<S, T, K> extends { type: OneRelationTypes } ? K : never)
     : never
 }[Names] & string : never
 
-export type FieldName<S extends Schema, T extends TableNames<S>, RootTable = T> = TableColumnNames<S, T> | '*' | RelatedFieldName<S, T, RootTable>
+export type FieldName<S extends Schema, T extends TableNames<S>, RootTable = T, Placeholder = true> = TableColumnNames<S, T> | (Placeholder extends true ? `*` : never) | RelatedFieldName<S, T, RootTable, false>
 
 export type LogicalOperator = 'and' | 'or'
 export type JoinType = 'INNER' | 'LEFT' | 'RIGHT' | 'FULL'
@@ -95,21 +114,18 @@ export type Condition = {
 }
 
 export type PrimaryKeyColumn<S extends Schema, T extends TableNames<S>> = {
-  [K in TableColumnNames<S, T>]: S[T]['columns'][K] extends { primaryKey: true } ? K : never
+  [K in TableColumnNames<S, T>]: TableFields<S, T>[K] extends { primary: true } ? K : never
 }[TableColumnNames<S, T>]
 
 export type TablePrimaryKeyValue<S extends Schema, T extends TableNames<S>> = TableColumnType<TableColumn<S, T, PrimaryKeyColumn<S, T>>>
 
-export type Item<S extends Schema, T extends TableNames<S>> = {
-  [K in TableColumnNames<S, T>]: TableColumnType<S, T, K> | (K extends TableRelationNames<S, T> ? TableRelation<S, T, K> extends infer R extends { through: string }
-    ? Item<S, R['table']>[]
-    : Item<S, R['table']> | null
-    : never)
-}
+export type RelationForeignKey<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelation<S, T, R> extends { foreignKey: infer FK } ? FK : PrimaryKeyColumn<S, TableRelation<S, T, R>['table']>
+
+type Simplify<T> = { [K in keyof T]: T[K] } & {}
 
 export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
 
-type DataType<T extends DataTypes> = T extends typeof DATA_TYPES[infer U]
+type DataType<T extends DataTypes> = DataTypeGroup<T> extends infer U
   ? U extends 'number' ? number
     : U extends 'string' ? string
       : U extends 'boolean' ? boolean
@@ -117,5 +133,9 @@ type DataType<T extends DataTypes> = T extends typeof DATA_TYPES[infer U]
           : U extends 'json' ? any
             : U extends 'bigint' ? bigint | string
               : never : never
+
+export type DataTypeGroup<T extends DataTypes> = {
+  [K in keyof typeof DATA_TYPES]: T extends (typeof DATA_TYPES)[K][number] ? K : never
+}[keyof typeof DATA_TYPES]
 
 export type DataTypes = typeof DATA_TYPES[keyof typeof DATA_TYPES][number]

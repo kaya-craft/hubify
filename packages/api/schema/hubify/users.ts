@@ -5,7 +5,7 @@ import { defineCollection, withDefaults } from '#hubify'
  */
 
 export default defineCollection({
-  columns: withDefaults({
+  fields: withDefaults({
     email: {
       type: 'string',
       unique: true

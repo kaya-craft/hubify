@@ -4,7 +4,7 @@ import { defineCollection, withDefaults } from '#hubify'
  * Collection schema definition for "collections" table.
  */
 export default defineCollection({
-  columns: withDefaults({
+  fields: withDefaults({
     name: {
       type: 'string'
     },
