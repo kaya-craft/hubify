@@ -2,10 +2,11 @@ import registeredDisplays from '#hubify/displays'
 import registeredInputs from '#hubify/inputs'
 import fields from '#hubify/fields'
 import tables from '#hubify/schema'
+
 import type { AsyncComponentLoader } from 'vue'
-import { getPrimaryKeyColumn } from '@hubify/api/modules/schema/utils/database/helpers'
-import { isOneToManyRelation } from '@hubify/api/lib/column-types'
+import { getPrimaryKeyColumn, isOneToManyRelation } from '@hubify/api/database/helpers'
 import type { TableFieldOption, TableFieldOptions } from '@@/types/fields'
+import type { Table, TableColumn, TableColumnNames, TableItem, TableNames, TablePrimaryKey, TablePrimaryKeyValue, TableRelation, TableRelationNames, TableRelations } from '@hubify/api/types/schema'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
@@ -38,7 +39,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Columns of the table.
    */
   const columns = computed(() => {
-    return toValue(table)?.columns as TableColumns<T> | undefined
+    return toValue(table)
   })
 
   /**
@@ -164,7 +165,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (!input?.component) {
       const collection = toValue(tableName)
-      if (isOneToManyRelation(collection, column)) {
+      if (isOneToManyRelation(getColumn(column))) {
         return h(resolveComponent('InputsSystemOneToMany'), {
           inheritAttrs: false,
           class: input?.class,
@@ -192,7 +193,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     if (!display?.component) {
       const collection = toValue(tableName)
 
-      if (isOneToManyRelation(collection, column)) {
+      if (isOneToManyRelation(getColumn(column))) {
         return h(resolveComponent('DisplaysSystemOneToMany'), {
           class: display?.class,
           collection,
@@ -248,7 +249,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
       await $fetch('/api/items/' + relation.table, {
         method: 'put',
         query: { where: { [primaryKey]: { $in: ids } } },
-        body: { [relation.toKey]: null }
+        body: { [relation.foreignKey]: null }
       })
 
       add({
@@ -286,7 +287,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
       await $fetch('/api/items/' + relation.table, {
         method: 'put',
         query: { where: { [primaryKey]: { $in: ids } } },
-        body: { [relation.toKey]: id }
+        body: { [relation.foreignKey]: id }
       })
 
       add({

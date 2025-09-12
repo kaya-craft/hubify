@@ -14,7 +14,7 @@ const { calendar, popover, size, variant, color } = defineProps<Props>()
 
 const value = defineModel<Model>()
 
-defineFieldDataTypes('date', 'timestamp', 'timestamptz', 'datetime')
+defineFieldDataTypes('date', 'timestamp', 'datetime')
 
 /**
  * To Calendar Date.

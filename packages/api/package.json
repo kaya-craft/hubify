@@ -4,8 +4,13 @@
   "type": "module",
   "exports": {
     ".": "./nuxt.config.ts",
+    "./*": {
+      "types": "./lib/*.d.ts",
+      "import": "./lib/*.ts",
+      "default": "./lib/*/index.ts"
+    },
+    "./collections": "./lib/collections/index.ts",
     "./utils/*": "./shared/utils/*.ts",
-    "./lib/*": "./shared/lib/*.ts",
     "./modules/*": "./modules/*.ts",
     "./types/*": "./types/*.d.ts",
     "./schema/*": "./schema/*.ts",

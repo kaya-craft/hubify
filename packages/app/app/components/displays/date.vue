@@ -8,7 +8,7 @@ interface Props {
  */
 const { value } = defineProps<Props>()
 
-defineFieldDataTypes('date', 'timestamp', 'timestamptz')
+defineFieldDataTypes('date', 'timestamp', 'datetime')
 </script>
 
 <template>

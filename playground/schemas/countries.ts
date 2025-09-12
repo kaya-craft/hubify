@@ -1,13 +1,21 @@
-export default defineTable((table, knex) => {
-  table.increments('id').primary()
-  table.text('name').notNullable()
-  table.text('icon').nullable()
-  table.timestamp('createdAt').defaultTo(knex.fn.now())
-  table.timestamp('updatedAt').defaultTo(knex.fn.now())
-  table.integer('region').unsigned().references('id').inTable('regions').onDelete('SET NULL').onUpdate('CASCADE').nullable()
-})
+import { withDefaults } from '@hubify/api/collections'
 
-export const fields = defineFields({
+export default defineCollection(withDefaults({
+  name: {
+    type: 'text',
+    nullable: false
+  },
+  icon: {
+    type: 'text',
+    nullable: true
+  },
+  region: {
+    type: 'one-to-many',
+    table: 'regions'
+  }
+}))
+
+export const fields = defineCollectionFields({
   id: {
     input: false,
     display: {

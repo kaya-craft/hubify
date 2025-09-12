@@ -1,7 +1,8 @@
 <script setup lang="ts" generic="T extends TableNames">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Clause } from './index.vue'
-import { columnTypeToOperators } from '@hubify/api/lib/column-types'
+import { columnTypeToOperators } from '@hubify/api/column-types'
+import type { TableColumnNames, TableNames } from '@hubify/api/types/schema'
 
 type Props = {
   collection: T

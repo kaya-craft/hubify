@@ -1,4 +1,6 @@
 <script setup lang="ts" generic="T extends Record<string, unknown>, K extends KeyContainingCollection<T>">
+import type { TableNames } from '@hubify/api/types/schema'
+
 export type KeyContainingCollection<T> = string | {
   [K in keyof T]: T[K] extends TableNames ? K : never
 }[keyof T]
@@ -12,6 +14,8 @@ type Props = {
   collectionKey?: never
   collection: TableNames
 }
+
+defineFieldDataTypes('text', 'varchar')
 
 const value = defineModel<string>()
 
@@ -28,8 +32,6 @@ const collectionName = computed(() => {
  * Composable to interact with collections
  */
 const { columnNames } = useTable(collectionName)
-
-defineFieldDataTypes('text', 'varchar')
 </script>
 
 <template>

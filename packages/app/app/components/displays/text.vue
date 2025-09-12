@@ -8,7 +8,7 @@ interface Props {
  */
 const { value } = defineProps<Props>()
 
-defineFieldDataTypes('text', 'varchar')
+defineFieldDataTypes('text', 'varchar', 'integer', 'float', 'double', 'decimal', 'bigInteger')
 </script>
 
 <template>

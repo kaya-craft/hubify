@@ -140,15 +140,15 @@ export const DATA_TYPES = {
       validate: () => z.instanceof(Buffer)
     }
   }
-} satisfies Record<string, DataTypeDefinition>
+} satisfies Record<string, DataTypeDefinitions>
 
 /**
  * Get the data type group for a given data type.
  */
-export function getDataTypeGroup(type: DataTypes) {
+export function getDataTypeGroup<T extends DataTypes>(type: T) {
   for (const group of Object.keys(DATA_TYPES)) {
     if (type in DATA_TYPES[group as keyof typeof DATA_TYPES]) {
-      return group as keyof typeof DATA_TYPES
+      return group as DataTypeGroup<T>
     }
   }
 
@@ -156,34 +156,46 @@ export function getDataTypeGroup(type: DataTypes) {
 }
 
 /**
+ * Get the data type group definition for a given data type.
+ */
+export function getDataTypeGroupDefinition<T extends DataTypes>(type: T) {
+  return DATA_TYPES[getDataTypeGroup(type)] as DataTypeGroupDefinition<T>
+}
+
+/**
  * Get the data type definition for a given data type.
  */
-export function getDataTypeDefinition(type: DataTypes) {
-  const group = getDataTypeGroup(type)
-  const def = DATA_TYPES[group] as DataTypeDefinition
-  const typeDef = def[type]
-  if (!typeDef) throw new Error(`Unsupported data type: ${type}`)
-  return typeDef
+export function getDataTypeDefinition<T extends DataTypes>(type: T) {
+  const group = getDataTypeGroupDefinition(type)
+  if (!(type in group)) throw new Error(`Unsupported data type: ${type}`)
+  return group[type] as DataTypeDefinition<T>
 }
 
 /**
  * Get the data type validator for a given data type.
  */
-export function getDataTypeValidator(type: DataTypes) {
+export function getDataTypeValidator<T extends DataTypes>(type: T) {
   return getDataTypeDefinition(type).validate
 }
 
 /**
  * Get the data type creator for a given data type.
  */
-export function getDataTypeCreator(type: DataTypes) {
+export function getDataTypeCreator<T extends DataTypes>(type: T) {
   return getDataTypeDefinition(type).create
 }
 
-type DataTypeDefinition = Record<string, {
+type DataTypeDefinitions = Record<string, DataTypeProps>
+
+type DataTypeProps = {
   create: (knex: Knex.CreateTableBuilder, name: string, def: FieldDefinition, isRelational?: boolean) => Knex.ColumnBuilder
   validate: (def: FieldDefinition) => z.ZodTypeAny
-}>
+}
+
+export type DataTypeGroupDefinition<T extends DataTypes> = (typeof DATA_TYPES)[DataTypeGroup<T>]
+export type DataTypeDefinition<T extends DataTypes> = DataTypeGroupDefinition<T>[T] extends infer U extends DataTypeProps ? U : never
+export type DataTypeValidator<T extends DataTypes> = ReturnType<DataTypeDefinition<T>['validate']>
+export type DataTypeCreator<T extends DataTypes> = ReturnType<DataTypeDefinition<T>['create']>
 
 export type DataType<T extends DataTypes> = DataTypeGroup<T> extends infer U
   ? U extends 'number' ? number
@@ -196,8 +208,8 @@ export type DataType<T extends DataTypes> = DataTypeGroup<T> extends infer U
 
 export type DataTypeGroup<T extends DataTypes> = {
   [K in keyof typeof DATA_TYPES]: T extends keyof (typeof DATA_TYPES)[K] ? K : never
-}[keyof typeof DATA_TYPES]
+}[keyof typeof DATA_TYPES] extends infer U ? U extends string ? U : never : never
 
 export type DataTypes = {
   [K in keyof typeof DATA_TYPES]: keyof (typeof DATA_TYPES)[K]
-}[keyof typeof DATA_TYPES]
+}[keyof typeof DATA_TYPES] extends infer U ? U extends string ? U : never : never

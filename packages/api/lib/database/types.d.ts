@@ -6,10 +6,7 @@ export interface Schema {
 }
 
 export interface TableDefinition {
-  name?: string
-  fields: {
-    [field: string]: FieldDefinition
-  }
+  [field: string]: FieldDefinition
 }
 
 type BaseColumnDefinition = {
@@ -25,6 +22,7 @@ type BaseRelationDefinition = BaseColumnDefinition & {
   table: string
   onDelete?: RelationAction
   onUpdate?: RelationAction
+  foreignKey?: string
 }
 
 export type RelationAction = 'CASCADE' | 'SET NULL' | 'RESTRICT' | 'NO ACTION' | 'SET DEFAULT' | null
@@ -40,7 +38,6 @@ export type ManyRelationTypes = 'many-to-many'
 
 export type RelationDefinition = BaseRelationDefinition & ({
   type: OneRelationTypes
-  foreignKey?: string
 } | {
   type: ManyRelationTypes
   through: string
@@ -51,7 +48,7 @@ export type FieldDefinition = ColumnDefinition | RelationDefinition
 
 export type TableNames<S extends Schema> = keyof S & string
 
-export type TableFields<S extends Schema, T extends TableNames<S>> = S[T] extends { fields: infer F } ? F : never
+export type TableFields<S extends Schema, T extends TableNames<S>> = S[T] extends infer F ? F : never
 export type TableFieldNames<S extends Schema, T extends TableNames<S>> = keyof TableFields<S, T> & string
 
 export type TableColumnNames<S extends Schema, T extends TableNames<S>> = {
@@ -67,7 +64,7 @@ export type TableColumns<S extends Schema, T extends TableNames<S>> = Pick<Table
 export type TableColumn<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = TableColumns<S, T>[C]
 
 export type TableRelations<S extends Schema, T extends TableNames<S>> = Pick<TableFields<S, T>, TableRelationNames<S, T>>
-export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R]
+export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R] extends infer F ? F & Omit<RelationDefinition, F> : never
 
 export type TableItem<S extends Schema, T extends TableNames<S>, Deep = true> = Simplify<{
   [K in TableFieldNames<S, T>]: K extends TableRelationNames<S, T>

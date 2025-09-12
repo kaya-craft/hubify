@@ -1,7 +1,4 @@
-/**
- * Define the fields for the hubify_roles collection. Types are automatically inferred!
- */
-export const fields = defineFields({
+export const fields = defineCollectionFields({
   admin: {
     input: {
       component: 'switch'

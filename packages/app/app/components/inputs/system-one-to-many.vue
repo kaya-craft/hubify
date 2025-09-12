@@ -1,4 +1,6 @@
 <script setup lang="ts" generic="T extends TableNames, R extends TableRelationNames<T>">
+import type { TableNames, TableItem, TablePrimaryKeyValue, TableColumnNames, TableRelation, TableRelationNames } from '@hubify/api/types/schema'
+
 type RelatedTable = TableRelation<T, R>['table']
 
 type Props = {
@@ -6,6 +8,8 @@ type Props = {
   relation: R
   displayColumn?: TableColumnNames<RelatedTable>
 }
+
+defineFieldDataTypes('one-to-many')
 
 const value = defineModel<TablePrimaryKeyValue<RelatedTable>>()
 
@@ -48,8 +52,8 @@ const { data: items } = useFetch(`/api/items/${toValue(name)}`, {
     columns: [toValue(primaryKey), ...toValue(displayColumns)]
   },
   transform: (items: TableItem<T>[]) => items.map(item => ({
-    label: getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn)]),
-    value: item[toValue(primaryKey)]
+    label: getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn) as keyof typeof item]),
+    value: item[toValue(primaryKey) as keyof typeof item]
   }))
 })
 </script>

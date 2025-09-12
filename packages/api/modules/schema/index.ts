@@ -11,7 +11,7 @@ export interface HubifyModuleOptions extends Omit<Knex.Config, 'client'> {
 
 declare module '@nuxt/schema' {
   interface NuxtHooks {
-    'hubify:schema': (files: { path: string, collection: string }[]) => void
+    'hubify:schema': (files: { path: string, name: string }[]) => void
   }
 }
 
@@ -37,9 +37,12 @@ export default defineNuxtModule<HubifyModuleOptions>({
       getContents: () => generateSchemaContent(options.schema)
     })
 
-    setupAliases(localResolve('./utils'), schema)
+    nuxt.options.nitro.alias ??= {}
+    nuxt.options.alias ??= {}
+    nuxt.options.nitro.alias['#hubify/schema'] = schema
+    nuxt.options.alias['#hubify/schema'] = schema
 
-    const dirs = getSchemaDirectories(options.schema)
+    const dirs = getDirectories(options.schema)
 
     nuxt.hook('builder:watch', async (_, path) => {
       const isSchemaFile = dirs.some(dir => path.startsWith(dir))
@@ -60,34 +63,7 @@ export default defineNuxtModule<HubifyModuleOptions>({
  */
 function getAllCollectionFiles(dirs: string[]) {
   const uniqueDirs = Array.from(new Set(dirs))
-  return Promise.all(uniqueDirs.map(getCollectionsFromDir)).then(results => results.flat())
-}
-
-/**
- * Get all collection from a directory.
- */
-async function getCollectionsFromDir(dir: string) {
-  const list = await scanDirExports([join(dir, '**/*')], {
-    filePatterns: ['*.ts', '*.js']
-  })
-
-  return list.filter(i => i.name === 'default').map(i => ({
-    path: i.from.replace(extname(i.from), ''),
-    collection: i.from.replace(dir + '/', '').replace(extname(i.from), '').split('/').join('_')
-  }))
-}
-
-/**
- * Set up aliases.
- */
-function setupAliases(utils: string, schema: string) {
-  const nuxt = useNuxt()
-  nuxt.options.nitro.alias ??= {}
-  nuxt.options.alias ??= {}
-  nuxt.options.nitro.alias['#hubify'] = utils
-  nuxt.options.alias['#hubify'] = utils
-  nuxt.options.nitro.alias['#hubify/schema'] = schema
-  nuxt.options.alias['#hubify/schema'] = schema
+  return Promise.all(uniqueDirs.map(dir => getFilesFromDir(dir))).then(results => results.flat())
 }
 
 /**
@@ -100,17 +76,17 @@ async function generateSchemaContent(dirs: string[]) {
 
   await nuxt.callHook('hubify:schema', files)
 
-  const collections = Array.from(new Set(files.map(f => f.collection))).sort()
+  const collections = Array.from(new Set(files.map(f => f.name))).sort()
 
   const imports: string[] = []
   const items: string[] = []
 
   for (const name of collections) {
-    const match = files.filter(file => file.collection === name)
+    const match = files.filter(file => file.name === name)
 
     if (match.length > 1) {
       imports.push(...match.map((file, index) => `import ${name}_${index} from '${file.path}'`))
-      items.push(`\t${name}: Object.assign({}, ${match.map((_, index) => `${name}_${index}`).join(', ')}))`)
+      items.push(`\t${name}: defu(${match.map((_, index) => `${name}_${index}`).join(', ')})`)
     }
     else {
       imports.push(`import ${name}_base from '${match[0]!.path}'`)
@@ -119,7 +95,8 @@ async function generateSchemaContent(dirs: string[]) {
   }
 
   return [
-    'import { normalizeSchema } from \'#hubify\'',
+    'import { normalizeSchema } from \'@hubify/api/collections\'',
+    'import { defu } from \'defu\'',
     ...imports,
     '',
     'const schema = normalizeSchema({\n' + items.join(',\n') + '\n})',
@@ -131,9 +108,24 @@ async function generateSchemaContent(dirs: string[]) {
 }
 
 /**
- * Get schema directories from the Nuxt options.
+ * Get all directories, including inside layers.
  */
-function getSchemaDirectories(schema: string[]) {
+export function getDirectories(schema: string[]) {
   const layers = useNuxt().options._layers.map(layer => layer.cwd)
   return [...new Set(schema.flatMap(dir => isAbsolute(dir) ? dir : layers.map(layer => resolve(layer, dir))).filter(dir => existsSync(dir)))]
+}
+
+/**
+ * Get a list of default exports from a directory.
+ */
+export async function getFilesFromDir(dir: string, exportName: string | null = 'default', extensions = ['.ts', '.js'], delimiter = '_') {
+  const list = await scanDirExports([join(dir, '**/*')], {
+    filePatterns: extensions
+  })
+
+  return list.filter(i => exportName ? i.name === exportName : true).map(i => ({
+    path: i.from.replace(extname(i.from), ''),
+    name: i.from.replace(dir + '/', '').replace(extname(i.from), '').split('/').join(delimiter),
+    ext: extname(i.from)
+  }))
 }

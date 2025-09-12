@@ -1,4 +1,4 @@
-export const fields = defineFields({
+export const fields = defineCollectionFields({
   id: false,
   email: {
     input: {

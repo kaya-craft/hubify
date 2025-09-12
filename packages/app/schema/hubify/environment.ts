@@ -1,7 +1,7 @@
-export const fields = defineFields({
+export const fields = defineCollectionFields({
   id: false,
-  created_at: false,
-  updated_at: false,
+  createdAt: false,
+  updatedAt: false,
   key: {
     input: {
       component: 'text',

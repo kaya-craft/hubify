@@ -1,12 +1,12 @@
-export default defineTable((table, knex) => {
-  table.increments('id').primary()
-  table.text('name').notNullable()
-  table.text('icon').nullable()
-  table.timestamp('createdAt').defaultTo(knex.fn.now())
-  table.timestamp('updatedAt').defaultTo(knex.fn.now())
-})
+import { withDefaults } from '@hubify/api/collections'
 
-export const fields = defineFields({
+export default defineCollection(withDefaults({
+  name: {
+    type: 'varchar'
+  }
+}))
+
+export const fields = defineCollectionFields({
   id: {
     input: false,
     display: {

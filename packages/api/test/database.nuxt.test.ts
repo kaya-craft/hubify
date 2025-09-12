@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { instance } from './setup'
-import { getCurrentSchema, runMigrations } from '@hubify/api/lib/database/migration'
+import { getCurrentSchema, runMigrations } from '@hubify/api/database/migration'
 import schema from '#hubify/schema'
-import { normalizeSchema } from '../modules/schema/utils'
-import type { Schema } from '@hubify/api/lib/database/types.d'
+import { normalizeSchema } from '@hubify/api/collections'
+import type { Schema } from '@hubify/api/database/types'
 
 describe('database', () => {
   it('should write correct find query', async () => {
@@ -100,21 +100,18 @@ describe('database', () => {
     const newSchema = normalizeSchema({
       ...schema,
       hubify_profiles: {
-        name: 'hubify_profiles',
-        fields: {
-          id: {
-            type: 'integer',
-            primary: true,
-            autoIncrement: true
-          },
-          bio: {
-            type: 'text',
-            nullable: true
-          },
-          user: {
-            type: 'one-to-many',
-            table: 'hubify_users'
-          }
+        id: {
+          type: 'integer',
+          primary: true,
+          autoIncrement: true
+        },
+        bio: {
+          type: 'text',
+          nullable: true
+        },
+        user: {
+          type: 'one-to-many',
+          table: 'hubify_users'
         }
       }
     })
@@ -142,12 +139,9 @@ describe('database', () => {
 function cleanSchema<T extends Schema>(schema: T) {
   return Object.fromEntries(Object.entries(schema).map(([tableName, tableDef]) => [
     tableName,
-    {
-      ...tableDef,
-      fields: Object.fromEntries(Object.entries(tableDef.fields).filter(([_, fieldDef]) => fieldDef.type !== 'many-to-many').map(([fieldName, fieldDef]) => [
-        fieldName,
-        Object.fromEntries(Object.entries(fieldDef).filter(([key, _]) => key !== 'default'))
-      ]))
-    }
+    Object.fromEntries(Object.entries(tableDef).filter(([_, fieldDef]) => fieldDef.type !== 'many-to-many').map(([fieldName, fieldDef]) => [
+      fieldName,
+      Object.fromEntries(Object.entries(fieldDef).filter(([key, _]) => key !== 'default'))
+    ]))
   ])) as T
 }

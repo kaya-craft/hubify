@@ -1,17 +1,15 @@
-import { defineCollection, withDefaults } from '#hubify'
+import { withDefaults } from '@hubify/api/collections'
 
 /**
  * Migration for creating the `hubify_environment` table.
  */
-export default defineCollection({
-  fields: withDefaults({
-    key: {
-      type: 'varchar',
-      unique: true
-    },
-    value: {
-      type: 'text',
-      nullable: true
-    }
-  })
-})
+export default defineCollection(withDefaults({
+  key: {
+    type: 'varchar',
+    unique: true
+  },
+  value: {
+    type: 'text',
+    nullable: true
+  }
+}))

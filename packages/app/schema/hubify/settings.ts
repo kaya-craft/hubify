@@ -1,7 +1,4 @@
-/**
- * Define the fields for the hubify_settings collection. Types are automatically inferred!
- */
-export const fields = defineFields({
+export const fields = defineCollectionFields({
   projectDescription: {
     input: {
       component: 'textarea'

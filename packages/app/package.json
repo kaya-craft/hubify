@@ -6,7 +6,12 @@
     ".": "./nuxt.config.ts",
     "./modules/*": "./modules/*.ts",
     "./schema/*": "./schema/*.ts",
-    "./types/*": "./types/*.d.ts"
+    "./types/*": "./types/*.d.ts",
+    "./*": {
+      "types": "./lib/*.d.ts",
+      "import": "./lib/*.ts",
+      "default": "./lib/*/index.ts"
+    }
   },
   "scripts": {
     "build": "nuxt build",

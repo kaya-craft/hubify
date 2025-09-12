@@ -238,6 +238,9 @@ importers:
 
   playground:
     dependencies:
+      '@hubify/api':
+        specifier: workspace:*
+        version: link:../packages/api
       '@hubify/app':
         specifier: workspace:*
         version: link:../packages/app

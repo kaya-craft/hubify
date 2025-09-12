@@ -8,6 +8,8 @@ type Props = {
   value?: TablePrimaryKeyValue<RelatedTable>
 }
 
+defineFieldDataTypes('one-to-many')
+
 const { collection, value, relation, displayColumn: _displayColumn } = defineProps<Props>()
 
 /**

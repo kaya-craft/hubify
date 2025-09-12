@@ -1,5 +1,5 @@
 import type { knex } from 'knex'
-import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition } from './types'
+import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition, TableDefinition } from './types'
 import { OPERATORS } from './operators'
 
 /**
@@ -10,7 +10,7 @@ export function getQueriedfields<S extends Schema, T extends TableNames<S>>(quer
     ...getFieldsFields(query.fields),
     ...getOrderByfields(query.orderBy),
     ...getGroupByfields(query.groupBy),
-    ...getWherefields(query.where)
+    ...getWhereFields(query.where)
   ])
 
   return Array.from(fields)
@@ -19,12 +19,12 @@ export function getQueriedfields<S extends Schema, T extends TableNames<S>>(quer
 /**
  * Get the fields used in the where query.
  */
-function getWherefields<S extends Schema, T extends TableNames<S>>(where: QueryParams<S, T>['where']): string[] {
+function getWhereFields<S extends Schema, T extends TableNames<S>>(where: QueryParams<S, T>['where']): string[] {
   if (!where) return []
 
   return Object.entries(where).flatMap(([key, value]) => {
     if (key === '$and' || key === '$or') {
-      if (Array.isArray(value)) return value.flatMap(getWherefields)
+      if (Array.isArray(value)) return value.flatMap(getWhereFields)
       return []
     }
 
@@ -75,8 +75,8 @@ export function getJoinsFromQuery<S extends Schema, T extends TableNames<S>>(sch
 
       joins.set(part, field)
 
-      return schema[field.table]?.fields
-    }, schema[table]?.fields)
+      return schema[field.table]
+    }, schema[table] as S[T] | TableDefinition | undefined)
   }
 
   return joins
@@ -94,7 +94,7 @@ export function normalizeFields<S extends Schema, T extends TableNames<S>>(schem
  */
 export function normalizeField<S extends Schema, T extends TableNames<S>>(schema: S, table: T, field: FieldName<S, T>): string {
   return field.split('.').reduce((_, part, index, array) => {
-    const field = schema[table]?.fields?.[part]
+    const field = schema[table]?.[part]
     if (isRelation(field) && index < array.length - 1) {
       table = field.table as T
     }
@@ -160,13 +160,13 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
 
   for (const [fromKey, relation] of joins) {
     if (relation.type === 'many-to-many') {
-      const [throughForeignKey, throughRelation] = Object.entries(schema[relation.through]?.fields ?? {}).find(([_, col]) => {
+      const [throughForeignKey, throughRelation] = Object.entries(schema[relation.through] ?? {}).find(([_, col]) => {
         return isRelation(col) && col.table === relation.table
       }) || []
       if (!isRelation(throughRelation)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
       const throughLocalKey = getRelationForeignKey(schema, throughRelation.table, relation)
 
-      const throughRelation2 = schema[relation.through]?.fields?.[relation.throughKey]
+      const throughRelation2 = schema[relation.through]?.[relation.throughKey]
       if (!isRelation(throughRelation2)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
       const relationLocalKey = getRelationForeignKey(schema, throughRelation2.table, relation)
 
@@ -184,7 +184,7 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
  * Get the primary key field of a table.
  */
 export function getPrimaryKeyColumn<S extends Schema, T extends TableNames<S>>(schema: S, table: T) {
-  const fields = schema[table]?.fields
+  const fields = schema[table]
   if (!fields) throw new Error(`Table not found in schema: ${table}`)
 
   const primaryKeyColumn = Object.entries(fields).find(([_, col]) => 'primary' in col && col.primary)
@@ -227,4 +227,11 @@ export function isRelation(field: unknown): field is RelationDefinition {
  */
 export function isManyToManyRelation(field: unknown): field is RelationDefinition & { type: 'many-to-many' } {
   return isRelation(field) && field.type === 'many-to-many'
+}
+
+/**
+ * Check if a field definition is a one-to-many relation.
+ */
+export function isOneToManyRelation(field: unknown): field is RelationDefinition & { type: 'one-to-many' } {
+  return isRelation(field) && field.type === 'one-to-many'
 }

@@ -1,9 +1,8 @@
-import type { columnTypeToZod } from '@hubify/api/lib/column-types'
 import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
-import type { TableNames, TableColumnNames, TableColumns, TableColumn, TableColumnType } from '#imports'
-import type { DataTypes } from '@hubify/api/types/database'
+import type { TableNames, TableColumnNames, TableColumn, TableColumnType } from '@hubify/api/types/schema'
+import type { DataTypes, DataTypeValidator } from '@hubify/api/database/data-types'
 
-type ColumnToZod<T extends TableNames, C extends TableColumnNames<T>> = TableColumn<T, C>['type'] extends infer CT extends DataTypes ? ReturnType<typeof columnTypeToZod<CT>> : never
+type ColumnToZod<T extends TableNames, C extends TableColumnNames<T>> = TableColumn<T, C>['type'] extends infer U extends DataTypes ? DataTypeValidator<U> : never
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export type Input<T extends TableNames, C extends TableColumnNames<T>> = {
@@ -11,7 +10,7 @@ export type Input<T extends TableNames, C extends TableColumnNames<T>> = {
   props?: Record<string, any>
   class?: string
   label?: string
-  rules?: (defaultRules: ColumnToZod<T, C>) => ZodType<any>
+  rules?: (rules: ColumnToZod<T, C>) => ZodType<any>
 }
 
 export type Display = {
@@ -28,13 +27,13 @@ export type FieldOption<T extends TableNames, C extends TableColumnNames<T>> = f
   display?: Display | false
 }
 
-export type FieldOptions<T extends TableNames, C extends TableColumns<T>> = {
-  [K in keyof C]?: C[K]['type'] extends keyof FieldOptionByDataTypes<T, K>
-    ? FieldOptionByDataTypes<T, K>[C[K]['type']] extends infer I ? I extends boolean ? I : I & Omit<Exclude<FieldOption<T, K>, boolean>, keyof I> : never
+export type FieldOptions<T extends TableNames> = {
+  [K in TableColumnNames<T>]?: TableColumn<T, K>['type'] extends infer U extends keyof FieldOptionByDataTypes<T, K>
+    ? FieldOptionByDataTypes<T, K>[U] extends infer I ? I extends boolean ? I : I & Omit<Exclude<FieldOption<T, K>, boolean>, keyof I> : never
     : FieldOption<T, K>
 }
 
-export type TableFieldOptions<T extends TableNames> = FieldOptions<T, TableColumns<T>>
+export type TableFieldOptions<T extends TableNames> = FieldOptions<T>
 
 export type TableFieldOption<T extends TableNames, C extends TableColumnNames<T>> = TableFieldOptions<T>[C] extends infer U extends FieldOption<T, C> ? U : never
 
@@ -42,13 +41,17 @@ export type TableFieldOptionValue<T extends TableNames, C extends TableColumnNam
 
 type ComponentProps<C extends Component> = C extends new (...args: any) => any
   ? Omit<InstanceType<C>['$props'], keyof VNodeProps | keyof AllowedComponentProps>
-  : never
+  : C extends (...args: any) => any ? NonNullable<ReturnType<C>['__ctx']>['props'] : never
 
 export type ComponentDataTypes<C extends Component> = C extends new (...args: any) => any
   ? InstanceType<C>['dataTypes'] extends readonly (infer T)[]
     ? T
     : never
-  : never
+  : C extends (...args: any) => any
+    ? Parameters<NonNullable<ReturnType<C>['__ctx']>['expose']>[0] extends { dataTypes: readonly (infer T)[] }
+      ? T
+      : never
+    : never
 
 type InputComponents = {
   [K in keyof typeof import('#hubify/inputs').default]: typeof import('#hubify/inputs').default[K] extends () => Promise<infer C extends Component> ? C : never
