@@ -44,21 +44,15 @@ export function useCollections() {
     refresh()
   })
 
-  /**
-   * Current collection from route (if any)
-   */
-  const currentCollection = computed(() => {
-    const routeParams = useRoute().params as { collection?: string }
-    if (!routeParams.collection) return
-
-    return toValue(collections)?.find(c => c.name === routeParams.collection)
-  })
+  function getCollectionMeta<T extends TableNames>(name: T) {
+    return toValue(collections)?.find(collection => collection.name === name)
+  }
 
   return {
     collections,
     extractDisplayColumns,
     getDisplay,
-    currentCollection
+    getCollectionMeta
   }
 }
 

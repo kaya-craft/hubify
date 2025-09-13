@@ -7,10 +7,6 @@ export const columns = defineTableColumns({
     type: 'text',
     notNull: true
   },
-  icon: {
-    type: 'text',
-    notNull: false
-  },
   createdAt: {
     type: 'timestamp',
     default: 'CURRENT_TIMESTAMP'

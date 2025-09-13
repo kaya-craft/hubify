@@ -7,7 +7,11 @@ export const columns = defineTableColumns({
     type: 'text',
     notNull: true
   },
-  icon: {
+  emoji: {
+    type: 'text',
+    notNull: false
+  },
+  code: {
     type: 'text',
     notNull: false
   },
@@ -32,7 +36,7 @@ export const fields = defineFieldOptions(columns, {
       component: 'text'
     }
   },
-  icon: {
+  emoji: {
     input: {
       component: 'icon-picker',
       label: 'Icon',

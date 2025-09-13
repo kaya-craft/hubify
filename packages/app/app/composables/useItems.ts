@@ -2,15 +2,15 @@ export function useItems<T extends TableNames>(collection: T) {
   /**
    * Get items
    */
-  function getItems(where?: MaybeRefOrGetter<Where<T>>) {
-    const { data, execute, status } = useFetch<TableItem<T>[]>(`/api/items/${collection}` as `/api/items/:collection`, {
-      query: { where },
-      immediate: false
+  async function getItems(where?: MaybeRefOrGetter<Where<T>>) {
+    const { data, refresh, status } = await useFetch<TableItem<T>[]>(`/api/items/${collection}` as `/api/items/:collection`, {
+      query: { where }
     })
+
     return {
       data,
       status,
-      execute
+      refresh
     }
   }
 

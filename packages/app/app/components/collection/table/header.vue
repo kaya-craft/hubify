@@ -2,10 +2,15 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Column, Table } from '@tanstack/vue-table'
 
-const { collection, selected, table } = defineProps<{
+const { collection, disableDeleteButton, table } = defineProps<{
   collection: T
   selected: TableItem<T>[]
   table: Table<T>
+  disableDeleteButton?: boolean
+}>()
+
+const emits = defineEmits<{
+  'delete-items': []
 }>()
 
 const globalFilter = defineModel<string>('global-filter')
@@ -13,20 +18,16 @@ const queryWhere = defineModel<Where<T>>('query-where')
 const pageSize = defineModel<number>('page-size')
 
 /**
- * Get current collection from hubify_collections
+ * Collection meta data from hubify_collections
  */
-const { currentCollection } = useCollections()
+const { getCollectionMeta } = useCollections()
+const collectionMeta = getCollectionMeta(collection)
 
 /**
- * Display Icon component from hubify_collections icon field
+ * Collection icon component
  */
 const { getDisplayComponent: getHubifyDisplayComponent } = useTable('hubify_collections')
-const collectionIconComponent = h(getHubifyDisplayComponent('icon'), { value: currentCollection?.value?.icon })
-
-/**
- * Delete items
- */
-const itemsToDelete = computed(() => toValue(selected)?.map(s => s.id))
+const collectionIconComponent = h(getHubifyDisplayComponent('icon'), { value: collectionMeta?.icon })
 
 /**
  * Pagination
@@ -50,9 +51,12 @@ const pageSizes: DropdownMenuItem[] = [{
 
 function updatePagination(newPageSize: number) {
   pageSize.value = newPageSize
-  table.value?.tableApi.setPageSize(newPageSize)
+  table.setPageSize(newPageSize)
 }
 
+/**
+ * Table columns items for the column visibility dropdown.
+ */
 const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
   return table
     ?.getAllColumns()
@@ -70,6 +74,16 @@ const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
       }
     }))
 })
+
+/**
+ * Delete modal state
+ */
+const deleteModalOpen = ref(false)
+
+function deleteItems() {
+  emits('delete-items')
+  deleteModalOpen.value = false
+}
 </script>
 
 <template>
@@ -81,14 +95,14 @@ const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
       <component
         :is="collectionIconComponent"
         v-if="collectionIconComponent"
-        :style="`color: ${currentCollection?.color}`"
+        :style="`color: ${collectionMeta?.color}`"
       />
     </template>
 
     <template #title>
       <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
         <h2
-          :style="`color: ${currentCollection?.color}`"
+          :style="`color: ${collectionMeta?.color}`"
           class="text-lg font-semibold capitalize"
         >
           {{ collection }}
@@ -106,10 +120,7 @@ const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
           name="append-header"
         />
         <!-- Page size -->
-        <UDropdownMenu
-          :items="pageSizes"
-          @update:model-value="emit('update:page-size', $event)"
-        >
+        <UDropdownMenu :items="pageSizes">
           <UButton
             color="neutral"
             variant="outline"
@@ -123,16 +134,6 @@ const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
           :collection
         />
 
-        <!-- Delete -->
-        <!-- <UButton
-          :disabled="!itemsToDelete.length"
-          color="error"
-          variant="outline"
-          icon="heroicons:trash"
-          :loading="status === 'pending'"
-          @click="deleteItems(itemsToDelete)"
-        /> -->
-
         <!-- Column visibility -->
         <UDropdownMenu
           :items="tableColumnsItems"
@@ -145,6 +146,37 @@ const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
             trailing-icon="i-lucide-chevron-down"
           />
         </UDropdownMenu>
+
+        <!-- Delete -->
+        <UModal
+          v-model:open="deleteModalOpen"
+          title="Are you sure to delete the selected items ?"
+        >
+          <UButton
+            :disabled="disableDeleteButton"
+            color="error"
+            variant="outline"
+            icon="heroicons:trash"
+          />
+
+          <template #body>
+            <div class="flex justify-between">
+              <UButton
+                color="error"
+                variant="outline"
+                icon="heroicons:trash"
+                label="Confirm delete"
+                @click="deleteItems"
+              />
+
+              <UButton
+                color="neutral"
+                variant="outline"
+                label="Cancel"
+              />
+            </div>
+          </template>
+        </UModal>
       </div>
     </template>
   </UDashboardNavbar>

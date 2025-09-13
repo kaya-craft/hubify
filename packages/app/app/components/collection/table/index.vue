@@ -23,14 +23,14 @@ const { displayedColumns, getDisplayComponent, getColumnLabel } = useTable(colle
 const { queryWhere, validatedWhere } = useQueryWhere(collection, where)
 
 const {
-  getItems
+  getItems,
+  deleteItems
 } = useItems(collection)
 
 /**
  * Fetch items for the collection.
  */
-const { data: items, execute: fetchItems, status } = getItems(validatedWhere)
-await fetchItems()
+const { data: items, refresh: refreshItems, status } = await getItems(validatedWhere)
 
 /**
  * List of collection columns.
@@ -113,17 +113,22 @@ const selected = computed((): TableItem<T>[] => {
 })
 
 /**
+ * Selected items IDs
+ */
+const selectedItemsId = computed(() => toValue(selected)?.map(s => s.id))
+
+/**
  * Refresh the collection when the collection is updated.
  */
 onHubifyHook('items', ({ collection: name }) => {
   if (name === collection) {
-    fetchItems()
+    refreshItems()
     table.value?.tableApi.resetRowSelection()
   }
 })
 
 /**
- * Persisted limit for the collection.
+ * Persisted page size
  */
 const pageSize = useLocalStorage(`hubify.collection.${collection}.limit`, 10)
 
@@ -138,7 +143,7 @@ const pagination = ref({
 const globalFilter = ref('')
 
 /**
- * Column visibility
+ * Persisted column visibility
  */
 const columnVisibility = useLocalStorage(`hubify.collection.${collection}.columnVisibility`, {} as Record<string, boolean>)
 </script>
@@ -153,97 +158,9 @@ const columnVisibility = useLocalStorage(`hubify.collection.${collection}.column
         :collection
         :selected
         :table="table?.tableApi"
+        :disable-delete-button="!selectedItemsId.length"
+        @delete-items="deleteItems(selectedItemsId)"
       />
-
-      <!-- <UDashboardNavbar>
-        <template #leading>
-          <slot
-            name="prepend-header"
-            :selected
-          />
-          <component
-            :is="collectionIconComponent"
-            v-if="collectionIconComponent"
-            :style="`color: ${currentCollection?.color}`"
-          />
-        </template>
-
-        <template #title>
-          <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-            <h2
-              :style="`color: ${currentCollection?.color}`"
-              class="text-lg font-semibold capitalize"
-            >
-              {{ collection }}
-            </h2>
-            <UInput
-              v-model="globalFilter"
-              placeholder="Search ..."
-            />
-          </div>
-        </template>
-
-        <template #right>
-          <div class="flex flex-row gap-6">
-            <slot
-              name="append-header"
-              :selected
-            />
-            <UDropdownMenu
-              :items="pageSizes"
-              @update:model-value="updatePagination"
-            >
-              <UButton
-                color="neutral"
-                variant="outline"
-                :label="`${pageSize} items`"
-              />
-            </UDropdownMenu>
-
-            <CollectionFilter
-              v-model="queryWhere"
-              :collection
-            />
-
-            <UButton
-              :disabled="!itemsToDelete.length"
-              color="error"
-              variant="outline"
-              icon="heroicons:trash"
-              :loading="status === 'pending'"
-              @click="deleteItems(itemsToDelete)"
-            />
-
-            <UDropdownMenu
-              :items="
-                table?.tableApi
-                  ?.getAllColumns()
-                  .filter((column: Column<T>) => column.getCanHide())
-                  .filter((column: Column<T>) => column.id !== 'select' && column.id !== 'actions')
-                  .map((column: Column<T>) => ({
-                    label: column.id,
-                    type: 'checkbox' as const,
-                    checked: column.getIsVisible(),
-                    onUpdateChecked(checked: boolean) {
-                      table?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
-                    },
-                    onSelect(e?: Event) {
-                      e?.preventDefault()
-                    }
-                  }))
-              "
-              :content="{ align: 'end' }"
-            >
-              <UButton
-                label="Columns"
-                color="neutral"
-                variant="outline"
-                trailing-icon="i-lucide-chevron-down"
-              />
-            </UDropdownMenu>
-          </div>
-        </template>
-      </UDashboardNavbar> -->
     </template>
 
     <template #body>
