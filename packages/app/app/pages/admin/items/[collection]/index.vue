@@ -19,6 +19,7 @@ const { canCreate } = useTable(collection)
 <template>
   <CollectionTable
     :collection
+    :selectable="true"
   >
     <template #append-header>
       <UButton

@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
-import { CollectionTableActions, UCheckbox, UTable } from '#components'
-import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
+import { CollectionTableActions, UButton, UCheckbox } from '#components'
+import type { TableColumn } from '@nuxt/ui'
+import type { Row } from '@tanstack/vue-table'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 
 type Props = {
@@ -17,32 +18,19 @@ const { selectable, collection, where } = defineProps<Props>()
 const { displayedColumns, getDisplayComponent, getColumnLabel } = useTable(collection)
 
 /**
- * Get current collection from hubify_collections
- */
-const { currentCollection } = useCollections()
-
-/**
- * Display Icon component from hubify_collections icon field
- */
-const { getDisplayComponent: getHubifyDisplayComponent } = useTable('hubify_collections')
-const collectionIconComponent = h(getHubifyDisplayComponent('icon'), { value: currentCollection?.value?.icon })
-
-/**
  * Where query.
  */
 const { queryWhere, validatedWhere } = useQueryWhere(collection, where)
 
-/**
- * Persisted limit for the collection.
- */
-const limit = useLocalStorage(`hubify.collection.${collection}.limit`, 10)
+const {
+  getItems
+} = useItems(collection)
 
 /**
- * Fetch data for the collection.
+ * Fetch items for the collection.
  */
-const { data, status, refresh } = await useFetch<TableItem<T>[]>(`/api/items/${collection}` as `/api/items/:collection`, {
-  query: { where: validatedWhere, limit: limit.value }
-})
+const { data: items, execute: fetchItems, status } = getItems(validatedWhere)
+await fetchItems()
 
 /**
  * List of collection columns.
@@ -51,7 +39,21 @@ const collectionColumns = computed(() => {
   return toValue(displayedColumns).map(name => ({
     id: name,
     accessorKey: name,
-    header: getColumnLabel(name),
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: getColumnLabel(name),
+        icon: isSorted
+          ? isSorted === 'asc'
+            ? 'i-lucide-arrow-up-narrow-wide'
+            : 'i-lucide-arrow-down-wide-narrow'
+          : 'i-lucide-arrow-up-down',
+        class: '-mx-2.5',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      })
+    },
     cell: ({ row }) => {
       const value = row.original[name as keyof typeof row.original]
       const component = getDisplayComponent(name)
@@ -107,7 +109,7 @@ const table = useTemplateRef('table')
  * Selected items
  */
 const selected = computed((): TableItem<T>[] => {
-  return (table.value?.tableApi.getSelectedRowModel().flatRows.map(row => row.original) ?? []) as TableItem<T>[]
+  return (table.value?.tableApi.getSelectedRowModel().flatRows.map((row: Row<T>) => row.original) ?? []) as TableItem<T>[]
 })
 
 /**
@@ -115,51 +117,50 @@ const selected = computed((): TableItem<T>[] => {
  */
 onHubifyHook('items', ({ collection: name }) => {
   if (name === collection) {
-    refresh()
+    fetchItems()
     table.value?.tableApi.resetRowSelection()
   }
 })
 
 /**
- * Pagination
+ * Persisted limit for the collection.
  */
-const availablePageSizes: DropdownMenuItem[] = [{
-  label: '10',
-  value: 10
-}, {
-  label: '20',
-  value: 20
-}, {
-  label: '50',
-  value: 50
-}, {
-  label: '100',
-  value: 100
-}].map(item => ({
-  ...item,
-  onSelect: () => updatePagination(item.value as number)
-}))
+const pageSize = useLocalStorage(`hubify.collection.${collection}.limit`, 10)
 
 const pagination = ref({
   pageIndex: 0,
-  pageSize: limit.value
+  pageSize: pageSize.value
 })
 
-function updatePagination(newPageSize: number) {
-  table.value?.tableApi.setPagination({
-    pageIndex: 0,
-    pageSize: newPageSize
-  })
-  limit.value = newPageSize
-}
+/**
+ * Global filter
+ */
+const globalFilter = ref('')
+
+/**
+ * Column visibility
+ */
+const columnVisibility = useLocalStorage(`hubify.collection.${collection}.columnVisibility`, {} as Record<string, boolean>)
 </script>
 
 <template>
   <UDashboardPanel id="collection-table">
     <template #header>
-      <UDashboardNavbar>
+      <CollectionTableHeader
+        v-model:query-where="queryWhere"
+        v-model:global-filter="globalFilter"
+        v-model:page-size="pageSize"
+        :collection
+        :selected
+        :table="table?.tableApi"
+      />
+
+      <!-- <UDashboardNavbar>
         <template #leading>
-          <slot name="prepend-header" />
+          <slot
+            name="prepend-header"
+            :selected
+          />
           <component
             :is="collectionIconComponent"
             v-if="collectionIconComponent"
@@ -168,47 +169,95 @@ function updatePagination(newPageSize: number) {
         </template>
 
         <template #title>
-          <h2
-            :style="`color: ${currentCollection?.color}`"
-            class="text-lg font-semibold capitalize"
-          >
-            {{ collection }}
-          </h2>
+          <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+            <h2
+              :style="`color: ${currentCollection?.color}`"
+              class="text-lg font-semibold capitalize"
+            >
+              {{ collection }}
+            </h2>
+            <UInput
+              v-model="globalFilter"
+              placeholder="Search ..."
+            />
+          </div>
         </template>
 
         <template #right>
-          <slot name="append-header" />
-          <UDropdownMenu
-            :items="availablePageSizes"
-            @update:model-value="updatePagination"
-          >
-            <UButton
-              icon="i-lucide-menu"
-              color="neutral"
-              variant="outline"
+          <div class="flex flex-row gap-6">
+            <slot
+              name="append-header"
+              :selected
             />
-          </UDropdownMenu>
+            <UDropdownMenu
+              :items="pageSizes"
+              @update:model-value="updatePagination"
+            >
+              <UButton
+                color="neutral"
+                variant="outline"
+                :label="`${pageSize} items`"
+              />
+            </UDropdownMenu>
 
-          <CollectionFilter
-            v-model="queryWhere"
-            :collection
-          />
+            <CollectionFilter
+              v-model="queryWhere"
+              :collection
+            />
+
+            <UButton
+              :disabled="!itemsToDelete.length"
+              color="error"
+              variant="outline"
+              icon="heroicons:trash"
+              :loading="status === 'pending'"
+              @click="deleteItems(itemsToDelete)"
+            />
+
+            <UDropdownMenu
+              :items="
+                table?.tableApi
+                  ?.getAllColumns()
+                  .filter((column: Column<T>) => column.getCanHide())
+                  .filter((column: Column<T>) => column.id !== 'select' && column.id !== 'actions')
+                  .map((column: Column<T>) => ({
+                    label: column.id,
+                    type: 'checkbox' as const,
+                    checked: column.getIsVisible(),
+                    onUpdateChecked(checked: boolean) {
+                      table?.tableApi?.getColumn(column.id)?.toggleVisibility(!!checked)
+                    },
+                    onSelect(e?: Event) {
+                      e?.preventDefault()
+                    }
+                  }))
+              "
+              :content="{ align: 'end' }"
+            >
+              <UButton
+                label="Columns"
+                color="neutral"
+                variant="outline"
+                trailing-icon="i-lucide-chevron-down"
+              />
+            </UDropdownMenu>
+          </div>
         </template>
-      </UDashboardNavbar>
+      </UDashboardNavbar> -->
     </template>
 
     <template #body>
       <UTable
         ref="table"
         v-model:pagination="pagination"
+        v-model:global-filter="globalFilter"
+        v-model:column-visibility="columnVisibility"
         :columns="[...prependColumns, ...collectionColumns, ...actionColumns]"
-        :data
+        :data="items"
         sticky
         :loading="status === 'pending'"
         :pagination-options="{
-          getPaginationRowModel: getPaginationRowModel(),
-          rowCount: data?.length,
-          manualPagination: true
+          getPaginationRowModel: getPaginationRowModel()
         }"
       />
     </template>
@@ -220,9 +269,9 @@ function updatePagination(newPageSize: number) {
       <UPagination
         class="flex justify-center p-4 border-t-1 border-slate-600"
         :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
-        :items-per-page="table?.tableApi?.getState().pagination.pageSize"
-        :total="table?.tableApi?.getFilteredRowModel().rows.length"
-        @update:page="(p) => table?.tableApi?.setPageIndex(p - 1)"
+        :items-per-page="pageSize"
+        :total="items?.length"
+        @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)"
       />
     </template>
   </UDashboardPanel>
