@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
 import { CollectionTableActions, UButton, UCheckbox } from '#components'
 import type { TableColumn } from '@nuxt/ui'
-import type { Row } from '@tanstack/vue-table'
+import type { ColumnSort, Row } from '@tanstack/vue-table'
 import { getPaginationRowModel } from '@tanstack/vue-table'
 
 type Props = {
@@ -16,21 +16,6 @@ const { selectable, collection, where } = defineProps<Props>()
  * Collection definition.
  */
 const { displayedColumns, getDisplayComponent, getColumnLabel } = useTable(collection)
-
-/**
- * Where query.
- */
-const { queryWhere, validatedWhere } = useQueryWhere(collection, where)
-
-const {
-  getItems,
-  deleteItems
-} = useItems(collection)
-
-/**
- * Fetch items for the collection.
- */
-const { data: items, refresh: refreshItems, status } = await getItems(validatedWhere)
 
 /**
  * List of collection columns.
@@ -146,6 +131,29 @@ const globalFilter = ref('')
  * Persisted column visibility
  */
 const columnVisibility = useLocalStorage(`hubify.collection.${collection}.columnVisibility`, {} as Record<string, boolean>)
+
+/**
+ * Where query.
+ */
+const { queryWhere, validatedWhere } = useQueryWhere(collection, where)
+
+const {
+  getItems,
+  deleteItems
+} = useItems(collection)
+
+/**
+ * Fetch items for the collection.
+ */
+const query = computed(() => ({
+  where: validatedWhere.value,
+  limit: pagination.value.pageSize,
+  offset: pagination.value.pageIndex * pagination.value.pageSize,
+  order: table.value?.tableApi.getState().sorting.map((sort: ColumnSort) => ({
+    [sort.id]: sort.desc ? 'desc' : 'asc'
+  }))
+}))
+const { items, total_count, refresh: refreshItems, status } = await getItems(query)
 </script>
 
 <template>
@@ -187,7 +195,7 @@ const columnVisibility = useLocalStorage(`hubify.collection.${collection}.column
         class="flex justify-center p-4 border-t-1 border-slate-600"
         :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
         :items-per-page="pageSize"
-        :total="items?.length"
+        :total="total_count"
         @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)"
       />
     </template>

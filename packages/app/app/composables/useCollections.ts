@@ -5,13 +5,13 @@ export function useCollections() {
   /**
    * List of collections.
    **/
-  const { data: collections, refresh } = useFetch('/api/items/hubify_collections')
+  const { data: collections, refresh } = useFetch<{ items: TableItem<'hubify_collections'>[], total_count: number }>('/api/items/hubify_collections')
 
   /**
    * Extract display columns from collection.
    */
   function extractDisplayColumns<T extends TableNames>(name: T) {
-    const collection = toValue(collections)?.find(collection => collection.name === name)
+    const collection = toValue(collections)?.items?.find(collection => collection.name === name)
 
     if (!collection?.displayTemplate) return
 
@@ -26,7 +26,7 @@ export function useCollections() {
    * Get display value from item and columns.
    */
   function getDisplay<T extends TableNames>(name: T, item: TableItem<T>) {
-    const collection = toValue(collections)?.find(collection => collection.name === name)
+    const collection = toValue(collections)?.items?.find(collection => collection.name === name)
 
     if (!collection?.displayTemplate) return
 
@@ -45,7 +45,7 @@ export function useCollections() {
   })
 
   function getCollectionMeta<T extends TableNames>(name: T) {
-    return toValue(collections)?.find(collection => collection.name === name)
+    return toValue(collections)?.items?.find(collection => collection.name === name)
   }
 
   return {

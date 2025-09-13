@@ -60,8 +60,8 @@ const localePath = useLocalePath()
 /**
  * Format collections for navigation menu.
  */
-const meniItems = computed(() => {
-  return toValue(collections)?.map(collection => ({
+const menuItems = computed(() => {
+  return toValue(collections)?.items.map(collection => ({
     label: collection.name,
     icon: collection.icon || 'i-lucide-folder',
     color: collection.color || 'bg-gray-500',
@@ -91,7 +91,7 @@ const meniItems = computed(() => {
           />
           <UNavigationMenu
             :collapsed="collapsed"
-            :items="meniItems"
+            :items="menuItems"
             orientation="vertical"
             tooltip
             popover

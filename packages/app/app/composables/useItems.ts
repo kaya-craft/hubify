@@ -1,14 +1,17 @@
+import type { QueryParams } from '@hubify/restql'
+
 export function useItems<T extends TableNames>(collection: T) {
   /**
    * Get items
    */
-  async function getItems(where?: MaybeRefOrGetter<Where<T>>) {
-    const { data, refresh, status } = await useFetch<TableItem<T>[]>(`/api/items/${collection}` as `/api/items/:collection`, {
-      query: { where }
+  async function getItems(query?: MaybeRefOrGetter<QueryParams<Schema, T>>) {
+    const { data, refresh, status } = await useFetch<{ items: TableItem<T>[], total_count: number }>(`/api/items/${collection}` as `/api/items/:collection`, {
+      query
     })
 
     return {
-      data,
+      items: data.value?.items || [],
+      total_count: data.value?.total_count || 0,
       status,
       refresh
     }
