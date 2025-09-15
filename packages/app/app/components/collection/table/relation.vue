@@ -28,7 +28,7 @@ const relation = computed(() => {
 <template>
   <CollectionTable
     :collection="relation?.table"
-    :where="{ [relation.toKey]: { $eq: id } }"
+    :query-router="{ where: { [relation.toKey]: { $eq: id } } }"
     selectable
   >
     <template #append-header="{ selected: detaching }">

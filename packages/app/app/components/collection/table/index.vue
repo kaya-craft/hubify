@@ -2,15 +2,15 @@
 import { CollectionTableActions, UButton, UCheckbox } from '#components'
 import type { QueryParams } from '@hubify/restql'
 import type { TableColumn } from '@nuxt/ui'
-import type { ColumnSort, Row } from '@tanstack/vue-table'
+import type { ColumnSort, Row, Table } from '@tanstack/vue-table'
 
 type Props = {
   collection: T
-  where?: Where<T>
+  queryRouter?: QueryParams<Schema, T>
   selectable?: boolean
 }
 
-const { selectable, collection, where } = defineProps<Props>()
+const { selectable, collection, queryRouter } = defineProps<Props>()
 
 /**
  * Collection definition.
@@ -36,7 +36,10 @@ const collectionColumns = computed(() => {
             : 'i-lucide-arrow-down-wide-narrow'
           : 'i-lucide-arrow-up-down',
         class: '-mx-2.5',
-        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+        onClick: () => {
+          queryOrderBy.value = (column.getIsSorted() === 'asc' ? `-${name}` : name) as unknown as QueryParams<Schema, T>['orderBy']
+          return column.toggleSorting(column.getIsSorted() === 'asc')
+        }
       })
     },
     cell: ({ row }) => {
@@ -88,7 +91,7 @@ const prependColumns = computed(() => {
 /**
  * Table reference.
  */
-const table = useTemplateRef('table')
+const table = useTemplateRef<{ tableApi: Table<T> }>('table')
 
 /**
  * Selected items
@@ -113,14 +116,14 @@ onHubifyHook('items', ({ collection: name }) => {
 })
 
 /**
- * Persisted page size
+ * Router query state
  */
-const pageSize = useLocalStorage(`hubify.collection.${collection}.limit`, 10)
+const { queryWhere, validatedWhere, queryOffset, queryOrderBy } = useQueryRouter(collection, queryRouter)
 
-const pagination = ref({
-  pageIndex: 0,
-  pageSize: pageSize.value
-})
+/**
+ * Pagination composable
+ */
+const { updatePageSize, pagination } = usePagination(collection)
 
 /**
  * Global filter
@@ -132,10 +135,17 @@ const globalFilter = ref('')
  */
 const columnVisibility = useLocalStorage(`hubify.collection.${collection}.columnVisibility`, {} as Record<string, boolean>)
 
-/**
- * Where query.
- */
-const { queryWhere, validatedWhere } = useQueryWhere(collection, where)
+const offset = computed(() => queryOffset.value ?? pagination.value.pageIndex * pagination.value.pageSize)
+
+const orderBy = computed(() => {
+  const sorting = table.value?.tableApi.getState().sorting
+  if (!sorting?.length) return queryOrderBy.value
+  return sorting.map((sort: ColumnSort) => sort.desc ? `-${sort.id}` : sort.id).join(',')
+})
+
+watch(offset, (newOffset) => {
+  queryOffset.value = newOffset || undefined
+})
 
 /**
  * Fetch items for the collection.
@@ -143,8 +153,8 @@ const { queryWhere, validatedWhere } = useQueryWhere(collection, where)
 const query = computed<QueryParams<Schema, T>>((): QueryParams<Schema, T> => ({
   where: validatedWhere.value,
   limit: pagination.value.pageSize,
-  offset: pagination.value.pageIndex * pagination.value.pageSize,
-  orderBy: table.value?.tableApi.getState().sorting.map((sort: ColumnSort) => sort.desc ? `-${sort.id}` : sort.id)
+  offset: offset.value,
+  orderBy: orderBy.value //  table.value?.tableApi.getState().sorting.map((sort: ColumnSort) => sort.desc ? `-${sort.id}` : sort.id)
 }))
 
 const {
@@ -153,6 +163,11 @@ const {
 } = useItems(collection, query)
 
 const { items, total_count, refresh: refreshItems, status } = await getItems()
+
+async function handlePageSizeChange(newPageSize: number) {
+  updatePageSize(newPageSize)
+  table.value?.tableApi.setPageSize(newPageSize)
+}
 </script>
 
 <template>
@@ -161,12 +176,12 @@ const { items, total_count, refresh: refreshItems, status } = await getItems()
       <CollectionTableHeader
         v-model:query-where="queryWhere"
         v-model:global-filter="globalFilter"
-        v-model:page-size="pageSize"
         :collection
         :selected
         :table="table?.tableApi"
         :disable-delete-button="!selectedItemsId.length"
         @delete-items="deleteItems(selectedItemsId)"
+        @update:page-size="(size: number) => handlePageSizeChange(size)"
       />
     </template>
 
@@ -187,12 +202,9 @@ const { items, total_count, refresh: refreshItems, status } = await getItems()
       #footer
     >
       <slot name="footer" />
-      <UPagination
-        class="flex justify-center p-4 border-t-1 border-slate-600"
-        :default-page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
-        :items-per-page="pageSize"
-        :total="total_count"
-        @update:page="(p: number) => table?.tableApi?.setPageIndex(p - 1)"
+      <CollectionTableFooter
+        :collection="collection"
+        :total-count="total_count ?? 0"
       />
     </template>
   </UDashboardPanel>

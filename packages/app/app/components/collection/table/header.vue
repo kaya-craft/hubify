@@ -11,11 +11,13 @@ const { collection, disableDeleteButton, table } = defineProps<{
 
 const emits = defineEmits<{
   'delete-items': []
+  'update:page-size': [pageSize: number]
 }>()
+
+const { updatePageSize, pageSize } = usePagination(collection)
 
 const globalFilter = defineModel<string>('global-filter')
 const queryWhere = defineModel<Where<T>>('query-where')
-const pageSize = defineModel<number>('page-size')
 
 /**
  * Collection meta data from hubify_collections
@@ -28,6 +30,16 @@ const collectionMeta = getCollectionMeta(collection)
  */
 const { getDisplayComponent: getHubifyDisplayComponent } = useTable('hubify_collections')
 const collectionIconComponent = h(getHubifyDisplayComponent('icon'), { value: collectionMeta?.icon })
+
+/**
+ * Router query state
+ */
+// const { queryLimit } = useQueryRouter(collection)
+
+function handleUpdatePageSize(newPageSize: number) {
+  updatePageSize(newPageSize)
+  emits('update:page-size', newPageSize)
+}
 
 /**
  * Pagination
@@ -46,13 +58,8 @@ const pageSizes: DropdownMenuItem[] = [{
   value: 100
 }].map(item => ({
   ...item,
-  onSelect: () => updatePagination(item.value as number)
+  onSelect: () => handleUpdatePageSize(item.value as number)
 }))
-
-function updatePagination(newPageSize: number) {
-  pageSize.value = newPageSize
-  table.setPageSize(newPageSize)
-}
 
 /**
  * Table columns items for the column visibility dropdown.
