@@ -1,8 +1,8 @@
 <script setup lang="ts" generic="T extends TableNames">
 import { CollectionTableActions, UButton, UCheckbox } from '#components'
+import type { QueryParams } from '@hubify/restql'
 import type { TableColumn } from '@nuxt/ui'
 import type { ColumnSort, Row } from '@tanstack/vue-table'
-import { getPaginationRowModel } from '@tanstack/vue-table'
 
 type Props = {
   collection: T
@@ -137,23 +137,22 @@ const columnVisibility = useLocalStorage(`hubify.collection.${collection}.column
  */
 const { queryWhere, validatedWhere } = useQueryWhere(collection, where)
 
-const {
-  getItems,
-  deleteItems
-} = useItems(collection)
-
 /**
  * Fetch items for the collection.
  */
-const query = computed(() => ({
+const query = computed<QueryParams<Schema, T>>((): QueryParams<Schema, T> => ({
   where: validatedWhere.value,
   limit: pagination.value.pageSize,
   offset: pagination.value.pageIndex * pagination.value.pageSize,
-  order: table.value?.tableApi.getState().sorting.map((sort: ColumnSort) => ({
-    [sort.id]: sort.desc ? 'desc' : 'asc'
-  }))
+  orderBy: table.value?.tableApi.getState().sorting.map((sort: ColumnSort) => sort.desc ? `-${sort.id}` : sort.id)
 }))
-const { items, total_count, refresh: refreshItems, status } = await getItems(query)
+
+const {
+  getItems,
+  deleteItems
+} = useItems(collection, query)
+
+const { items, total_count, refresh: refreshItems, status } = await getItems()
 </script>
 
 <template>
@@ -181,9 +180,6 @@ const { items, total_count, refresh: refreshItems, status } = await getItems(que
         :data="items"
         sticky
         :loading="status === 'pending'"
-        :pagination-options="{
-          getPaginationRowModel: getPaginationRowModel()
-        }"
       />
     </template>
 
