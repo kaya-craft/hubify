@@ -31,11 +31,6 @@ const collectionMeta = getCollectionMeta(collection)
 const { getDisplayComponent: getHubifyDisplayComponent } = useTable('hubify_collections')
 const collectionIconComponent = h(getHubifyDisplayComponent('icon'), { value: collectionMeta?.icon })
 
-/**
- * Router query state
- */
-// const { queryLimit } = useQueryRouter(collection)
-
 function handleUpdatePageSize(newPageSize: number) {
   updatePageSize(newPageSize)
   emits('update:page-size', newPageSize)

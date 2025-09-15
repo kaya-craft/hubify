@@ -131,7 +131,7 @@ const { updatePageSize, pagination } = usePagination(collection)
 const globalFilter = ref('')
 
 /**
- * Persisted column visibility
+ * Column visibility
  */
 const columnVisibility = useLocalStorage(`hubify.collection.${collection}.columnVisibility`, {} as Record<string, boolean>)
 
@@ -143,10 +143,6 @@ const orderBy = computed(() => {
   return sorting.map((sort: ColumnSort) => sort.desc ? `-${sort.id}` : sort.id).join(',')
 })
 
-watch(offset, (newOffset) => {
-  queryOffset.value = newOffset || undefined
-})
-
 /**
  * Fetch items for the collection.
  */
@@ -154,7 +150,7 @@ const query = computed<QueryParams<Schema, T>>((): QueryParams<Schema, T> => ({
   where: validatedWhere.value,
   limit: pagination.value.pageSize,
   offset: offset.value,
-  orderBy: orderBy.value //  table.value?.tableApi.getState().sorting.map((sort: ColumnSort) => sort.desc ? `-${sort.id}` : sort.id)
+  orderBy: orderBy.value
 }))
 
 const {
