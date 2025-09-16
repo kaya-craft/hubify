@@ -148,4 +148,22 @@ test.describe('/admin/items/countries', () => {
     await expect(panel.getByText('Nigeria')).toBeVisible()
     await expect(panel.getByText('France')).not.toBeVisible()
   })
+
+  test('toggle column visibility', async ({ page, baseURL }) => {
+    await mockCountriesApi(page)
+    await page.goto(`${baseURL}/admin/items/countries`)
+
+    const trigger = page.getByTestId('column-visibility').locator('button').first()
+    await expect(trigger).toHaveText('Columns')
+    await trigger.click()
+    const controlsId = await trigger.getAttribute('aria-controls')
+    if (!controlsId) throw new Error('aria-controls not found on page size trigger')
+
+    const panel = await page.locator('#dashboard-panel-collection-table, #collection-table trhead tr')
+
+    await expect(panel.getByText('Code', { exact: true })).toBeVisible()
+
+    await page.locator(`#${controlsId} [role="group"] >> text=Code`).click()
+    await expect(panel.getByText('Code', { exact: true })).not.toBeVisible()
+  })
 })

@@ -142,18 +142,19 @@ function deleteItems() {
         />
 
         <!-- Column visibility -->
-        <UDropdownMenu
-          :items="tableColumnsItems"
-          :content="{ align: 'end' }"
-        >
-          <UButton
-            label="Columns"
-            color="neutral"
-            variant="outline"
-            trailing-icon="i-lucide-chevron-down"
-          />
-        </UDropdownMenu>
-
+        <div data-testid="column-visibility">
+          <UDropdownMenu
+            :items="tableColumnsItems"
+            :content="{ align: 'end' }"
+          >
+            <UButton
+              label="Columns"
+              color="neutral"
+              variant="outline"
+              trailing-icon="i-lucide-chevron-down"
+            />
+          </UDropdownMenu>
+        </div>
         <!-- Delete -->
         <UModal
           v-model:open="deleteModalOpen"
