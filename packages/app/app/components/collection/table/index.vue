@@ -146,12 +146,14 @@ const orderBy = computed(() => {
 /**
  * Fetch items for the collection.
  */
-const query = computed<QueryParams<Schema, T>>((): QueryParams<Schema, T> => ({
-  where: validatedWhere.value,
-  limit: pagination.value.pageSize,
-  offset: offset.value,
-  orderBy: orderBy.value
-}))
+const query = computed<QueryParams<Schema, T>>((): QueryParams<Schema, T> => {
+  return {
+    where: validatedWhere.value,
+    limit: pagination.value.pageSize,
+    offset: validatedWhere.value ? 0 : offset.value,
+    orderBy: orderBy.value
+  }
+})
 
 const {
   getItems,

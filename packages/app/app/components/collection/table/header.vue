@@ -4,8 +4,8 @@ import type { Column, Table } from '@tanstack/vue-table'
 
 const { collection, disableDeleteButton, table } = defineProps<{
   collection: T
-  selected: TableItem<T>[]
-  table: Table<T>
+  selected?: TableItem<T>[]
+  table?: Table<T>
   disableDeleteButton?: boolean
 }>()
 
@@ -122,13 +122,17 @@ function deleteItems() {
           name="append-header"
         />
         <!-- Page size -->
-        <UDropdownMenu :items="pageSizes">
-          <UButton
-            color="neutral"
-            variant="outline"
-            :label="`${pageSize} items`"
-          />
-        </UDropdownMenu>
+        <div data-testid="table-page-size">
+          <UDropdownMenu
+            :items="pageSizes"
+          >
+            <UButton
+              color="neutral"
+              variant="outline"
+              :label="`${pageSize} items`"
+            />
+          </UDropdownMenu>
+        </div>
 
         <!-- Filters -->
         <CollectionFilter
