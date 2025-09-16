@@ -111,6 +111,7 @@ function deleteItems() {
         </h2>
         <UInput
           v-model="globalFilter"
+          data-testid="global-filter"
           placeholder="Search ..."
         />
       </div>

@@ -15,7 +15,7 @@ export function usePagination(collection: TableNames) {
   const pageIndex = computed(() => {
     if (!queryOffset.value) return 1
 
-    const index = Math.ceil((queryOffset.value ?? 0) / (pageSize.value ?? 10))
+    const index = Math.ceil((queryOffset.value ?? 0) / (pageSize.value ?? 10)) + 1
 
     if (index < 1) return 1
     return index
@@ -31,7 +31,7 @@ export function usePagination(collection: TableNames) {
 
   function updatePageIndex(newPageIndex: number) {
     pagination.value.pageIndex = newPageIndex
-    queryOffset.value = newPageIndex * pageSize.value || undefined
+    queryOffset.value = (newPageIndex - 1) * pageSize.value || undefined
   }
 
   function updatePageSize(newPageSize: number) {

@@ -135,7 +135,7 @@ const globalFilter = ref('')
  */
 const columnVisibility = useLocalStorage(`hubify.collection.${collection}.columnVisibility`, {} as Record<string, boolean>)
 
-const offset = computed(() => queryOffset.value ?? pagination.value.pageIndex * pagination.value.pageSize)
+const offset = computed(() => queryOffset.value ?? (pagination.value.pageIndex - 1) * pagination.value.pageSize)
 
 const orderBy = computed(() => {
   const sorting = table.value?.tableApi.getState().sorting

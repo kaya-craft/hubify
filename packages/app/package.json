@@ -13,7 +13,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "NODE_ENV=test playwright test --ui"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.5",
@@ -44,6 +45,7 @@
   "devDependencies": {
     "@atlaskit/pragmatic-drag-and-drop-unit-testing": "^1.1.1",
     "@nuxt/test-utils": "catalog:",
+    "@playwright/test": "^1.55.0",
     "@types/yaireo__tagify": "^4.27.0",
     "@vitest/browser": "^3.2.4",
     "@vue/server-renderer": "^3.5.21",
