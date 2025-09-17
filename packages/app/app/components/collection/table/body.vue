@@ -1,29 +1,17 @@
 <script setup lang="ts" generic="T extends TableNames">
 import { CollectionTableActions, UButton, UCheckbox } from '#components'
 import type { QueryParams } from '@hubify/restql'
-import type { TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, TableColumn } from '@nuxt/ui'
 import type { Table } from '@tanstack/vue-table'
 
-const { selectable, collection, baseQueryRouter } = defineProps<{
+type Props = {
   collection: T
-  baseQueryRouter?: QueryParams<Schema, T>
+  queryRouter?: QueryParams<Schema, T>
   selectable?: boolean
-}>()
+  items: TableItem<T>[]
+}
 
-/**
- * Router query state
- */
-const { query, queryOrderBy } = useQueryRouter(collection, baseQueryRouter)
-
-/**
- * Pagination
- */
-const { pagination } = usePagination(collection)
-
-/**
- * Column visibility
- */
-const columnVisibility = useLocalStorage(`hubify.collection.${collection}.columnVisibility`, {} as Record<string, boolean>)
+const { selectable, collection, queryRouter } = defineProps<Props>()
 
 /**
  * Collection definition.
@@ -106,47 +94,113 @@ const prependColumns = computed(() => {
   } satisfies TableColumn<TableItem<T>>]
 })
 
-const {
-  getItems
-} = useItems(collection, query)
-
-const { items, total_count, refresh } = await getItems()
-
 /**
  * Refresh the collection when the collection is updated.
  */
-onHubifyHook('items', ({ collection: name }) => {
-  if (name === collection) {
-    refresh()
-    table.value?.tableApi.resetRowSelection()
-  }
-})
+// onHubifyHook('items', ({ collection: name }) => {
+//   if (name === collection) {
+//     refreshItems()
+//     table.value?.tableApi.resetRowSelection()
+//   }
+// })
+
+/**
+ * Router query state
+ */
+const { validatedWhere, queryOffset, queryOrderBy } = useQueryRouter(collection, queryRouter)
+
+/**
+ * Pagination composable
+ */
+const { pagination, updatePageSize } = usePagination(collection)
+
+const pageSizes: DropdownMenuItem[] = [{
+  label: '10 items',
+  value: 10
+}, {
+  label: '20 items',
+  value: 20
+}, {
+  label: '50 items',
+  value: 50
+}, {
+  label: '100 items',
+  value: 100
+}].map(item => ({
+  ...item,
+  onSelect: () => updatePageSize(item.value as number)
+}))
+
+/**
+ * Column visibility
+ */
+const columnVisibility = useLocalStorage(`hubify.collection.${collection}.columnVisibility`, {} as Record<string, boolean>)
+
+/**
+ * Delete modal state
+ */
+const deleteModalOpen = ref(false)
+
+function deleteItems() {
+  emits('delete-items')
+  deleteModalOpen.value = false
+}
+
+// const orderBy = computed(() => {
+//   const sorting = table.value?.tableApi.getState().sorting
+//   if (!sorting?.length) return queryOrderBy.value
+//   return sorting.map((sort: ColumnSort) => sort.desc ? `-${sort.id}` : sort.id).join(',')
+// })
+
+/**
+ * Update table state based on pagination state
+ */
+watch(pagination, (newValue, oldValue) => {
+  if (newValue === oldValue) return
+  table.value?.tableApi.setPageSize(newValue.pageSize)
+}, { deep: true })
 </script>
 
 <template>
-  <div class="flex min-h-[calc(100vh_-_var(--ui-header-height))] flex-col overflow-hidden">
-    <CollectionTableHeader
-      :collection
-      :table="table?.tableApi"
-      :base-query-router
-      :total-count="total_count"
-    />
+  <div>
+    <div>
+      <div class="grid grid-flow-col gap-4 justify-end bg-slate-950 py-2 px-4">
+        <!-- Page size -->
+        <div data-testid="table-page-size">
+          <UDropdownMenu
+            :items="pageSizes"
+          >
+            <UButton
+              color="neutral"
+              variant="outline"
+              :label="`${pagination.pageSize} items`"
+            />
+          </UDropdownMenu>
+        </div>
 
+        <!-- Column visibility -->
+        <div data-testid="column-visibility">
+          <UDropdownMenu
+            :items="tableColumnsItems"
+            :content="{ align: 'end' }"
+          >
+            <UButton
+              label="Columns"
+              color="neutral"
+              variant="outline"
+              trailing-icon="i-lucide-chevron-down"
+            />
+          </UDropdownMenu>
+        </div>
+      </div>
+    </div>
     <UTable
       ref="table"
       v-model:pagination="pagination"
       v-model:column-visibility="columnVisibility"
-      class="flex-1 overflow-y-auto"
       :columns="[...prependColumns, ...collectionColumns, ...actionColumns]"
       :data="items"
       sticky
     />
-
-    <div class="sticky bottom-0 bg-(--ui-bg) shrink-0">
-      <CollectionTableFooter
-        :collection="collection"
-        :total-count="total_count ?? 0"
-      />
-    </div>
   </div>
 </template>

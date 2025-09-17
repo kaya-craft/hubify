@@ -32,7 +32,7 @@ export function useItems<T extends TableNames>(collection: T, query?: ComputedRe
         query: {
           where: {
             id: {
-              $in: ids
+              $in: toValue(ids)
             }
           }
         }

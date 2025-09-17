@@ -82,5 +82,8 @@
   "app.admin.filters.select-a-date-range": "Select a date range",
   "app.admin.items.attach-items": "Attach {name}",
   "app.admin.form.cancel": "Cancel",
-  "app.admin.items.detatch-items": "Detach {name}"
+  "app.admin.items.detatch-items": "Detach {name}",
+  "app.admin.items-number": "{displayedItems}/{totalItems} items",
+  "app.admin.confirm-delete-items": "Are you sure to delete the selected items?",
+  "app.admin.confirm-action": "Confirm"
 }

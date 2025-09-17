@@ -24,10 +24,10 @@ export function usePagination(collection: TableNames) {
   /**
   * Pagination state
   */
-  const pagination = ref({
+  const pagination = useState('pagination', () => ({
     pageIndex: pageIndex.value,
     pageSize: pageSize.value
-  })
+  }))
 
   function updatePageIndex(newPageIndex: number) {
     pagination.value.pageIndex = newPageIndex
@@ -35,7 +35,7 @@ export function usePagination(collection: TableNames) {
   }
 
   function updatePageSize(newPageSize: number) {
-    pageSize.value = newPageSize
+    pagination.value.pageSize = newPageSize
     queryLimit.value = newPageSize
   }
 

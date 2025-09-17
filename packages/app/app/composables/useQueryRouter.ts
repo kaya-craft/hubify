@@ -2,6 +2,8 @@ import { whereValidation } from '@hubify/api/lib/validation'
 import type { QueryParams } from '@hubify/restql'
 import { defu } from 'defu'
 
+const DEFAULT_PAGE_SIZE = 10
+
 export function useQueryRouter<T extends TableNames>(table: T, baseQueryRouter?: MaybeRefOrGetter<QueryParams<Schema, T>>) {
   /**
    * Where query model.
@@ -17,8 +19,10 @@ export function useQueryRouter<T extends TableNames>(table: T, baseQueryRouter?:
   /**
    * Where state.
    */
+  const baseQuery = computed(() => toValue(baseQueryRouter))
+
   const where = computed<QueryParams<Schema, T>['where']>(() => {
-    return defu(toValue(toValue(baseQueryRouter)?.where), toValue(queryWhere)) as QueryParams<Schema, T>['where']
+    return defu(toValue(baseQuery.value?.where), toValue(queryWhere)) as QueryParams<Schema, T>['where']
   })
 
   /**
@@ -57,6 +61,16 @@ export function useQueryRouter<T extends TableNames>(table: T, baseQueryRouter?:
     mode: 'replace'
   })
 
+  const orderBy = computed(() => queryOrderBy.value ?? baseQuery.value?.orderBy)
+
+  const limit = computed(() => queryLimit.value ?? baseQuery.value?.limit ?? DEFAULT_PAGE_SIZE)
+
+  const offset = computed(() => {
+    if (validatedWhere.value) return 0
+
+    return queryOffset.value ?? baseQuery.value?.offset ?? 0
+  })
+
   /**
    * Watch for changes in the where and validate it.
    */
@@ -68,12 +82,22 @@ export function useQueryRouter<T extends TableNames>(table: T, baseQueryRouter?:
     }
   })
 
+  const query = computed<QueryParams<Schema, T>>(() => {
+    return {
+      where: validatedWhere.value,
+      limit: limit.value,
+      offset: offset.value,
+      orderBy: orderBy.value
+    }
+  })
+
   return {
     where,
     queryWhere,
     queryLimit,
     queryOffset,
     queryOrderBy,
-    validatedWhere
+    validatedWhere,
+    query
   }
 }

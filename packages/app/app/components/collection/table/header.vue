@@ -1,44 +1,33 @@
 <script lang="ts" setup generic="T extends TableNames">
+import type { QueryParams } from '@hubify/restql'
 import type { DropdownMenuItem } from '@nuxt/ui'
-import type { Column, Table } from '@tanstack/vue-table'
+import type { Column, Row, Table } from '@tanstack/vue-table'
 
-const { collection, disableDeleteButton, table } = defineProps<{
+const { collection, table, baseQueryRouter } = defineProps<{
   collection: T
-  selected?: TableItem<T>[]
   table?: Table<T>
-  disableDeleteButton?: boolean
+  baseQueryRouter?: QueryParams<Schema, T>
+  totalCount: number
 }>()
-
-const emits = defineEmits<{
-  'delete-items': []
-  'update:page-size': [pageSize: number]
-}>()
-
-const { updatePageSize, pageSize } = usePagination(collection)
-
-const globalFilter = defineModel<string>('global-filter')
-const queryWhere = defineModel<Where<T>>('query-where')
 
 /**
- * Collection meta data from hubify_collections
+ * Translations
+ */
+const { t } = useI18n()
+
+/**
+ * Get collection meta to display collection name, icon and color
  */
 const { getCollectionMeta } = useCollections()
 const collectionMeta = getCollectionMeta(collection)
-
-/**
- * Collection icon component
- */
 const { getDisplayComponent: getHubifyDisplayComponent } = useTable('hubify_collections')
 const collectionIconComponent = h(getHubifyDisplayComponent('icon'), { value: collectionMeta?.icon })
 
-function handleUpdatePageSize(newPageSize: number) {
-  updatePageSize(newPageSize)
-  emits('update:page-size', newPageSize)
-}
-
 /**
- * Pagination
+ * Handle table row size
  */
+const { updatePageSize, pageSize } = usePagination(collection)
+
 const pageSizes: DropdownMenuItem[] = [{
   label: '10 items',
   value: 10
@@ -53,15 +42,14 @@ const pageSizes: DropdownMenuItem[] = [{
   value: 100
 }].map(item => ({
   ...item,
-  onSelect: () => handleUpdatePageSize(item.value as number)
+  onSelect: () => updatePageSize(item.value as number)
 }))
 
 /**
- * Table columns items for the column visibility dropdown.
+ * Handle column visibility
  */
 const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
-  return table
-    ?.getAllColumns()
+  return table?.getAllColumns()
     .filter((column: Column<T>) => column.getCanHide())
     .filter((column: Column<T>) => column.id !== 'select' && column.id !== 'actions')
     .map((column: Column<T>) => ({
@@ -78,114 +66,118 @@ const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
 })
 
 /**
- * Delete modal state
+ * Handle table filters
  */
-const deleteModalOpen = ref(false)
+const { queryWhere } = useQueryRouter(collection, baseQueryRouter)
 
-function deleteItems() {
-  emits('delete-items')
+/**
+ * Handle delete items
+ */
+const { deleteItems } = useItems(collection)
+const deleteModalOpen = ref(false)
+/**
+ * Selected items
+ */
+const selectedItems = computed((): TableItem<T>[] => {
+  return (table?.getSelectedRowModel().flatRows.map((row: Row<T>) => row.original) ?? []) as TableItem<T>[]
+})
+
+/**
+ * Selected items IDs
+ */
+const selectedItemsId = computed(() => toValue(selectedItems)?.map(s => s.id))
+
+const disableDeleteButton = computed(() => selectedItems.value.length === 0)
+
+async function handleDeleteItems() {
+  await deleteItems(selectedItemsId)
   deleteModalOpen.value = false
 }
 </script>
 
 <template>
-  <UDashboardNavbar>
-    <template #leading>
-      <slot
-        name="prepend-header"
-      />
+  <div class="grid grid-flow-col gap-6 justify-between bg-(--ui-bg) sticky top-0 z-10  shrink-0 px-6 pt-4 pb-0">
+    <div class="flex gap-6">
       <component
         :is="collectionIconComponent"
         v-if="collectionIconComponent"
         :style="`color: ${collectionMeta?.color}`"
       />
-    </template>
+      <h2
+        :style="`color: ${collectionMeta?.color}`"
+        class="text-lg font-semibold capitalize"
+      >
+        {{ collection }}
+        <span class="text-xs">({{ t('app.admin.items-number', { displayedItems: table?.getRowCount(), totalItems: totalCount }) }})</span>
+      </h2>
+    </div>
 
-    <template #title>
-      <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-        <h2
-          :style="`color: ${collectionMeta?.color}`"
-          class="text-lg font-semibold capitalize"
-        >
-          {{ collection }}
-        </h2>
-        <UInput
-          v-model="globalFilter"
-          data-testid="global-filter"
-          placeholder="Search ..."
-        />
-      </div>
-    </template>
-
-    <template #right>
-      <div class="flex flex-row gap-6">
-        <slot
-          name="append-header"
-        />
-        <!-- Page size -->
-        <div data-testid="table-page-size">
-          <UDropdownMenu
-            :items="pageSizes"
-          >
-            <UButton
-              color="neutral"
-              variant="outline"
-              :label="`${pageSize} items`"
-            />
-          </UDropdownMenu>
-        </div>
-
-        <!-- Filters -->
-        <CollectionFilter
-          v-model="queryWhere"
-          :collection
-        />
-
-        <!-- Column visibility -->
-        <div data-testid="column-visibility">
-          <UDropdownMenu
-            :items="tableColumnsItems"
-            :content="{ align: 'end' }"
-          >
-            <UButton
-              label="Columns"
-              color="neutral"
-              variant="outline"
-              trailing-icon="i-lucide-chevron-down"
-            />
-          </UDropdownMenu>
-        </div>
-        <!-- Delete -->
-        <UModal
-          v-model:open="deleteModalOpen"
-          title="Are you sure to delete the selected items ?"
+    <div class="flex gap-6">
+      <!-- Page size -->
+      <div data-testid="table-page-size">
+        <UDropdownMenu
+          :items="pageSizes"
         >
           <UButton
-            :disabled="disableDeleteButton"
-            color="error"
+            color="neutral"
             variant="outline"
-            icon="heroicons:trash"
+            label="Page size"
+            trailing-icon="i-lucide-chevron-down"
           />
-
-          <template #body>
-            <div class="flex justify-between">
-              <UButton
-                color="error"
-                variant="outline"
-                icon="heroicons:trash"
-                label="Confirm delete"
-                @click="deleteItems"
-              />
-
-              <UButton
-                color="neutral"
-                variant="outline"
-                label="Cancel"
-              />
-            </div>
-          </template>
-        </UModal>
+        </UDropdownMenu>
       </div>
-    </template>
-  </UDashboardNavbar>
+
+      <!-- Column visibility -->
+      <div data-testid="column-visibility">
+        <UDropdownMenu
+          :items="tableColumnsItems"
+          :content="{ align: 'end' }"
+        >
+          <UButton
+            label="Columns"
+            color="neutral"
+            variant="outline"
+            trailing-icon="i-lucide-chevron-down"
+          />
+        </UDropdownMenu>
+      </div>
+
+      <!-- Filter -->
+      <CollectionFilter
+        v-model="queryWhere"
+        :collection
+      />
+
+      <!-- Delete -->
+      <UModal
+        v-model:open="deleteModalOpen"
+        :title="t('app.admin.confirm-delete-items')"
+      >
+        <UButton
+          :disabled="disableDeleteButton"
+          color="error"
+          variant="outline"
+          icon="heroicons:trash"
+        />
+
+        <template #body>
+          <div class="flex justify-between">
+            <UButton
+              color="error"
+              variant="outline"
+              icon="heroicons:trash"
+              :label="t('app.admin.confirm-action')"
+              @click="handleDeleteItems"
+            />
+
+            <UButton
+              color="neutral"
+              variant="outline"
+              :label="t('app.admin.form.cancel')"
+            />
+          </div>
+        </template>
+      </UModal>
+    </div>
+  </div>
 </template>
