@@ -26,7 +26,7 @@ const collectionIconComponent = h(getHubifyDisplayComponent('icon'), { value: co
 /**
  * Handle table row size
  */
-const { updatePageSize, pageSize } = usePagination(collection)
+const { updatePageSize } = usePagination(collection)
 
 const pageSizes: DropdownMenuItem[] = [{
   label: '10 items',
@@ -97,7 +97,10 @@ async function handleDeleteItems() {
 
 <template>
   <div class="grid grid-flow-col gap-6 justify-between bg-(--ui-bg) sticky top-0 z-10  shrink-0 px-6 pt-4 pb-0">
-    <div class="flex gap-6">
+    <div
+      class="flex gap-6"
+      data-testid="collection-title"
+    >
       <component
         :is="collectionIconComponent"
         v-if="collectionIconComponent"
@@ -128,7 +131,7 @@ async function handleDeleteItems() {
       </div>
 
       <!-- Column visibility -->
-      <div data-testid="column-visibility">
+      <div data-testid="table-column-visibility">
         <UDropdownMenu
           :items="tableColumnsItems"
           :content="{ align: 'end' }"
@@ -154,6 +157,7 @@ async function handleDeleteItems() {
         :title="t('app.admin.confirm-delete-items')"
       >
         <UButton
+          data-testid="table-delete-button"
           :disabled="disableDeleteButton"
           color="error"
           variant="outline"

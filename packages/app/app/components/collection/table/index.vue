@@ -106,11 +106,15 @@ const prependColumns = computed(() => {
   } satisfies TableColumn<TableItem<T>>]
 })
 
+/**
+ * Fetch items
+ */
 const {
   getItems
 } = useItems(collection, query)
 
-const { items, total_count, refresh } = await getItems()
+const { items, total_count, fetchItems } = getItems()
+fetchItems()
 
 /**
  * Refresh the collection when the collection is updated.
@@ -124,7 +128,10 @@ onHubifyHook('items', ({ collection: name }) => {
 </script>
 
 <template>
-  <div class="flex min-h-[calc(100vh_-_var(--ui-header-height))] flex-col overflow-hidden">
+  <div
+    data-testid="collection-table"
+    class="flex min-h-[calc(100vh_-_var(--ui-header-height))] flex-col overflow-hidden"
+  >
     <CollectionTableHeader
       :collection
       :table="table?.tableApi"

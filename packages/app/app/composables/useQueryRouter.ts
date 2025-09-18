@@ -2,7 +2,7 @@ import { whereValidation } from '@hubify/api/lib/validation'
 import type { QueryParams } from '@hubify/restql'
 import { defu } from 'defu'
 
-const DEFAULT_PAGE_SIZE = 10
+export const DEFAULT_PAGE_SIZE = 10
 
 export function useQueryRouter<T extends TableNames>(table: T, baseQueryRouter?: MaybeRefOrGetter<QueryParams<Schema, T>>) {
   /**

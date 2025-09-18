@@ -13,8 +13,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test": "vitest watch",
-    "test:e2e": "NODE_ENV=test playwright test --ui"
+    "test": "vitest watch"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.5",

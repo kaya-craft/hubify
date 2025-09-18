@@ -10,6 +10,12 @@ let mockPageSize: Ref<number>
 let queryOffset: Ref<number | undefined>
 let queryLimit: Ref<number | undefined>
 
+vi.mock('~/composables/useQueryRouter', () => ({
+  useQueryRouter: () => ({
+    queryWhere: undefined
+  })
+}))
+
 const updatePageIndex = vi.fn((p: number) => {
   mockPageIndex.value = p
   queryOffset.value = p * mockPageSize.value || undefined
@@ -102,7 +108,8 @@ describe('CollectionTableHeader ', () => {
 
     page.render(CollectionTableHeader, {
       props: {
-        collection: 'test' as TableNames
+        collection: 'test' as TableNames,
+        totalCount: 100
       }
     })
 

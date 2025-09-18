@@ -4,19 +4,17 @@ export function useItems<T extends TableNames>(collection: T, query?: ComputedRe
   /**
    * Get items
    */
-  const { data, refresh, status } = useFetch<{ items: TableItem<T>[], total_count: number }>(`/api/items/${collection}` as `/api/items/:collection`, {
+  const { data, refresh: fetchItems, status } = useFetch<{ items: TableItem<T>[], total_count: number }>(`/api/items/${collection}` as `/api/items/:collection`, {
     query,
     immediate: false
   })
 
-  async function getItems() {
-    await refresh()
-
+  function getItems() {
     return {
       items: computed(() => data.value?.items || []),
       total_count: computed(() => data.value?.total_count || 0),
       status,
-      refresh
+      fetchItems
     }
   }
 
