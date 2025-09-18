@@ -6,13 +6,25 @@ import type { NavigationMenuItem } from '@nuxt/ui'
  */
 const state = reactive({
   sidebar: false,
-  notifications: false
+  options: false
 })
 
 /**
  * Translation.
  */
 const { t } = useI18n()
+
+/**
+ * Current page title.
+ */
+const currentPageTitle = useTitle()
+
+/**
+ * Check if there are notifications.
+ */
+const hasNotifications = computed(() => {
+  return false
+})
 
 /**
  * Localized routes.
@@ -132,14 +144,56 @@ const menuItems = computed(() => {
       >
         <template #header>
           <UDashboardNavbar
-            title="Collection"
+            :title="currentPageTitle || ''"
             icon="heroicons:table-cells"
-          />
+          >
+            <template #leading>
+              <UDashboardSidebarCollapse />
+            </template>
+            <template #right>
+              <UTooltip
+                :text="t('app.notifications')"
+                :shortcuts="['N']"
+              >
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                  square
+                  @click="state.options = !state.options"
+                >
+                  <UChip
+                    color="error"
+                    :show="hasNotifications"
+                    inset
+                  >
+                    <UIcon
+                      name="i-lucide-bell"
+                      class="size-5 shrink-0"
+                    />
+                  </UChip>
+                </UButton>
+              </UTooltip>
+            </template>
+          </UDashboardNavbar>
         </template>
         <template #body>
           <NuxtPage />
         </template>
       </UDashboardPanel>
+
+      <!-- <UDashboardSidebar
+        id="options"
+        v-model:collapsed="state.options"
+        collapsible
+        size="right"
+        class="bg-elevated/25"
+        :min-size="0"
+        :ui="{ footer: 'lg:border-t lg:border-default' }"
+      >
+        <template #default="{ collapsed }">
+          <p>Hello {{ collapsed }}</p>
+        </template>
+      </UDashboardSidebar> -->
     </UDashboardGroup>
   </UApp>
 </template>

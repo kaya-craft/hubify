@@ -1,5 +1,6 @@
 /// <reference types="@vitest/browser/providers/playwright" />
 import { CollectionTable, DisplaysText } from '#components'
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render } from 'vitest-browser-vue'
 import { computed, ref } from 'vue'
@@ -32,63 +33,59 @@ beforeEach(() => {
   mockQueryOffset.value = 0
 })
 
-vi.mock('~/composables/useQueryRouter', () => {
-  return {
-    useQueryRouter: vi.fn(() => {
-      return {
-        queryLimit: mockQueryLimit,
-        queryOffset: mockQueryOffset
-      }
-    })
+mockNuxtImport('useQueryRouter', () => {
+  return () => {
+    return {
+      queryLimit: mockQueryLimit,
+      queryOffset: mockQueryOffset
+    }
   }
 })
 
-vi.mock('~/composables/useTable', () => {
-  return {
-    useTable: vi.fn(() => {
-      const displayedColumns = computed(() => ['id', 'name', 'emoji', 'code'])
-
-      return {
-        primaryKey: 'id',
-        columnNames: ['id', 'name', 'emoji', 'code'],
-        getColumn: (key: string) => ({
-          type: key === 'id' ? 'integer' : 'text'
-        }),
-        getPrimaryKeyValue: () => 'id',
-        displayedColumns,
-        getDisplayComponent: vi.fn(() => DisplaysText),
-        getColumnLabel: vi.fn((column: string) => column)
-      }
-    })
+mockNuxtImport('useTable', () => {
+  return () => {
+    return {
+      primaryKey: 'id',
+      columnNames: ['id', 'name', 'emoji', 'code'],
+      getColumn: (key: string) => ({
+        type: key === 'id' ? 'integer' : 'text'
+      }),
+      getPrimaryKeyValue: () => 'id',
+      displayedColumns: computed(() => ['id', 'name', 'emoji', 'code']),
+      getDisplayComponent: () => DisplaysText,
+      getColumnLabel: (column: string) => column
+    }
   }
 })
 
-vi.mock('~/composables/useItems', () => {
-  return {
-    useItems: vi.fn((_collection, query) => {
-      const fetchItems = vi.fn().mockResolvedValue(undefined)
+mockNuxtImport('useItems', () => {
+  return () => {
+    const items = computed(() => {
+      const limit = Number(mockQueryLimit.value ?? 10)
+      const offset = Number(mockQueryOffset.value ?? 0)
 
-      // Fake items returns based on query parameters
-      const items = computed(() => {
-        const limit = Number(query?.value?.limit ?? mockQueryLimit.value ?? 10)
-        const offset = Number(query?.value?.offset ?? mockQueryOffset.value ?? 0)
+      if (!Number.isFinite(limit) || limit <= 0) return []
 
-        if (!Number.isFinite(limit) || limit <= 0) return []
-
-        return mockedCountries.items.slice(offset, offset + limit)
-      })
-
-      const totalCount = computed(() => mockedCountries.total_count)
-
-      return {
-        getItems: () => ({
-          items,
-          total_count: totalCount,
-          fetchItems
-        }),
-        deleteItems: vi.fn()
-      }
+      return mockedCountries.items.slice(offset, offset + limit)
     })
+
+    const totalCount = computed(() => mockedCountries.total_count)
+
+    return {
+      refresh: vi.fn(),
+      data: computed(() => ({
+        items: items.value,
+        total_count: totalCount.value
+      }))
+    }
+  }
+})
+
+mockNuxtImport('useCollection', () => {
+  return () => {
+    return {
+      remove: vi.fn()
+    }
   }
 })
 

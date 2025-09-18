@@ -15,7 +15,8 @@ const { t } = useI18n()
 /**
  * Table composable.
  */
-const { getRelation, loading, attach, detach } = useTable(collection)
+const { getRelation } = useTable(collection)
+const { attach, detach, loading } = useCollection(collection)
 
 /**
  * Current relation.

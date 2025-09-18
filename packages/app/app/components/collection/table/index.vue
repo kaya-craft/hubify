@@ -1,5 +1,4 @@
 <script setup lang="ts" generic="T extends TableNames">
-import { CollectionTableActions, UButton, UCheckbox } from '#components'
 import type { QueryParams } from '@hubify/restql'
 import type { TableColumn } from '@nuxt/ui'
 import type { Table } from '@tanstack/vue-table'
@@ -44,7 +43,7 @@ const collectionColumns = computed(() => {
     accessorKey: name,
     header: ({ column }) => {
       const isSorted = column.getIsSorted()
-      return h(UButton, {
+      return h(resolveComponent('UButton'), {
         color: 'neutral',
         variant: 'ghost',
         label: getColumnLabel(name),
@@ -77,7 +76,7 @@ const actionColumns = [{
   accessorKey: '',
   header: '',
   enableSorting: false,
-  cell: ({ row }) => h(CollectionTableActions, { collection, item: row.original })
+  cell: ({ row }) => h(resolveComponent('CollectionTableActions'), { collection, item: row.original })
 }] satisfies TableColumn<TableItem<T>>[]
 
 /**
@@ -89,7 +88,7 @@ const prependColumns = computed(() => {
   {
     id: 'select',
     header: ({ table }) =>
-      h(UCheckbox, {
+      h(resolveComponent('UCheckbox'), {
         'modelValue': table.getIsSomePageRowsSelected()
           ? 'indeterminate'
           : table.getIsAllPageRowsSelected(),
@@ -98,7 +97,7 @@ const prependColumns = computed(() => {
         'aria-label': 'Select all'
       }),
     cell: ({ row }) =>
-      h(UCheckbox, {
+      h(resolveComponent('UCheckbox'), {
         'modelValue': row.getIsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
         'aria-label': 'Select row'
@@ -109,12 +108,7 @@ const prependColumns = computed(() => {
 /**
  * Fetch items
  */
-const {
-  getItems
-} = useItems(collection, query)
-
-const { items, total_count, fetchItems } = getItems()
-fetchItems()
+const { refresh, data } = useItems(collection, query)
 
 /**
  * Refresh the collection when the collection is updated.
@@ -136,7 +130,7 @@ onHubifyHook('items', ({ collection: name }) => {
       :collection
       :table="table?.tableApi"
       :base-query-router
-      :total-count="total_count"
+      :total-count="data?.total_count"
     />
 
     <UTable
@@ -145,14 +139,14 @@ onHubifyHook('items', ({ collection: name }) => {
       v-model:column-visibility="columnVisibility"
       class="flex-1 overflow-y-auto"
       :columns="[...prependColumns, ...collectionColumns, ...actionColumns]"
-      :data="items"
+      :data="data?.items"
       sticky
     />
 
     <div class="sticky bottom-0 bg-(--ui-bg) shrink-0">
       <CollectionTableFooter
         :collection="collection"
-        :total-count="total_count ?? 0"
+        :total-count="data?.total_count || 0"
       />
     </div>
   </div>

@@ -7,7 +7,7 @@ const { collection, table, baseQueryRouter } = defineProps<{
   collection: T
   table?: Table<T>
   baseQueryRouter?: QueryParams<Schema, T>
-  totalCount: number
+  totalCount?: number
 }>()
 
 /**
@@ -73,7 +73,7 @@ const { queryWhere } = useQueryRouter(collection, baseQueryRouter)
 /**
  * Handle delete items
  */
-const { deleteItems } = useItems(collection)
+const { remove } = useCollection(collection)
 const deleteModalOpen = ref(false)
 /**
  * Selected items
@@ -90,9 +90,10 @@ const selectedItemsId = computed(() => toValue(selectedItems)?.map(s => s.id))
 const disableDeleteButton = computed(() => selectedItems.value.length === 0)
 
 async function handleDeleteItems() {
-  await deleteItems(selectedItemsId)
+  await remove(selectedItemsId)
   deleteModalOpen.value = false
 }
+const localeRoute = useLocaleRoute()
 </script>
 
 <template>
@@ -182,6 +183,16 @@ async function handleDeleteItems() {
           </div>
         </template>
       </UModal>
+
+      <!-- Create -->
+      <UButton
+        :to="localeRoute({ name: 'admin-items-collection-create', params: { collection } })"
+        variant="soft"
+        color="secondary"
+        leading-icon="heroicons:plus"
+      >
+        {{ t('app.admin.items.create') }}
+      </UButton>
     </div>
   </div>
 </template>

@@ -17,7 +17,7 @@ definePageMeta({
 const { collection } = defineProps<Props>()
 
 useSeoMeta({
-  title: () => collection,
+  title: () => 'Collection',
   description: () => ''
 })
 </script>

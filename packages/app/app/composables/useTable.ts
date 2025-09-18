@@ -1,10 +1,9 @@
 import registeredDisplays from '#hubify/displays'
 import registeredInputs from '#hubify/inputs'
 import tables from '#hubify/schema'
+import { isOneToManyRelation } from '@hubify/api/lib/column-types'
 import { getPrimaryKey } from '@hubify/restql/utils/helpers'
 import type { AsyncComponentLoader } from 'vue'
-import { InputsText, DisplaysText, DisplaysSystemOneToMany, InputsSystemOneToMany } from '#components'
-import { isOneToManyRelation } from '@hubify/api/lib/column-types'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
@@ -163,7 +162,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (!input?.component) {
       if (isOneToManyRelation(toValue(tableName), column)) {
-        return h(InputsSystemOneToMany, {
+        return h(resolveComponent('InputsSystemOneToMany'), {
           inheritAttrs: false,
           class: input?.class,
           collection: toValue(tableName),
@@ -171,7 +170,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
         })
       }
 
-      return h(InputsText, { class: input?.class })
+      return h(resolveComponent('InputsText'), { class: input?.class })
     }
 
     const component = registeredInputs[input.component as keyof typeof registeredInputs]
@@ -189,14 +188,14 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (!display?.component) {
       if (isOneToManyRelation(toValue(tableName), column)) {
-        return h(DisplaysSystemOneToMany, {
+        return h(resolveComponent('DisplaysSystemOneToMany'), {
           class: display?.class,
           collection: toValue(tableName),
           relation: column
         })
       }
 
-      return h(DisplaysText, { class: display?.class })
+      return h(resolveComponent('DisplaysText'), { class: display?.class })
     }
 
     const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
@@ -211,97 +210,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     const rels = toValue(relations)
     if (!rels || !(name in rels)) throw new Error(`Relation "${String(name)}" does not exist in table "${toValue(tableName)}".`)
     return rels[name] as TableRelation<T, R>
-  }
-
-  /**
-   * Extract primary key values from IDs or items.
-   */
-  function extractPrimaryKeyValues<T extends TableNames>(table: T, idsOrItems: (TablePrimaryKeyValue<T> | TableItem<T>)[]) {
-    const primaryKey = getPrimaryKey(tables, table)
-
-    if (!primaryKey) throw new Error(`Primary key for table "${table}" is not defined.`)
-
-    const values = idsOrItems.map((idOrItem) => {
-      if (typeof idOrItem === 'object') return idOrItem[primaryKey as keyof typeof idOrItem]
-      return idOrItem
-    }).filter(isNonNullish) as TablePrimaryKeyValue<T>[]
-
-    return [primaryKey, [...new Set(values)]] as const
-  }
-
-  /**
-   * Detatch from the specified relation.
-   */
-  async function detach<R extends TableRelationNames<T>, RT extends TableRelation<T, R>['table']>(
-    relationName: R,
-    ...idOrItems: (TablePrimaryKeyValue<RT> | TableItem<RT>)[]) {
-    try {
-      loading.value = true
-
-      const relation = getRelation(relationName)
-      const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
-
-      await $fetch('/api/items/' + relation.table, {
-        method: 'put',
-        query: { where: { [primaryKey]: { $in: ids } } },
-        body: { [relation.toKey]: null }
-      })
-
-      add({
-        title: 'Items detatched successfully',
-        color: 'success',
-        description: 'The items have been successfully detatched.'
-      })
-    }
-    catch (error) {
-      add({
-        title: 'Error detatching items',
-        color: 'error',
-        description: 'There was an error detatching the items. ' + String(error)
-      })
-      throw error
-    }
-    finally {
-      loading.value = false
-    }
-  }
-
-  /**
-   * Attach to the specified relation.
-   */
-  async function attach<R extends TableRelationNames<T>, RT extends TableRelation<T, R>['table']>(
-    id: TablePrimaryKeyValue<T>,
-    relationName: R,
-    ...idOrItems: (TablePrimaryKeyValue<RT> | TableItem<RT>)[]) {
-    try {
-      loading.value = true
-
-      const relation = getRelation(relationName)
-      const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
-
-      await $fetch('/api/items/' + relation.table, {
-        method: 'put',
-        query: { where: { [primaryKey]: { $in: ids } } },
-        body: { [relation.toKey]: id }
-      })
-
-      add({
-        title: 'Items attached successfully',
-        color: 'success',
-        description: 'The items have been successfully attached.'
-      })
-    }
-    catch (error) {
-      add({
-        title: 'Error attaching items',
-        color: 'error',
-        description: 'There was an error attaching the items. ' + String(error)
-      })
-      throw error
-    }
-    finally {
-      loading.value = false
-    }
   }
 
   /**
@@ -354,8 +262,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     relations,
     getRelation,
-    detach,
-    attach,
 
     loading
   }

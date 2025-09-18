@@ -1,18 +1,21 @@
 /// <reference types="@vitest/browser/providers/playwright" />
 import { CollectionFilterContent } from '#components'
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { page, userEvent, type Locator } from '@vitest/browser/context'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import 'vitest-browser-vue'
 
-vi.mock('~/composables/useTable', () => ({
-  useTable: () => ({
-    primaryKey: 'id',
-    columnNames: ['id', 'name'],
-    getColumn: (key: string) => ({
-      type: key === 'id' ? 'integer' : 'text'
-    })
-  })
-}))
+mockNuxtImport('useTable', () => {
+  return () => {
+    return {
+      primaryKey: 'id',
+      columnNames: ['id', 'name'],
+      getColumn: (key: string) => ({
+        type: key === 'id' ? 'integer' : 'text'
+      })
+    }
+  }
+})
 
 describe('CollectionFilter', () => {
   it('renders correctly', async () => {
