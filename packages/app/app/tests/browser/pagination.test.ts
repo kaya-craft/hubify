@@ -1,5 +1,6 @@
 /// <reference types="@vitest/browser/providers/playwright" />
 import { CollectionTableFooter, CollectionTableHeader } from '#components'
+import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { page, type Locator } from '@vitest/browser/context'
 import { describe, expect, it, vi } from 'vitest'
 import 'vitest-browser-vue'
@@ -10,11 +11,13 @@ let mockPageSize: Ref<number>
 let queryOffset: Ref<number | undefined>
 let queryLimit: Ref<number | undefined>
 
-vi.mock('~/composables/useQueryRouter', () => ({
-  useQueryRouter: () => ({
-    queryWhere: undefined
-  })
-}))
+mockNuxtImport('useQueryRouter', () => {
+  return () => {
+    return {
+      queryWhere: undefined
+    }
+  }
+})
 
 const updatePageIndex = vi.fn((p: number) => {
   mockPageIndex.value = p
@@ -49,7 +52,8 @@ describe('CollectionTableFooter ', () => {
     page.render(CollectionTableFooter, {
       props: {
         collection: 'test' as TableNames,
-        totalCount: 100
+        totalItems: 100,
+        displayedItems: 10
       }
     })
 
@@ -82,7 +86,8 @@ describe('CollectionTableFooter ', () => {
     page.render(CollectionTableFooter, {
       props: {
         collection: 'test' as TableNames,
-        totalCount: 100
+        totalItems: 100,
+        displayedItems: 10
       }
     })
 

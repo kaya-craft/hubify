@@ -12,13 +12,18 @@ export function usePagination(collection: TableNames) {
   /**
   * Page index
   */
-  const pageIndex = computed(() => {
-    if (!queryOffset.value) return 1
+  const pageIndex = computed({
+    get() {
+      if (!queryOffset.value) return 1
 
-    const index = Math.ceil((queryOffset.value ?? 0) / (pageSize.value ?? 10)) + 1
+      const index = Math.ceil((queryOffset.value ?? 0) / (pageSize.value ?? 10)) + 1
 
-    if (index < 1) return 1
-    return index
+      if (index < 1) return 1
+      return index
+    },
+    set(value) {
+      pagination.value.pageIndex = value
+    }
   })
 
   /**
@@ -30,12 +35,12 @@ export function usePagination(collection: TableNames) {
   }))
 
   function updatePageIndex(newPageIndex: number) {
-    pagination.value.pageIndex = newPageIndex
+    pageIndex.value = newPageIndex
     queryOffset.value = (newPageIndex - 1) * pageSize.value || undefined
   }
 
   function updatePageSize(newPageSize: number) {
-    pagination.value.pageSize = newPageSize
+    pageSize.value = newPageSize
     queryLimit.value = newPageSize
   }
 

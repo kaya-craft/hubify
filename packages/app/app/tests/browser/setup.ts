@@ -12,6 +12,8 @@ vi.stubGlobal('useI18n', () => ({
   t: (key: string) => key
 }))
 
+vi.stubGlobal('useLocaleRoute', vi.fn(() => route => route))
+
 const originalConsoleWarn = console.warn
 const originalConsoleError = console.error
 

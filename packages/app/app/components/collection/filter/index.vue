@@ -84,6 +84,34 @@ useDraggable(modalContainer, {
  * Open state.
  */
 const open = ref(false)
+
+/**
+ * Filter count
+ */
+function countConditions(root: ConditionTree): number {
+  if (root == null || typeof root !== 'object') return 0
+
+  let count = 0
+  const stack: ConditionTree[] = [root]
+
+  while (stack.length) {
+    const node: ConditionTree = stack.pop()!
+    if (node == null || typeof node !== 'object') continue
+    const group = node.$and ?? node.$or
+
+    if (Array.isArray(group)) {
+      for (let i = group.length - 1; i >= 0; i--) {
+        stack.push(group[i]!)
+      }
+    }
+    else {
+      count++
+    }
+  }
+
+  return count
+}
+const filterCount = computed(() => filter.value ? countConditions(filter.value) : 0)
 </script>
 
 <template>
@@ -96,8 +124,8 @@ const open = ref(false)
     :open="open"
   >
     <UButton
-      :label="t('app.admin.filters.label')"
-      variant="outline"
+      :label="t('app.admin.filters.label') + ` (${filterCount})`"
+      variant="soft"
       color="neutral"
       leading-icon="heroicons:funnel"
       @click.prevent="open = !open"

@@ -1,19 +1,32 @@
 <script lang="ts" setup>
-const { collection, totalCount } = defineProps<{
+const { collection, totalItems } = defineProps<{
   collection: TableNames
-  totalCount: number
+  totalItems: number
+  displayedItems: number
 }>()
 
+/**
+ * Pagination
+ */
 const { updatePageIndex, pageSize, pageIndex } = usePagination(collection)
+
+/**
+ * Translations
+ */
+const { t } = useI18n()
 </script>
 
 <template>
-  <UPagination
-    v-model:page="pageIndex"
-    data-testid="table-pagination"
-    class="flex justify-center p-4 border-t-1 border-slate-600"
-    :items-per-page="pageSize"
-    :total="totalCount"
-    @update:page="(p: number) => updatePageIndex(p)"
-  />
+  <div class="flex justify-center items-center p-4 border-t-1 border-slate-600">
+    <UPagination
+      v-model:page="pageIndex"
+      data-testid="table-pagination"
+      :items-per-page="pageSize"
+      :total="totalItems"
+      @update:page="(p: number) => updatePageIndex(p)"
+    />
+    <p class="text-xs ml-6">
+      ({{ t('app.admin.items-number', { displayedItems, totalItems }) }})
+    </p>
+  </div>
 </template>

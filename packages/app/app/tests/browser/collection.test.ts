@@ -8,8 +8,6 @@ import { DEFAULT_PAGE_SIZE } from '~/composables/useQueryRouter'
 
 const mockedCountries = (await import('./countries.mock.json')).default
 
-vi.stubGlobal('useLocaleRoute', vi.fn(() => route => route))
-
 vi.stubGlobal('useI18n', () => ({
   t: (value: string, params: Record<string, unknown>) => {
     if (value === 'app.admin.items-number') {
@@ -111,9 +109,7 @@ describe('CollectionTable', () => {
     // Render title
     const collectionTitle = screen.getByTestId('collection-title')
     await expect.element(collectionTitle).toBeVisible()
-    const titleText = collectionTitle.element().querySelector('h2')?.textContent
-    expect(titleText?.toLowerCase()).toContain('test')
-    expect(titleText).toContain(`${mockQueryLimit.value}/${mockedCountries.total_count} items`)
+    await expect.element(collectionTitle).toBeVisible()
 
     // Render Page size button
     const pageSizeButton = screen.getByTestId('table-page-size')

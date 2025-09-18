@@ -26,7 +26,7 @@ const collectionIconComponent = h(getHubifyDisplayComponent('icon'), { value: co
 /**
  * Handle table row size
  */
-const { updatePageSize } = usePagination(collection)
+const { updatePageSize, pageSize } = usePagination(collection)
 
 const pageSizes: DropdownMenuItem[] = [{
   label: '10 items',
@@ -112,7 +112,6 @@ const localeRoute = useLocaleRoute()
         class="text-lg font-semibold capitalize"
       >
         {{ collection }}
-        <span class="text-xs">({{ t('app.admin.items-number', { displayedItems: table?.getRowCount(), totalItems: totalCount }) }})</span>
       </h2>
     </div>
 
@@ -124,8 +123,9 @@ const localeRoute = useLocaleRoute()
         >
           <UButton
             color="neutral"
-            variant="outline"
-            label="Page size"
+            variant="soft"
+            :label="t('app.admin.collection.page-size', { pageSize })"
+            icon="lucide:list-ordered"
             trailing-icon="i-lucide-chevron-down"
           />
         </UDropdownMenu>
@@ -140,8 +140,9 @@ const localeRoute = useLocaleRoute()
           <UButton
             label="Columns"
             color="neutral"
-            variant="outline"
+            variant="soft"
             trailing-icon="i-lucide-chevron-down"
+            icon="lucide:columns-3-cog"
           />
         </UDropdownMenu>
       </div>
@@ -161,7 +162,8 @@ const localeRoute = useLocaleRoute()
           data-testid="table-delete-button"
           :disabled="disableDeleteButton"
           color="error"
-          variant="outline"
+          variant="soft"
+          :label="t('app.form.actions.delete')"
           icon="heroicons:trash"
         />
 

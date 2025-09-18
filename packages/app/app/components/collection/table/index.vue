@@ -146,7 +146,8 @@ onHubifyHook('items', ({ collection: name }) => {
     <div class="sticky bottom-0 bg-(--ui-bg) shrink-0">
       <CollectionTableFooter
         :collection="collection"
-        :total-count="data?.total_count || 0"
+        :total-items="data?.total_count || 0"
+        :displayed-items="table?.tableApi.getRowCount()"
       />
     </div>
   </div>

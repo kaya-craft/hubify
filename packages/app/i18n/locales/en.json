@@ -100,5 +100,6 @@
   "app.toast.attach-item.error": "There was an error attaching the item.",
   "app.toast.detach-item.title": "Detach item",
   "app.toast.detach-item.success": "The item has been successfully detached.",
-  "app.toast.detach-item.error": "There was an error detaching the item."  
+  "app.toast.detach-item.error": "There was an error detaching the item.",
+  "app.admin.collection.page-size": "Page size: {pageSize}"
 }
