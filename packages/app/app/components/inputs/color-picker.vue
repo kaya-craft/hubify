@@ -41,7 +41,7 @@ const defaultColors = [
 
 <template>
   <div>
-    <UButtonGroup>
+    <UButtonGroup class="w-full">
       <UPopover>
         <UBadge
           variant="outline"

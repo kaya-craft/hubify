@@ -82,6 +82,13 @@ const menuItems = computed(() => {
     to: localePath({ name: 'admin-items-collection', params: { collection: collection.name } })
   }) as NavigationMenuItem)
 })
+
+/**
+ * Project settings
+ */
+const { data } = await useItems('hubify_settings')
+
+const projectName = computed(() => data.value?.items[0]?.name)
 </script>
 
 <template>
@@ -93,9 +100,23 @@ const menuItems = computed(() => {
         collapsible
         resizable
         class="bg-elevated/25"
-        :ui="{ footer: 'lg:border-t lg:border-default' }"
+        :ui="{ footer: 'lg:border-t lg:border-default', body: 'pt-0', header: state.sidebar ? 'hidden': 'flex' }"
       >
         <template #default="{ collapsed }">
+          <UDashboardNavbar :ui="{ root: 'sm:px-0 px-0' }">
+            <template #leading>
+              <div class="flex items-center gap-4">
+                <UAvatar
+                  :alt="projectName"
+                  :size="collapsed ? 'md' : 'lg'"
+                />
+                <p>
+                  {{ projectName }}
+                </p>
+              </div>
+            </template>
+          </UDashboardNavbar>
+
           <UDashboardSearchButton
             :collapsed="collapsed"
             :label="t('app.search.placeholder')"
@@ -118,7 +139,10 @@ const menuItems = computed(() => {
                   :name="item.icon"
                   class="size-5"
                 />
-                <p class="text-md capitalize">
+                <p
+                  class="text-md capitalize"
+                  :class="{ hidden: collapsed }"
+                >
                   {{ item.label }}
                 </p>
               </div>
@@ -140,6 +164,7 @@ const menuItems = computed(() => {
       </UDashboardSidebar>
 
       <UDashboardPanel
+        id="main-panel"
         :ui="{ body: 'flex flex-col gap-4 sm:gap-6 flex-1 overflow-y-auto p-0 sm:p-0' }"
       >
         <template #header>
@@ -150,6 +175,7 @@ const menuItems = computed(() => {
             <template #leading>
               <UDashboardSidebarCollapse />
             </template>
+
             <template #right>
               <UTooltip
                 :text="t('app.notifications')"
@@ -180,20 +206,6 @@ const menuItems = computed(() => {
           <NuxtPage />
         </template>
       </UDashboardPanel>
-
-      <!-- <UDashboardSidebar
-        id="options"
-        v-model:collapsed="state.options"
-        collapsible
-        size="right"
-        class="bg-elevated/25"
-        :min-size="0"
-        :ui="{ footer: 'lg:border-t lg:border-default' }"
-      >
-        <template #default="{ collapsed }">
-          <p>Hello {{ collapsed }}</p>
-        </template>
-      </UDashboardSidebar> -->
     </UDashboardGroup>
   </UApp>
 </template>

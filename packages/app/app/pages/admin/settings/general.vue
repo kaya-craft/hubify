@@ -5,18 +5,17 @@ useSeoMeta({
   title: () => t('app.admin.settings.general.title'),
   description: () => t('app.admin.settings.general.description')
 })
+
+const { data } = await useItems('hubify_settings')
+
+const initialState = computed(() => data.value?.items[0])
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <p class="text-sm">
-        {{ t('app.admin.settings.general.description') }}
-      </p>
-    </template>
-
+  <UContainer class="py-4 lg:py-8">
     <CollectionForm
-      collection="hubify_collections"
+      collection="hubify_settings"
+      :initial-state="initialState"
     />
-  </UCard>
+  </UContainer>
 </template>

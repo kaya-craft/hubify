@@ -1,6 +1,6 @@
+import { itemValidation } from '@hubify/api/lib/validation'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type z from 'zod'
-import { itemValidation } from '@hubify/api/lib/validation'
 
 export type TableFormState<T extends TableNames> = {
   [C in TableColumnNames<T>]: TableFieldOptionValue<T, C> | undefined
@@ -43,8 +43,9 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
    * Update an existing item to the database.
    */
   async function save(data: TableFormSubmitEvent<T>['data'], id: string) {
+    console.log('======> ', id)
     try {
-      await $fetch('/api/items/' + collection + '/' + id, {
+      await $fetch(`/api/items/${collection}/${id}` as '/api/items/:collection/:id', {
         method: 'put',
         body: data
       })

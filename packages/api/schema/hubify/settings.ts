@@ -3,22 +3,32 @@ export const columns = defineTableColumns({
    * Primary key for the table.
    */
   id: {
-    type: 'uuid',
+    type: 'integer',
     primaryKey: true
   },
   /**
    * Name of the project.
    */
-  projectName: {
-    type: 'text',
-    notNull: true
+  name: {
+    type: 'text'
   },
   /**
    * Description of the project.
    */
-  projectDescription: {
-    type: 'text',
-    notNull: true
+  description: {
+    type: 'text'
+  },
+  /**
+   * Primary color
+   */
+  primaryColor: {
+    type: 'text'
+  },
+  /**
+   * Project logo
+   */
+  logo: {
+    type: 'text'
   },
   /**
    * Timestamp when the settings table was created.

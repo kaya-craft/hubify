@@ -97,7 +97,7 @@ const localeRoute = useLocaleRoute()
 </script>
 
 <template>
-  <div class="grid grid-flow-col gap-6 justify-between bg-(--ui-bg) sticky top-0 z-10  shrink-0 px-6 pt-4 pb-0">
+  <div class="grid grid-col-1 lg:grid-flow-col gap-2 lg:gap-6 justify-between bg-(--ui-bg) sticky top-0 z-10  shrink-0 px-6 pt-4 pb-0">
     <div
       class="flex gap-6"
       data-testid="collection-title"
@@ -111,11 +111,11 @@ const localeRoute = useLocaleRoute()
         :style="`color: ${collectionMeta?.color}`"
         class="text-lg font-semibold capitalize"
       >
-        {{ collection }}
+        {{ collection.replaceAll('_', ' ') }}
       </h2>
     </div>
 
-    <div class="flex gap-6">
+    <div class="flex gap-4 overflow-x-scroll pb-2">
       <!-- Page size -->
       <div data-testid="table-page-size">
         <UDropdownMenu

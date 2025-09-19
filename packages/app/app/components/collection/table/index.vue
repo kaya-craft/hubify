@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T extends TableNames">
+import { CollectionTableActions } from '#components'
 import type { QueryParams } from '@hubify/restql'
 import type { TableColumn } from '@nuxt/ui'
 import type { Table } from '@tanstack/vue-table'
@@ -76,7 +77,7 @@ const actionColumns = [{
   accessorKey: '',
   header: '',
   enableSorting: false,
-  cell: ({ row }) => h(resolveComponent('CollectionTableActions'), { collection, item: row.original })
+  cell: ({ row }) => h(CollectionTableActions, { collection, item: row.original })
 }] satisfies TableColumn<TableItem<T>>[]
 
 /**

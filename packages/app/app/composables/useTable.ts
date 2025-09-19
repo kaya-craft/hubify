@@ -1,3 +1,4 @@
+import { DisplaysText } from '#components'
 import registeredDisplays from '#hubify/displays'
 import registeredInputs from '#hubify/inputs'
 import tables from '#hubify/schema'
@@ -195,7 +196,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
         })
       }
 
-      return h(resolveComponent('DisplaysText'), { class: display?.class })
+      return h(DisplaysText, { class: display?.class })
     }
 
     const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
