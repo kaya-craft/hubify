@@ -16,17 +16,9 @@ const { collection, table, baseQueryRouter } = defineProps<{
 const { t } = useI18n()
 
 /**
- * Get collection meta to display collection name, icon and color
- */
-const { getCollectionMeta } = useCollections()
-const collectionMeta = getCollectionMeta(collection)
-const { getDisplayComponent: getHubifyDisplayComponent } = useTable('hubify_collections')
-const collectionIconComponent = h(getHubifyDisplayComponent('icon'), { value: collectionMeta?.icon })
-
-/**
  * Handle table row size
  */
-const { updatePageSize, pageSize } = usePagination(collection)
+const { updatePageSize, pagination } = usePagination(collection)
 
 const pageSizes: DropdownMenuItem[] = [{
   label: '10 items',
@@ -98,23 +90,6 @@ const localeRoute = useLocaleRoute()
 
 <template>
   <div class="grid grid-col-1 lg:grid-flow-col gap-2 lg:gap-6 justify-between bg-(--ui-bg) sticky top-0 z-10  shrink-0 px-6 pt-4 pb-0">
-    <div
-      class="flex gap-6"
-      data-testid="collection-title"
-    >
-      <component
-        :is="collectionIconComponent"
-        v-if="collectionIconComponent"
-        :style="`color: ${collectionMeta?.color}`"
-      />
-      <h2
-        :style="`color: ${collectionMeta?.color}`"
-        class="text-lg font-semibold capitalize"
-      >
-        {{ collection.replaceAll('_', ' ') }}
-      </h2>
-    </div>
-
     <div class="flex gap-4 overflow-x-scroll pb-2">
       <!-- Page size -->
       <div data-testid="table-page-size">
@@ -124,7 +99,7 @@ const localeRoute = useLocaleRoute()
           <UButton
             color="neutral"
             variant="soft"
-            :label="t('app.admin.collection.page-size', { pageSize })"
+            :label="t('app.admin.collection.page-size', { pageSize: pagination.pageSize })"
             icon="lucide:list-ordered"
             trailing-icon="i-lucide-chevron-down"
           />
@@ -152,7 +127,9 @@ const localeRoute = useLocaleRoute()
         v-model="queryWhere"
         :collection
       />
+    </div>
 
+    <div class="flex gap-4 overflow-x-scroll pb-2">
       <!-- Delete -->
       <UModal
         v-model:open="deleteModalOpen"

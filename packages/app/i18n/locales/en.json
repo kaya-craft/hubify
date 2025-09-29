@@ -23,7 +23,7 @@
   "validations.password.min": "Must be at least 8 characters",
   "app.login.form.submit": "Login",
   "app.admin.settings.title": "Settings",
-  "app.admin.settings.general.title": "General",
+  "app.admin.settings.general.title": "Global settings",
   "app.admin.settings.appearance.title": "Appearance",
   "app.admin.settings.environment.title": "Environment",
   "app.admin.profile.title": "Profile",

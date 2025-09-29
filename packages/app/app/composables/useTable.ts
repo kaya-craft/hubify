@@ -1,4 +1,4 @@
-import { DisplaysText } from '#components'
+import { DisplaysText, InputsText } from '#components'
 import registeredDisplays from '#hubify/displays'
 import registeredInputs from '#hubify/inputs'
 import tables from '#hubify/schema'
@@ -7,11 +7,6 @@ import { getPrimaryKey } from '@hubify/restql/utils/helpers'
 import type { AsyncComponentLoader } from 'vue'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
-  /**
-   * Toast.
-   */
-  const { add } = useToast()
-
   /**
    * Loading state.
    */
@@ -25,8 +20,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   })
 
   /**
-     * Table definition.
-     */
+   * Table definition.
+   */
   const table = computed(() => {
     const name = toValue(tableName)
     if (!tables[name]) throw new Error(`Table "${name}" does not exist.`)
@@ -147,7 +142,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getDisplay<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
-
     if (columnOptions === false || columnOptions?.display === false) return false
 
     return columnOptions?.display
@@ -171,7 +165,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
         })
       }
 
-      return h(resolveComponent('InputsText'), { class: input?.class })
+      return h(InputsText, { class: input?.class })
     }
 
     const component = registeredInputs[input.component as keyof typeof registeredInputs]
@@ -184,7 +178,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getDisplayComponent<C extends TableColumnNames<T>>(column: C) {
     const display = getDisplay(column)
-
     if (display === false) return
 
     if (!display?.component) {
@@ -195,12 +188,10 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
           relation: column
         })
       }
-
       return h(DisplaysText, { class: display?.class })
     }
 
     const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
-
     return defineAsyncComponent(component as AsyncComponentLoader)
   }
 

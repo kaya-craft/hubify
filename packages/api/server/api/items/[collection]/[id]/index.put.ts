@@ -4,7 +4,7 @@
 export default defineEventHandler(async (event) => {
   const collection = await ensureValidCollection(event)
 
-  const [id, params, item] = await Promise.all([
+  const [id, params, inputItem] = await Promise.all([
     ensureValidId(collection, event),
     ensureValidQueryParams(collection, event),
     ensureValidInputItem(collection, true, event)
@@ -12,12 +12,21 @@ export default defineEventHandler(async (event) => {
 
   const { updateOne } = useDb()
 
-  return ensureValidOutputItem(collection, updateOne(collection, id, item, params)).then((item) => {
+  try {
+    const item = await updateOne(collection, id, inputItem, params)
+    if (!item) {
+      throw createError({
+        status: 404,
+        message: 'Item not found'
+      })
+    }
     emitMessage(event, {
       type: 'items:updated',
       data: { collection, item }
     })
-
     return item
-  })
+  }
+  catch (e) {
+    throw createError(e)
+  }
 })

@@ -8,7 +8,7 @@ const { collection, totalItems } = defineProps<{
 /**
  * Pagination
  */
-const { updatePageIndex, pageSize, pageIndex } = usePagination(collection)
+const { updatePageIndex, pagination } = usePagination(collection)
 
 /**
  * Translations
@@ -19,9 +19,9 @@ const { t } = useI18n()
 <template>
   <div class="flex justify-center items-center p-4 border-t-1 border-slate-600">
     <UPagination
-      v-model:page="pageIndex"
+      v-model:page="pagination.pageIndex"
       data-testid="table-pagination"
-      :items-per-page="pageSize"
+      :items-per-page="pagination.pageSize"
       :total="totalItems"
       @update:page="(p: number) => updatePageIndex(p)"
     />

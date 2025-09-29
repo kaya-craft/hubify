@@ -109,7 +109,7 @@ const prependColumns = computed(() => {
 /**
  * Fetch items
  */
-const { refresh, data } = useItems(collection, query)
+const { refresh, data } = useItems(collection, { query })
 
 /**
  * Refresh the collection when the collection is updated.
@@ -133,7 +133,6 @@ onHubifyHook('items', ({ collection: name }) => {
       :base-query-router
       :total-count="data?.total_count"
     />
-
     <UTable
       ref="table"
       v-model:pagination="pagination"

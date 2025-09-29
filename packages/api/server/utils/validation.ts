@@ -1,8 +1,9 @@
-import z from 'zod'
 import tables from '#hubify/schema'
-import type { ColumnName, TableName } from '@hubify/restql'
-import { asEnumArray, asObject, itemValidation, whereValidation } from '@hubify/api/lib/validation'
 import { columnTypeToZod } from '@hubify/api/lib/column-types'
+import { asEnumArray, asObject, itemValidation, whereValidation } from '@hubify/api/lib/validation'
+import type { ColumnName, TableName } from '@hubify/restql'
+import type { ZodError } from 'zod'
+import z from 'zod'
 import type { TableItem } from '~/modules/schema/runtime/utils/define'
 
 /**
@@ -76,7 +77,17 @@ export async function ensureValidOutputItem<T extends TableNames, I extends Tabl
     optional: true
   })
 
-  return validateItem.parse(await item) as I
+  try {
+    return validateItem.parse(await item) as I
+  }
+  catch (e) {
+    const error = e as ZodError
+    throw createError({
+      status: 500,
+      message: 'Validation error',
+      data: JSON.parse(error.message)
+    })
+  }
 }
 
 /**

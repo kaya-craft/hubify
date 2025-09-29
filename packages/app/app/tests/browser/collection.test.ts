@@ -23,19 +23,25 @@ afterAll(() => {
   vi.unstubAllGlobals()
 })
 
-const mockQueryLimit = ref(DEFAULT_PAGE_SIZE)
-const mockQueryOffset = ref(0)
+const pagination = ref({
+  pageIndex: 1,
+  pageSize: 10
+})
+const queryOffset: Ref<number | undefined> = ref()
+const queryLimit: Ref<number | undefined> = ref()
 
 beforeEach(() => {
-  mockQueryLimit.value = DEFAULT_PAGE_SIZE
-  mockQueryOffset.value = 0
+  pagination.value.pageIndex = 1
+  pagination.value.pageSize = DEFAULT_PAGE_SIZE
+  queryLimit.value = undefined
+  queryOffset.value = undefined
 })
 
 mockNuxtImport('useQueryRouter', () => {
   return () => {
     return {
-      queryLimit: mockQueryLimit,
-      queryOffset: mockQueryOffset
+      queryLimit,
+      queryOffset
     }
   }
 })
@@ -59,8 +65,8 @@ mockNuxtImport('useTable', () => {
 mockNuxtImport('useItems', () => {
   return () => {
     const items = computed(() => {
-      const limit = Number(mockQueryLimit.value ?? 10)
-      const offset = Number(mockQueryOffset.value ?? 0)
+      const limit = Number(queryLimit.value ?? 10)
+      const offset = Number(queryOffset.value ?? 0)
 
       if (!Number.isFinite(limit) || limit <= 0) return []
 
@@ -95,21 +101,13 @@ describe('CollectionTable', () => {
       }
     })
 
-    mockQueryLimit.value = 10
-    mockQueryOffset.value = 0
-
     // Render table
     const table = screen.getByTestId('collection-table')
     await expect.element(table).toBeVisible()
     const itemCell = screen.getByText('France')
     await expect.element(itemCell).toBeVisible()
     const tableRows = table.element().querySelectorAll('tbody > tr')
-    expect(tableRows?.length).toEqual(mockQueryLimit.value)
-
-    // Render title
-    const collectionTitle = screen.getByTestId('collection-title')
-    await expect.element(collectionTitle).toBeVisible()
-    await expect.element(collectionTitle).toBeVisible()
+    expect(tableRows?.length).toEqual(queryLimit.value)
 
     // Render Page size button
     const pageSizeButton = screen.getByTestId('table-page-size')

@@ -1,3 +1,4 @@
+import type { NuxtError } from '#app'
 import tables from '#hubify/schema'
 import type { QueryParams } from '@hubify/restql'
 import { getPrimaryKey } from '@hubify/restql/utils/helpers'
@@ -12,7 +13,7 @@ export function useCollection<T extends TableNames>(collection: T) {
   /**
    * Add an item to the collection
    */
-  async function create(body: z.Infer<TableFormSchema<T>>) {
+  async function add(body: z.Infer<TableFormSchema<T>>) {
     try {
       loading.value = true
       const response = await $fetch(`/api/items/${collection}` as `/api/items/:collection`, {
@@ -23,8 +24,8 @@ export function useCollection<T extends TableNames>(collection: T) {
       return response
     }
     catch (e) {
-      console.error(e)
-      alert(t('app.toast.create-item.title'), t('app.toast.create-item.error') + ' ' + String(e))
+      console.error((e as NuxtError).message)
+      alert(t('app.toast.create-item.title'), t('app.toast.create-item.error'))
     }
     finally {
       loading.value = false
@@ -161,7 +162,7 @@ export function useCollection<T extends TableNames>(collection: T) {
 
   return {
     loading,
-    create,
+    add,
     remove,
     update,
     attach,

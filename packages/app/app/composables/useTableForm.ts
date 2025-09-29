@@ -43,7 +43,6 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
    * Update an existing item to the database.
    */
   async function save(data: TableFormSubmitEvent<T>['data'], id: string) {
-    console.log('======> ', id)
     try {
       await $fetch(`/api/items/${collection}/${id}` as '/api/items/:collection/:id', {
         method: 'put',

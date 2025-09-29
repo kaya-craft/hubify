@@ -13,7 +13,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test": "vitest watch"
+    "test:browser": "vitest watch --project browser",
+    "test:composables": "vitest watch --project composables"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.5",
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "@atlaskit/pragmatic-drag-and-drop-unit-testing": "^1.1.1",
+    "@iconify/vue": "^5.0.0",
     "@nuxt/test-utils": "catalog:",
     "@playwright/test": "^1.55.0",
     "@types/yaireo__tagify": "^4.27.0",

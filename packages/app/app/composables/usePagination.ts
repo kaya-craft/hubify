@@ -1,53 +1,44 @@
 export function usePagination(collection: TableNames) {
-/**
- * Router query state
- */
+  /**
+   * Query router parameters
+   */
   const { queryLimit, queryOffset } = useQueryRouter(collection)
 
   /**
   * Page size
   */
-  const pageSize = queryLimit.value ? queryLimit as Ref<number> : useLocalStorage(`hubify.collection.${collection}.limit`, 10)
-
-  /**
-  * Page index
-  */
-  const pageIndex = computed({
-    get() {
-      if (!queryOffset.value) return 1
-
-      const index = Math.ceil((queryOffset.value ?? 0) / (pageSize.value ?? 10)) + 1
-
-      if (index < 1) return 1
-      return index
-    },
-    set(value) {
-      pagination.value.pageIndex = value
-    }
-  })
+  const _pageSize = useLocalStorage(`hubify.collection.${collection}.limit`, 10)
 
   /**
   * Pagination state
   */
   const pagination = useState('pagination', () => ({
-    pageIndex: pageIndex.value,
-    pageSize: pageSize.value
+    pageIndex: 1,
+    pageSize: toValue(_pageSize || queryLimit) || 10
   }))
 
   function updatePageIndex(newPageIndex: number) {
-    pageIndex.value = newPageIndex
-    queryOffset.value = (newPageIndex - 1) * pageSize.value || undefined
+    pagination.value.pageIndex = newPageIndex
+    queryOffset.value = (newPageIndex - 1) * pagination.value.pageSize
   }
 
   function updatePageSize(newPageSize: number) {
-    pageSize.value = newPageSize
-    queryLimit.value = newPageSize
+    pagination.value.pageSize = newPageSize // set new page size
+    _pageSize.value = newPageSize // store in localeStorage
+    queryLimit.value = newPageSize // set new query limit
+    const index = Math.max((Math.ceil((queryOffset.value ?? 0) / (newPageSize ?? 10)) + 1), 1) // recalculate index based on new page size
+    updatePageIndex(index)
   }
+
+  /**
+   * Init once to set query params
+   */
+  updatePageIndex(pagination.value.pageIndex)
+  updatePageSize(pagination.value.pageSize)
 
   return {
     pagination,
-    pageSize,
-    pageIndex,
+
     updatePageIndex,
     updatePageSize
   }

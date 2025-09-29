@@ -14,6 +14,9 @@ export const fields = defineFieldOptions(columns, {
       props: {
         placeholder: 'Project Name'
       }
+    },
+    display: {
+      class: 'text-lg'
     }
   },
 

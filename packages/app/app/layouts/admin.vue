@@ -15,11 +15,6 @@ const state = reactive({
 const { t } = useI18n()
 
 /**
- * Current page title.
- */
-const currentPageTitle = useTitle()
-
-/**
  * Check if there are notifications.
  */
 const hasNotifications = computed(() => {
@@ -73,14 +68,16 @@ const localePath = useLocalePath()
  * Format collections for navigation menu.
  */
 const menuItems = computed(() => {
-  return toValue(collections)?.items.map(collection => ({
-    label: collection.name,
-    icon: collection.icon || 'i-lucide-folder',
-    color: collection.color || 'bg-gray-500',
-    description: collection.description,
-    displayTemplate: collection.displayTemplate,
-    to: localePath({ name: 'admin-items-collection', params: { collection: collection.name } })
-  }) as NavigationMenuItem)
+  return toValue(collections)?.items
+    .filter(c => !c.hidden)
+    .map(collection => ({
+      label: collection.name,
+      icon: collection.icon || 'i-lucide-folder',
+      color: collection.color || 'bg-gray-500',
+      description: collection.description,
+      displayTemplate: collection.displayTemplate,
+      to: localePath({ name: 'admin-items-collection', params: { collection: collection.name } })
+    }) as NavigationMenuItem)
 })
 
 /**
@@ -89,6 +86,13 @@ const menuItems = computed(() => {
 const { data } = await useItems('hubify_settings')
 
 const projectName = computed(() => data.value?.items[0]?.name)
+
+/**
+ * Current collection
+*/
+const route = useRoute()
+
+const currentCollection = computed(() => route.params.collection)
 </script>
 
 <template>
@@ -168,13 +172,12 @@ const projectName = computed(() => data.value?.items[0]?.name)
         :ui="{ body: 'flex flex-col gap-4 sm:gap-6 flex-1 overflow-y-auto p-0 sm:p-0' }"
       >
         <template #header>
-          <UDashboardNavbar
-            :title="currentPageTitle || ''"
-            icon="heroicons:table-cells"
-          >
+          <UDashboardNavbar :ui="{ center: 'flex' }">
             <template #leading>
               <UDashboardSidebarCollapse />
             </template>
+
+            <CollectionTitle :collection="currentCollection" />
 
             <template #right>
               <UTooltip

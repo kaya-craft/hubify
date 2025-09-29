@@ -25,7 +25,7 @@ const value = defineModel<string>()
 /**
  * Props for the icon selector component.
  */
-const { limit = 32 } = defineProps<Props>()
+const { limit = 27 } = defineProps<Props>()
 
 /**
  * Search query
@@ -56,7 +56,8 @@ const { data, pending } = useFetch<APIv2SearchResponse>('/api/iconify/search', {
  * Items to display based on selected page
  */
 const items = computed(() => {
-  return toValue(data)?.icons.slice(toValue(page), toValue(page) + limit)
+  const offset = (toValue(page) - 1) * limit
+  return toValue(data)?.icons.slice(offset, offset + limit)
 })
 
 /**

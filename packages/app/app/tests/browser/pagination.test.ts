@@ -2,14 +2,23 @@
 import { CollectionTableFooter, CollectionTableHeader } from '#components'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { page, type Locator } from '@vitest/browser/context'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import 'vitest-browser-vue'
 import { ref, type Ref } from 'vue'
 
-let mockPageIndex: Ref<number>
-let mockPageSize: Ref<number>
-let queryOffset: Ref<number | undefined>
-let queryLimit: Ref<number | undefined>
+const pagination = ref({
+  pageIndex: 1,
+  pageSize: 10
+})
+const queryOffset: Ref<number | undefined> = ref()
+const queryLimit: Ref<number | undefined> = ref()
+
+beforeEach(() => {
+  pagination.value.pageIndex = 1
+  pagination.value.pageSize = 10
+  queryLimit.value = undefined
+  queryOffset.value = undefined
+})
 
 mockNuxtImport('useQueryRouter', () => {
   return () => {
@@ -19,36 +28,32 @@ mockNuxtImport('useQueryRouter', () => {
   }
 })
 
-const updatePageIndex = vi.fn((p: number) => {
-  mockPageIndex.value = p
-  queryOffset.value = p * mockPageSize.value || undefined
+const updatePageIndex = vi.fn((newPageIndex: number) => {
+  pagination.value.pageIndex = newPageIndex
+  queryOffset.value = (newPageIndex - 1) * pagination.value.pageSize
 })
 
-const updatePageSize = vi.fn((p: number) => {
-  mockPageSize.value = p
-  queryLimit.value = p
+const updatePageSize = vi.fn((newPageSize: number) => {
+  pagination.value.pageSize = newPageSize
+  queryLimit.value = newPageSize
+  const index = Math.max((Math.ceil((queryOffset.value ?? 0) / (newPageSize ?? 10)) + 1), 1)
+  updatePageIndex(index)
 })
 
-vi.mock('~/composables/usePagination', () => ({
-  usePagination: () => {
-    mockPageIndex = mockPageIndex ?? ref(1)
-    mockPageSize = mockPageSize ?? ref(10)
-    queryOffset = ref(undefined)
-    queryLimit = ref(undefined)
+mockNuxtImport('usePagination', () => {
+  return () => {
+    updatePageIndex(pagination.value.pageIndex)
+    updatePageSize(pagination.value.pageSize)
     return {
-      pageIndex: mockPageIndex,
-      pageSize: mockPageSize,
+      pagination,
       updatePageIndex,
       updatePageSize
     }
   }
-}))
+})
 
 describe('CollectionTableFooter ', () => {
   it('Renders corectly CollectionTableFooter', async () => {
-    mockPageIndex = ref(1)
-    mockPageSize = ref(10)
-
     page.render(CollectionTableFooter, {
       props: {
         collection: 'test' as TableNames,
@@ -56,6 +61,12 @@ describe('CollectionTableFooter ', () => {
         displayedItems: 10
       }
     })
+
+    /**
+     * query parameters should equal pagination
+     */
+    expect(queryLimit.value).toEqual(10)
+    expect(queryOffset.value).toEqual(0)
 
     const pagination = page.getByTestId('table-pagination')
     await expect.element(pagination).toBeVisible()
@@ -80,9 +91,6 @@ describe('CollectionTableFooter ', () => {
   })
 
   it('Update offset query correctly', async () => {
-    mockPageIndex = ref(1)
-    mockPageSize = ref(10)
-
     page.render(CollectionTableFooter, {
       props: {
         collection: 'test' as TableNames,
@@ -97,20 +105,17 @@ describe('CollectionTableFooter ', () => {
     await page3Button?.click()
 
     expect(updatePageIndex).toHaveBeenCalledWith(3)
-    expect(queryOffset.value).toBe(30) // 3 * pageSize = 30
+    expect(queryOffset.value).toBe(20) // (3 - 1) * pageSize = 20
 
     const lastPageButton = paginationButtons[paginationButtons.length - 1]
     await lastPageButton?.click()
     expect(updatePageIndex).toHaveBeenLastCalledWith(10)
-    expect(queryOffset.value).toBe(100) // 10 * pageSize = 100
+    expect(queryOffset.value).toBe(90) // 10 * pageSize = 100
   })
 })
 
 describe('CollectionTableHeader ', () => {
   it('Renders corectly CollectionTableHeader', async () => {
-    mockPageIndex = ref(1)
-    mockPageSize = ref(10)
-
     page.render(CollectionTableHeader, {
       props: {
         collection: 'test' as TableNames,
@@ -121,7 +126,7 @@ describe('CollectionTableHeader ', () => {
     const pageSizeElement = page.getByTestId('table-page-size').getByTag('button')
     await expect(pageSizeElement).toBeVisible()
 
-    expect(queryLimit.value).toBeUndefined()
+    expect(queryLimit.value).toBe(10)
 
     await selectOption(pageSizeElement, '20 items')
     expect(queryLimit.value).toBe(20)
