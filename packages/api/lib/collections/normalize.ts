@@ -64,8 +64,10 @@ function normalizeFieldDefinition<N, F extends FieldDefinition>(schema: Schema, 
   }
 }
 
-type NormalizedSchema<T extends Schema> = {
+type Prettify<T> = { [K in keyof T]: T[K] } & {}
+
+type NormalizedSchema<T extends Schema> = Prettify<{
   [K in keyof T]: {
     [F in keyof T[K]]: T[K][F] extends ColumnDefinition ? T[K][F] & Omit<ColumnDefinition, keyof T[K][F]> : T[K][F] extends RelationDefinition ? T[K][F] & Omit<RelationDefinition, keyof T[K][F]> : never
   }
-}
+}>

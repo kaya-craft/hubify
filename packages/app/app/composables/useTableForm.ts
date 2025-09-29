@@ -1,6 +1,6 @@
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type z from 'zod'
-import { itemValidation } from '@hubify/api/lib/validation'
+import { itemValidation } from '@hubify/api/validation'
 
 export type TableFormState<T extends TableNames> = {
   [C in TableColumnNames<T>]: TableColumnType<T, C> | undefined

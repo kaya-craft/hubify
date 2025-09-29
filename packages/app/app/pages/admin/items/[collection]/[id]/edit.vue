@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends TableNames">
-import { isManyToOneRelation } from '@hubify/api/lib/column-types'
+import { isManyToOneRelation } from '@hubify/api/column-types'
 
 interface Props {
   collection: T

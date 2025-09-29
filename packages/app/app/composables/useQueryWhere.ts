@@ -1,4 +1,4 @@
-import { whereValidation } from '@hubify/api/lib/validation'
+import { whereValidation } from '@hubify/api/validation'
 import { defu } from 'defu'
 
 export type Where<T extends TableNames> = QueryParams<T>['where']

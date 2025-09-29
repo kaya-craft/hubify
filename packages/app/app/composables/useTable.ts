@@ -6,7 +6,6 @@ import tables from '#hubify/schema'
 import type { AsyncComponentLoader } from 'vue'
 import { getPrimaryKeyColumn, isOneToManyRelation } from '@hubify/api/database/helpers'
 import type { TableFieldOption, TableFieldOptions } from '@@/types/fields'
-import type { Table, TableColumn, TableColumnNames, TableItem, TableNames, TablePrimaryKey, TablePrimaryKeyValue, TableRelation, TableRelationNames, TableRelations } from '@hubify/api/types/schema'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
@@ -32,7 +31,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   const table = computed(() => {
     const name = toValue(tableName)
     if (!tables[name]) throw new Error(`Table "${name}" does not exist.`)
-    return tables[name] as Table<T>
+    return tables[name]
   })
 
   /**
@@ -104,9 +103,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Get the column with the specified name.
   */
   function getColumn<C extends TableColumnNames<T>>(name: C) {
-    const cols = toValue(columns)
-    if (!cols || !isObject(cols) || !(name in cols)) throw new Error(`Column "${name}" does not exist in table "${table}".`)
-    return cols[name] as TableColumn<T, C> | undefined
+    if (!table.value || !isObject(table.value) || !(name in table.value)) throw new Error(`Column "${name}" does not exist in table "${table}".`)
+    return table.value[name as keyof typeof table.value] as TableField<T, C>
   }
 
   /**

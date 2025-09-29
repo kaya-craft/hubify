@@ -2,7 +2,6 @@
 import type { Operator } from '@hubify/api/database/types'
 import type { AndOrClause } from './index.vue'
 import type { DropdownMenuItem } from '@nuxt/ui'
-import type { ConditionTree, TableColumnNames, TableNames } from '@hubify/api/types/schema'
 
 export type Clause<T extends TableNames> = {
   type: 'clause'

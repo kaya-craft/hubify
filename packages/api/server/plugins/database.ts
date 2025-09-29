@@ -1,6 +1,6 @@
 import type { NitroApp } from 'nitropack'
 import schema from '#hubify/schema'
-import { runMigrations } from '@hubify/api/lib/database/migration'
+import { runMigrations } from '@hubify/api/database/migration'
 
 /**
  * Update schema upon modification.

@@ -1,5 +1,5 @@
 import schema from '#hubify/schema'
-import type { ColumnDefinition, DataTypes, Operator } from '@hubify/api/lib/database/types.d'
+import type { ColumnDefinition, DataTypes, Operator } from '@hubify/api/database/types.d'
 import { OPERATORS } from './database/operators'
 import z from 'zod'
 

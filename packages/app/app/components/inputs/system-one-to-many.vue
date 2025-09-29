@@ -1,6 +1,4 @@
 <script setup lang="ts" generic="T extends TableNames, R extends TableRelationNames<T>">
-import type { TableNames, TableItem, TablePrimaryKeyValue, TableColumnNames, TableRelation, TableRelationNames } from '@hubify/api/types/schema'
-
 type RelatedTable = TableRelation<T, R>['table']
 
 type Props = {

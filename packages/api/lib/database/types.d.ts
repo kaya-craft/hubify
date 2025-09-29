@@ -9,7 +9,7 @@ export interface TableDefinition {
   [field: string]: FieldDefinition
 }
 
-type BaseColumnDefinition = {
+export interface BaseColumnDefinition {
   nullable?: boolean
   unique?: boolean
   default?: unknown

@@ -1,5 +1,5 @@
 import schema from '#hubify/schema'
-import { createDatabaseInstance } from '@hubify/api/lib/database/index'
+import { createDatabaseInstance } from '@hubify/api/database/index'
 
 const instance = createDatabaseInstance(useRuntimeConfig().hubify?.db, schema)
 

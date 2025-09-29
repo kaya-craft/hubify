@@ -1,5 +1,4 @@
 <script setup lang="ts" generic="T extends TableNames">
-import type { TableNames } from '@hubify/api/types/schema'
 import type { ConditionTreeAsArray } from './index.vue'
 
 type Props = {

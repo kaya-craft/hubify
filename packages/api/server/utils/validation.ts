@@ -1,7 +1,7 @@
 import z from 'zod'
 import tables from '#hubify/schema'
-import { asEnumArray, asObject, itemValidation, whereValidation } from '@hubify/api/lib/validation'
-import { columnTypeToZod } from '@hubify/api/lib/column-types'
+import { asEnumArray, asObject, itemValidation, whereValidation } from '@hubify/api/validation'
+import { columnTypeToZod } from '@hubify/api/column-types'
 
 /**
  * Validates the router parameters for a collection and returns the collection name.
@@ -18,7 +18,7 @@ export async function ensureValidCollection(event = useEvent()) {
  * Validates the router parameters for a collection and an ID, returning both.
  */
 export async function ensureValidId<T extends TableNames>(collection: T, event = useEvent()) {
-  const primaryKeyColumn = Object.values(tables[collection].columns).find(column => column.primaryKey)
+  const primaryKeyColumn = Object.values(tables[collection]).find(column => column.primaryKey)
 
   const { id } = await getValidatedRouterParams(event, z.object({
     id: columnTypeToZod(primaryKeyColumn.type)
@@ -34,7 +34,7 @@ export async function ensureValidQueryParams<T extends TableNames>(
   collection: T,
   event = useEvent()
 ) {
-  const columnNames = Object.keys(tables[collection].columns) as TableColumnNames<T>[]
+  const columnNames = Object.keys(tables[collection]) as TableColumnNames<T>[]
 
   return await getValidatedQuery(event, z.object({
     columns: asEnumArray(columnNames).optional(),

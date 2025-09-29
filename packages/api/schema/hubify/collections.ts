@@ -8,16 +8,20 @@ export default defineCollection(withDefaults({
     type: 'varchar'
   },
   description: {
-    type: 'text'
+    type: 'text',
+    nullable: true
   },
   color: {
-    type: 'varchar'
+    type: 'varchar',
+    nullable: true
   },
   icon: {
-    type: 'varchar'
+    type: 'varchar',
+    nullable: true
   },
   displayTemplate: {
-    type: 'text'
+    type: 'text',
+    nullable: true
   },
   hidden: {
     type: 'boolean',
