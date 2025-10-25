@@ -17,4 +17,5 @@ catalog:
   zod: ^4.1.5
 
 onlyBuiltDependencies:
+  - esbuild
   - vue-demi
