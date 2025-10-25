@@ -7,7 +7,7 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/test-utils/module',
-    '@nuxt/ui-pro',
+    '@nuxt/ui',
     '@vueuse/nuxt',
 
     /**
