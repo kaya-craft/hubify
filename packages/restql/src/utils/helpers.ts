@@ -329,20 +329,20 @@ export interface SchemaDiff {
   }>
 }
 export type NormalizedColumn<S extends Schema, T extends TableName<S>, C extends string>
-    = C extends '*' ? `${Wrap<T>}.${C}`
-      : C extends `${infer K}.${infer V}` ? K extends keyof S[T]['relations']
-        ? S[T]['relations'][K] extends { table: infer R }
-          ? R extends string ? NormalizedColumn<S, R, V> : never
-          : never
+  = C extends '*' ? `${Wrap<T>}.${C}`
+    : C extends `${infer K}.${infer V}` ? K extends keyof S[T]['relations']
+      ? S[T]['relations'][K] extends { table: infer R }
+        ? R extends string ? NormalizedColumn<S, R, V> : never
         : never
-        : `${Wrap<T>}.${Wrap<C>}`
+      : never
+      : `${Wrap<T>}.${Wrap<C>}`
 
 export type NormalizedColumns<S extends Schema, T extends TableName<S>, F extends string[] | undefined, Wildcard extends boolean = true>
-    = F extends string[]
-      ? UnionToTuple<NormalizedColumn<S, T, F[number]>>
-      : Wildcard extends true
-        ? [NormalizedColumn<S, T, '*'>]
-        : []
+  = F extends string[]
+    ? UnionToTuple<NormalizedColumn<S, T, F[number]>>
+    : Wildcard extends true
+      ? [NormalizedColumn<S, T, '*'>]
+      : []
 
 export type Wrap<T extends string> = ReturnType<typeof wrap<T>>
 
@@ -351,70 +351,70 @@ export type Unprepend<T extends string, P extends string> = T extends `${P}${inf
 export type Prepend<T extends string, P extends string> = `${P}${T}`
 
 export type JoinClauses<S extends Schema, T extends TableName<S>, C extends FieldName<S, T>> = UniqueArray<UnionToTuple<
-    Relation<S, T, C> extends (infer U)[]
-      ? U extends RelationDefinition<any, any, any>
-        ? ReturnType<typeof getJoinClause<U>>
-        : never
+  Relation<S, T, C> extends (infer U)[]
+    ? U extends RelationDefinition<any, any, any>
+      ? ReturnType<typeof getJoinClause<U>>
       : never
+    : never
 >>
 
 export type OrderByClause<S extends Schema, T extends TableName<S>, C extends string> = C extends `-${infer K}` ? `${NormalizedColumn<S, T, K>} DESC` : `${NormalizedColumn<S, T, C>} ASC`
 
 export type OrderByClauses<S extends Schema, T extends TableName<S>, C extends string[] | undefined> = UniqueArray<UnionToTuple<
-    C extends (infer U)[] ? U extends string ? OrderByClause<S, T, U> : never : never
+  C extends (infer U)[] ? U extends string ? OrderByClause<S, T, U> : never : never
 >>
 
 export type Normalize<T>
-    = T extends string ? `'${T}'`
-      : T extends number | bigint | boolean | null | undefined ? `${T}`
-        : never
+  = T extends string ? `'${T}'`
+    : T extends number | bigint | boolean | null | undefined ? `${T}`
+      : never
 
 export type NormalizeArray<T extends unknown[]> = T extends [infer U, ...infer Last] ? [Normalize<U>, ...NormalizeArray<Last>] : []
 
 export type OperatorToSQL<O extends keyof typeof OPERATORS, V>
-    = O extends '$eq' ? `= ${Normalize<V>}`
-      : O extends '$neq' ? `!= ${Normalize<V>}`
-        : O extends '$gt' ? `> ${Normalize<V>}`
-          : O extends '$gte' ? `>= ${Normalize<V>}`
-            : O extends '$lt' ? `< ${Normalize<V>}`
-              : O extends '$lte' ? `<= ${Normalize<V>}`
-                : O extends '$contains' ? `LIKE %${Normalize<V>}%`
-                  : O extends '$ncontains' ? `NOT LIKE %${Normalize<V>}%`
-                    : O extends '$startsWith' ? `LIKE ${Normalize<V>}%`
-                      : O extends '$nstartsWith' ? `NOT LIKE ${Normalize<V>}%`
-                        : O extends '$endsWith' ? `LIKE %${Normalize<V>}`
-                          : O extends '$nendsWith' ? `NOT LIKE %${Normalize<V>}`
-                            : O extends '$null' ? 'IS NULL'
-                              : O extends '$nnull' ? 'IS NOT NULL'
-                                : O extends '$in' ? V extends any[] ? `IN (${CleanJoin<NormalizeArray<V>>})` : never
-                                  : O extends '$nin' ? V extends any[] ? `NOT IN (${CleanJoin<NormalizeArray<V>>})` : never
-                                    : O extends '$between' ? V extends any[] ? `BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
-                                      : O extends '$nbetween' ? V extends any[] ? `NOT BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
-                                        : never
+  = O extends '$eq' ? `= ${Normalize<V>}`
+    : O extends '$neq' ? `!= ${Normalize<V>}`
+      : O extends '$gt' ? `> ${Normalize<V>}`
+        : O extends '$gte' ? `>= ${Normalize<V>}`
+          : O extends '$lt' ? `< ${Normalize<V>}`
+            : O extends '$lte' ? `<= ${Normalize<V>}`
+              : O extends '$contains' ? `LIKE %${Normalize<V>}%`
+                : O extends '$ncontains' ? `NOT LIKE %${Normalize<V>}%`
+                  : O extends '$startsWith' ? `LIKE ${Normalize<V>}%`
+                    : O extends '$nstartsWith' ? `NOT LIKE ${Normalize<V>}%`
+                      : O extends '$endsWith' ? `LIKE %${Normalize<V>}`
+                        : O extends '$nendsWith' ? `NOT LIKE %${Normalize<V>}`
+                          : O extends '$null' ? 'IS NULL'
+                            : O extends '$nnull' ? 'IS NOT NULL'
+                              : O extends '$in' ? V extends any[] ? `IN (${CleanJoin<NormalizeArray<V>>})` : never
+                                : O extends '$nin' ? V extends any[] ? `NOT IN (${CleanJoin<NormalizeArray<V>>})` : never
+                                  : O extends '$between' ? V extends any[] ? `BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
+                                    : O extends '$nbetween' ? V extends any[] ? `NOT BETWEEN ${Normalize<V[0]>} AND ${Normalize<V[1]>}` : never
+                                      : never
 
 export type WhereColumnClause<F extends string, C extends Condition>
-    = CleanJoin<UnionToTuple<{
-      [CC in keyof C]: CC extends keyof typeof OPERATORS ? `${F} ${OperatorToSQL<CC, C[CC]>}` : never
-    }[keyof C]> extends infer U extends JoinableItem[] ? U : never, ' AND '>
+  = CleanJoin<UnionToTuple<{
+    [CC in keyof C]: CC extends keyof typeof OPERATORS ? `${F} ${OperatorToSQL<CC, C[CC]>}` : never
+  }[keyof C]> extends infer U extends JoinableItem[] ? U : never, ' AND '>
 
 export type WhereClauses<S extends Schema, T extends TableName<S>, C extends Condition | ConditionTree<S, T>, F extends string = '', W extends string = ''>
-    = C extends Condition
-      ? WhereColumnClause<F, C>
-      : C extends Record<string, any>
-        ? CleanJoin<[
-          W,
-          ...UnionToTuple<{
-            [K in keyof C]:
-            K extends '$and'
-              ? `(${CleanJoin<[W, ...UnionToTuple<WhereClauses<S, T, C['$and'][number], F>>], ' AND '>})`
-              : K extends '$or'
-                ? `(${CleanJoin<[W, ...UnionToTuple<WhereClauses<S, T, C['$or'][number], F>>], ' OR '>})`
-                : K extends string
-                  ? WhereClauses<S, T, C[K], NormalizedColumn<S, T, K>>
-                  : never
-          }[keyof C]>
-        ], ' AND '>
-        : W
+  = C extends Condition
+    ? WhereColumnClause<F, C>
+    : C extends Record<string, any>
+      ? CleanJoin<[
+        W,
+        ...UnionToTuple<{
+          [K in keyof C]:
+          K extends '$and'
+            ? `(${CleanJoin<[W, ...UnionToTuple<WhereClauses<S, T, C['$and'][number], F>>], ' AND '>})`
+            : K extends '$or'
+              ? `(${CleanJoin<[W, ...UnionToTuple<WhereClauses<S, T, C['$or'][number], F>>], ' OR '>})`
+              : K extends string
+                ? WhereClauses<S, T, C[K], NormalizedColumn<S, T, K>>
+                : never
+        }[keyof C]>
+      ], ' AND '>
+      : W
 
 type _Item<S extends Schema, T extends TableName<S>, C extends string[], I = {}> = C extends [infer U, ...infer Rest] ? I & {
   [K in U as U extends `${infer A}.${string}` ? A : U extends string ? U : never]:
@@ -433,11 +433,11 @@ type _Item<S extends Schema, T extends TableName<S>, C extends string[], I = {}>
 export type Item<S extends Schema, T extends TableName<S>, C extends QueryParams<S, T>['columns'] | undefined = undefined> = C extends string[] ? Simplify<_Item<S, T, C>> : TableDefinition<S, T, false>
 
 export type WhereWithPrimaryKey<S extends Schema, T extends TableName<S>, K extends PrimaryKeyValue<S, T>, P extends QueryParams<S, T>>
-   = P['where'] & Record<PrimaryKey<S, T>, { $eq: K }>
+  = P['where'] & Record<PrimaryKey<S, T>, { $eq: K }>
 
 export type AllFields<S extends Schema, T extends TableName<S>, P extends QueryParams<S, T>>
-    = UniqueArray<UnionToTuple<
+  = UniqueArray<UnionToTuple<
         (P['columns'] extends string[] ? P['columns'][number] : never)
         | (P['groupBy'] extends string[] ? P['groupBy'][number] : never)
         | (P['orderBy'] extends string[] ? Unprepend<P['orderBy'][number], '-'> : never)
-    >>
+  >>
