@@ -24,7 +24,7 @@
     "@simplewebauthn/server": "^13.1.2",
     "crossws": "^0.4.1",
     "nuxt": "catalog:",
-    "nuxt-auth-utils": "0.5.23",
+    "nuxt-auth-utils": "0.5.25",
     "vue": "catalog:",
     "vue-router": "catalog:",
     "zod": "catalog:"
