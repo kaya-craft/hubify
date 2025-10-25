@@ -36,7 +36,7 @@
     "knex-schema-inspector": "^3.1.0",
     "nuxt": "catalog:",
     "pluralize": "^8.0.0",
-    "nuxt-auth-utils": "0.5.23",
+    "nuxt-auth-utils": "0.5.25",
     "vue": "catalog:",
     "vue-router": "catalog:",
     "zod": "catalog:"
