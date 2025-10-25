@@ -6,8 +6,6 @@ const { collection, column } = defineProps<{
 }>()
 
 const { getDisplayComponent, getColumnLabel } = useTable(collection)
-
-const displayComponent = computed(() => getDisplayComponent(column))
 </script>
 
 <template>

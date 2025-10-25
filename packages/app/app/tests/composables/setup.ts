@@ -17,7 +17,7 @@ const store = vi.hoisted<ComposableStore>(() => ({
   useStorageMap: new Map<string, Ref<unknown>>()
 }))
 
-type TranslatorFn = (key: string, ...args: any[]) => string
+type TranslatorFn = (key: string, ...args: unknown[]) => string
 
 const shared = vi.hoisted(() => ({
   fetch: vi.fn(),
@@ -96,6 +96,7 @@ beforeEach(() => {
   shared.relation = { table: 'hubify_collections' as TableNames, toKey: 'collection_id' }
   shared.getRelation = vi.fn(() => shared.relation)
 
+  // @ts-expect-error -- ignore --
   ;(globalThis as { $fetch?: typeof $fetch }).$fetch = shared.fetch
 
   vi.stubGlobal('useI18n', () => ({

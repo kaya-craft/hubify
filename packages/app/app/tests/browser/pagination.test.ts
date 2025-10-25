@@ -2,7 +2,7 @@
 import { CollectionTableFooter, CollectionTableHeader } from '#components'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { page, type Locator } from '@vitest/browser/context'
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import 'vitest-browser-vue'
 import { ref, type Ref } from 'vue'
 

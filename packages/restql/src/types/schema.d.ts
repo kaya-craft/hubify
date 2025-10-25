@@ -52,7 +52,7 @@ export type ColumnName<S extends Schema, T extends TableName<S>> = keyof S[T]['c
 type RelationName<S extends Schema, T extends TableName<S>> = keyof NonNullable<S[T]['relations']> & string
 
 type RelationTableName<S extends Schema, T extends TableName<S>, C extends RelationName<S, T>>
-    = C extends keyof NonNullable<S[T]['relations']> ? NonNullable<S[T]['relations']>[C]['table'] : never
+  = C extends keyof NonNullable<S[T]['relations']> ? NonNullable<S[T]['relations']>[C]['table'] : never
 
 interface RelationDefinition<S extends Schema, T extends TableName<S>, C extends RelationName<S, T> | string> {
   fromTable: T
@@ -62,13 +62,13 @@ interface RelationDefinition<S extends Schema, T extends TableName<S>, C extends
 }
 
 export type Relation<S extends Schema, T extends TableName<S>, C extends FieldName<S, T> | string, D extends RelationDefinition<any, any, any>[] = []>
-    = C extends `${infer A}.${infer B}.${infer C}`
-      ? Relation<S, RelationTableName<S, T, A>, `${B}.${C}`, [...D, RelationDefinition<S, T, A>]>
-      : C extends `${infer A}.${string}`
-        ? [...D, RelationDefinition<S, T, A>]
-        : C extends RelationName<S, T>
-          ? [...D, RelationDefinition<S, T, C>]
-          : D
+  = C extends `${infer A}.${infer B}.${infer C}`
+    ? Relation<S, RelationTableName<S, T, A>, `${B}.${C}`, [...D, RelationDefinition<S, T, A>]>
+    : C extends `${infer A}.${string}`
+      ? [...D, RelationDefinition<S, T, A>]
+      : C extends RelationName<S, T>
+        ? [...D, RelationDefinition<S, T, C>]
+        : D
 
 export type FieldName<S extends Schema = Schema, F extends TableName<S> = TableName<S>, FF extends TableName<S> = F>
   = Exclude<ColumnName<S, F>, RelationName<S, F>> | {
@@ -84,20 +84,20 @@ export type FieldName<S extends Schema = Schema, F extends TableName<S> = TableN
 type ColumnTypes = 'text' | 'float4' | 'boolean' | 'date' | 'json' | 'integer' | 'int4' | 'int8' | 'timestamptz' | 'uuid' | 'varchar' | 'timestamp' | 'numeric'
 
 type ColumnTypeToTsType<T extends ColumnTypes>
-    = T extends 'text' ? string
-      : T extends 'float4' ? number
-        : T extends 'boolean' ? boolean
-          : T extends 'date' ? Date
-            : T extends 'json' ? Record<string, any>
-              : T extends 'int4' ? number
-                : T extends 'int8' ? bigint
-                  : T extends 'timestamptz' ? Date
-                    : T extends 'uuid' ? string
-                      : T extends 'varchar' ? string
-                        : T extends 'timestamp' ? Date
-                          : T extends 'numeric' ? number
-                            : T extends 'integer' ? number
-                              : never
+  = T extends 'text' ? string
+    : T extends 'float4' ? number
+      : T extends 'boolean' ? boolean
+        : T extends 'date' ? Date
+          : T extends 'json' ? Record<string, any>
+            : T extends 'int4' ? number
+              : T extends 'int8' ? bigint
+                : T extends 'timestamptz' ? Date
+                  : T extends 'uuid' ? string
+                    : T extends 'varchar' ? string
+                      : T extends 'timestamp' ? Date
+                        : T extends 'numeric' ? number
+                          : T extends 'integer' ? number
+                            : never
 
 export type PrimaryKey<S extends Schema, T extends TableName<S>> = {
   [K in keyof S[T]['columns']]: S[T]['columns'][K]['primaryKey'] extends true ? K : never
