@@ -4,8 +4,9 @@ import { useNuxt, addTypeTemplate, addTemplate, defineNuxtModule, resolveModule,
 import { scanFilesFromDir } from 'unimport'
 
 export interface FieldsModuleOptions {
-  inputs: string[]
-  displays: string[]
+  inputs?: string[]
+  displays?: string[]
+  schema?: string[]
 }
 
 declare module '@hubify/api/modules/schema/index' {
@@ -17,14 +18,16 @@ export default defineNuxtModule<FieldsModuleOptions>({
     name: '@hubify/fields',
     configKey: 'hubify'
   },
-  defaults: nuxt => ({
-    inputs: [join(nuxt.options.dir.app, 'components', 'inputs')],
-    displays: [join(nuxt.options.dir.app, 'components', 'displays')]
+  defaults: () => ({
+    inputs: ['./app/components/inputs'],
+    displays: ['./app/components/displays'],
+    schema: ['./schema']
   }),
   setup(options, nuxt) {
     const logger = useLogger('@hubify/fields')
-    const inputsDirs = getDirectories(options.inputs)
-    const displaysDirs = getDirectories(options.displays)
+    const inputsDirs = getDirectories(options.inputs || [])
+    const displaysDirs = getDirectories(options.displays || [])
+    const fieldsDirs = getDirectories(options.schema || [])
 
     if (inputsDirs.length > 0) {
       logger.info(`Inputs directories: ${inputsDirs.join(', ')}`)
@@ -48,7 +51,7 @@ export default defineNuxtModule<FieldsModuleOptions>({
 
     const { dst: fieldsPath } = addTemplate({
       filename: 'hubify/fields.ts',
-      getContents: () => generateFieldsContent(nuxt.options.hubify.schema),
+      getContents: () => generateFieldsContent(fieldsDirs),
       write: true
     })
 
@@ -61,7 +64,7 @@ export default defineNuxtModule<FieldsModuleOptions>({
       })
     })
 
-    generateDefineField(nuxt.options.hubify.schema)
+    generateDefineField(fieldsDirs)
 
     nuxt.options.nitro.alias ??= {}
     nuxt.options.nitro.alias['#hubify/inputs'] = inputsPath
@@ -95,14 +98,15 @@ async function generateFieldsContent(dirs: string[]) {
   const files = await getAllCollectionFiles(dirs)
 
   const collections = Array.from(new Set(files.map(f => f.name))).sort()
-
   const imports: string[] = []
   const items: string[] = []
+  let includeDefu = false
 
   for (const name of collections) {
     const match = files.filter(file => file.name === name)
 
     if (match.length > 1) {
+      includeDefu = true
       imports.push(...match.map((file, index) => `import { fields as ${name}_${index} } from '${file.path}'`))
       items.push(`\t${name}: defu(${match.map((_, index) => `${name}_${index}`).join(', ')})`)
     }
@@ -113,10 +117,11 @@ async function generateFieldsContent(dirs: string[]) {
   }
 
   return [
-    'import { defu } from \'defu\'',
+    includeDefu ? 'import { defu } from \'defu\'' : '',
+    'import type { TableFieldOptions } from \'@hubify/app/types/fields\'',
     ...imports,
     '',
-    'const hubifyFields = {\n' + items.join(',\n') + '\n}',
+    'const hubifyFields: { [K in TableNames]?: TableFieldOptions<K> } = {\n' + items.join(',\n') + '\n}',
     '',
     ...collections.map(name => `export const ${name} = hubifyFields.${name}`),
     '',
@@ -165,7 +170,7 @@ async function generateDefineField(fieldsDirs: string[]) {
       'import type schema from \'./../schema\'',
       '',
       'declare global {',
-      '\texport function defineCollectionFields<F extends FieldOptions<\'' + file.name + '\'>>(fields: F): F',
+      '\texport function defineCollectionFields<const F extends FieldOptions<\'' + file.name + '\'>>(fields: F): F',
       '}',
       '\n',
       'export {}'

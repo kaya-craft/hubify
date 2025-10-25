@@ -51,6 +51,7 @@
     "@nuxt/test-utils": "catalog:",
     "@types/yaireo__tagify": "^4.27.0",
     "@vitest/browser": "^3.2.4",
+    "@vue/compiler-dom": "^3.5.22",
     "@vue/server-renderer": "^3.5.21",
     "playwright": "^1.55.0",
     "ufo": "^1.6.1",

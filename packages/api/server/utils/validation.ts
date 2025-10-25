@@ -18,8 +18,7 @@ export async function ensureValidCollection(event = useEvent()) {
  * Validates the router parameters for a collection and an ID, returning both.
  */
 export async function ensureValidId<T extends TableNames>(collection: T, event = useEvent()) {
-  const primaryKeyColumn = Object.values(tables[collection]).find(column => column.primaryKey)
-
+  const primaryKeyColumn = Object.values(tables[collection]).find(column => column.primary)
   const { id } = await getValidatedRouterParams(event, z.object({
     id: columnTypeToZod(primaryKeyColumn.type)
   }).parse)

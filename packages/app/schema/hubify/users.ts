@@ -1,5 +1,6 @@
 export const fields = defineCollectionFields({
   id: false,
+  password: false,
   email: {
     input: {
       component: 'text',
@@ -12,7 +13,6 @@ export const fields = defineCollectionFields({
       }
     }
   },
-  password: false,
   firstname: {
     input: {
       component: 'text',

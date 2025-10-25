@@ -1,6 +1,6 @@
 import { extname, resolve, isAbsolute, join } from 'node:path'
 import { existsSync } from 'node:fs'
-import { addTemplate, createResolver, defineNuxtModule, updateRuntimeConfig, updateTemplates, useNuxt } from 'nuxt/kit'
+import { addTemplate, defineNuxtModule, updateRuntimeConfig, updateTemplates, useNuxt } from 'nuxt/kit'
 import type { Knex } from 'knex'
 import { scanDirExports } from 'unimport'
 
@@ -15,15 +15,13 @@ declare module '@nuxt/schema' {
   }
 }
 
-const { resolve: localResolve } = createResolver(import.meta.url)
-
 export default defineNuxtModule<HubifyModuleOptions>({
   meta: {
     name: '@hubify/schema',
     configKey: 'hubify'
   },
   defaults: nuxt => ({
-    schema: [localResolve('../../schema'), join(nuxt.options.rootDir, 'schema')],
+    schema: ['./schema'],
     client: 'better-sqlite3',
     useNullAsDefault: true,
     connection: {
@@ -31,18 +29,18 @@ export default defineNuxtModule<HubifyModuleOptions>({
     }
   }),
   async setup(options, nuxt) {
+    const dirs = getDirectories(options.schema)
+
     const { dst: schema } = addTemplate({
       filename: 'hubify/schema.ts',
       write: true,
-      getContents: () => generateSchemaContent(options.schema)
+      getContents: () => generateSchemaContent(dirs)
     })
 
     nuxt.options.nitro.alias ??= {}
     nuxt.options.alias ??= {}
     nuxt.options.nitro.alias['#hubify/schema'] = schema
     nuxt.options.alias['#hubify/schema'] = schema
-
-    const dirs = getDirectories(options.schema)
 
     nuxt.hook('builder:watch', async (_, path) => {
       const isSchemaFile = dirs.some(dir => path.startsWith(dir))
@@ -81,10 +79,13 @@ async function generateSchemaContent(dirs: string[]) {
   const imports: string[] = []
   const items: string[] = []
 
+  let includeDefu = false
+
   for (const name of collections) {
     const match = files.filter(file => file.name === name)
 
     if (match.length > 1) {
+      includeDefu = true
       imports.push(...match.map((file, index) => `import ${name}_${index} from '${file.path}'`))
       items.push(`\t${name}: defu(${match.map((_, index) => `${name}_${index}`).join(', ')})`)
     }
@@ -96,7 +97,7 @@ async function generateSchemaContent(dirs: string[]) {
 
   return [
     'import { normalizeSchema } from \'@hubify/api/collections\'',
-    'import { defu } from \'defu\'',
+    includeDefu ? 'import { defu } from \'defu\'' : '',
     ...imports,
     '',
     'const schema = normalizeSchema({\n' + items.join(',\n') + '\n})',

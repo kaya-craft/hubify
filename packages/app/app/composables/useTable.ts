@@ -4,8 +4,18 @@ import fields from '#hubify/fields'
 import tables from '#hubify/schema'
 
 import type { AsyncComponentLoader } from 'vue'
-import { getPrimaryKeyColumn, isOneToManyRelation } from '@hubify/api/database/helpers'
-import type { TableFieldOption, TableFieldOptions } from '@@/types/fields'
+import { getPrimaryKeyColumn, isOneToManyRelation, isRelation } from '@hubify/api/database/helpers'
+import type { TableFieldOption } from '@@/types/fields'
+
+const defaultInputs = {
+  'text': defineAsyncComponent(registeredInputs.text),
+  'system-one-to-many': defineAsyncComponent(registeredInputs['system-one-to-many'])
+}
+
+const defaultDisplays = {
+  'text': defineAsyncComponent(registeredDisplays.text),
+  'system-one-to-many': defineAsyncComponent(registeredDisplays['system-one-to-many'])
+}
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
@@ -22,7 +32,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Name of the table.
    */
   const tableName = computed(() => {
-    return toValue(_tableName) as T
+    return toValue(_tableName)
   })
 
   /**
@@ -45,14 +55,16 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Table fields.
    */
   const tableFields = computed(() => {
-    return fields[toValue(tableName) as keyof typeof fields] as TableFieldOptions<T> | undefined
+    const name = toValue(tableName)
+    if (!fields[name]) throw new Error(`Fields for table "${name}" do not exist.`)
+    return fields[name]
   })
 
   /**
    * Table relations.
    */
   const relations = computed(() => {
-    return toValue(table).relations as TableRelations<T>
+    return Object.fromEntries(Object.entries(toValue(table)).filter(([_, def]) => isRelation(def))) as TableRelations<T>
   })
 
   /**
@@ -72,8 +84,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (fields) {
       return keys.sort((a, b) => {
-        const aIndex = (fields?.[a] && fields?.[a]?.order) ?? 0
-        const bIndex = (fields?.[b] && fields?.[b]?.order) ?? 0
+        const aIndex = isObject(fields?.[a]) ? fields[a].order ?? 0 : 0
+        const bIndex = isObject(fields?.[b]) ? fields[b].order ?? 0 : 0
         return aIndex - bIndex
       })
     }
@@ -104,7 +116,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   */
   function getColumn<C extends TableColumnNames<T>>(name: C) {
     if (!table.value || !isObject(table.value) || !(name in table.value)) throw new Error(`Column "${name}" does not exist in table "${table}".`)
-    return table.value[name as keyof typeof table.value] as TableField<T, C>
+    return table.value[name as keyof typeof table.value] as TableColumn<T, C>
   }
 
   /**
@@ -164,15 +176,15 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     if (!input?.component) {
       const collection = toValue(tableName)
       if (isOneToManyRelation(getColumn(column))) {
-        return h(resolveComponent('InputsSystemOneToMany'), {
+        return h(defaultInputs['system-one-to-many'], {
           inheritAttrs: false,
           class: input?.class,
           collection,
-          relation: column
+          relation: column as never
         })
       }
 
-      return h(resolveComponent('InputsText'), { class: input?.class })
+      return h(defaultInputs.text, { class: input?.class })
     }
 
     const component = registeredInputs[input.component as keyof typeof registeredInputs]
@@ -192,14 +204,14 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
       const collection = toValue(tableName)
 
       if (isOneToManyRelation(getColumn(column))) {
-        return h(resolveComponent('DisplaysSystemOneToMany'), {
+        return h(defaultDisplays['system-one-to-many'], {
           class: display?.class,
           collection,
-          relation: column
+          relation: column as never
         })
       }
 
-      return h(resolveComponent('DisplaysText'), { class: display?.class })
+      return h(defaultDisplays.text, { class: display?.class })
     }
 
     const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
@@ -242,11 +254,13 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
       loading.value = true
 
       const relation = getRelation(relationName)
+
       const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
 
       await $fetch('/api/items/' + relation.table, {
         method: 'put',
         query: { where: { [primaryKey]: { $in: ids } } },
+        // @ts-expect-error - I don't understand why ts is complaining here
         body: { [relation.foreignKey]: null }
       })
 
@@ -280,11 +294,13 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
       loading.value = true
 
       const relation = getRelation(relationName)
+
       const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
 
       await $fetch('/api/items/' + relation.table, {
         method: 'put',
         query: { where: { [primaryKey]: { $in: ids } } },
+        // @ts-expect-error - I don't understand why ts is complaining here
         body: { [relation.foreignKey]: id }
       })
 

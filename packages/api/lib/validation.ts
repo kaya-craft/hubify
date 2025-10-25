@@ -8,7 +8,7 @@ import { columnTypeToOperators, columnTypeToZod, columnValidation } from './colu
 export function whereValidation<T extends TableNames>(
   collection: T
 ) {
-  const columns = Object.entries(tables[collection].columns)
+  const columns = Object.entries(tables[collection])
 
   const obj = columns.reduce((acc, [column, def]) => {
     const operators = columnTypeToOperators(def)
@@ -39,7 +39,7 @@ export function whereValidation<T extends TableNames>(
  * Item validation.
  */
 export function itemValidation<T extends TableNames>(collection: T, options: ItemValidationOptions = {}) {
-  const columns = tables[collection].columns
+  const columns = tables[collection]
 
   const columnSchemas = Object.fromEntries(
     Object.entries(columns).map(([name, column]) => {
