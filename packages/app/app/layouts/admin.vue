@@ -6,7 +6,7 @@ import type { NavigationMenuItem } from '@nuxt/ui'
  */
 const state = reactive({
   sidebar: false,
-  notifications: false
+  options: false
 })
 
 /**
@@ -15,21 +15,16 @@ const state = reactive({
 const { t } = useI18n()
 
 /**
- * Localized routes.
- */
-const localeRoute = useLocaleRoute()
-
-/**
- * Current page title.
- */
-const currentPageTitle = useTitle()
-
-/**
  * Check if there are notifications.
  */
 const hasNotifications = computed(() => {
   return false
 })
+
+/**
+ * Localized routes.
+ */
+const localeRoute = useLocaleRoute()
 
 /**
  * List of settings links for the admin dashboard.
@@ -63,6 +58,42 @@ const settings = computed<NavigationMenuItem[]>(() =>
  * List of collections.
  */
 const { collections } = useCollections()
+
+/**
+   * Locale path.
+   */
+const localePath = useLocalePath()
+
+/**
+ * Project settings
+ */
+const { data } = await useItems('hubify_settings')
+
+/**
+ * Format collections for navigation menu.
+ */
+const menuItems = computed(() => {
+  return toValue(collections)?.filter(c => !c.hidden)
+    .map(collection => ({
+      label: collection.name,
+      icon: collection.icon || 'i-lucide-folder',
+      color: collection.color || 'bg-gray-500',
+      description: collection.description,
+      displayTemplate: collection.displayTemplate,
+      to: localePath({ name: 'admin-items-collection', params: { collection: collection.name } })
+    }) as NavigationMenuItem)
+})
+
+const projectName = computed(() => {
+  return toValue(data)?.at(0)?.name || 'Hubify'
+})
+
+/**
+ * Current collection
+*/
+const route = useRoute()
+
+const currentCollection = computed(() => route.params.collection)
 </script>
 
 <template>
@@ -74,9 +105,23 @@ const { collections } = useCollections()
         collapsible
         resizable
         class="bg-elevated/25"
-        :ui="{ footer: 'lg:border-t lg:border-default' }"
+        :ui="{ footer: 'lg:border-t lg:border-default', body: 'pt-0', header: state.sidebar ? 'hidden': 'flex' }"
       >
         <template #default="{ collapsed }">
+          <UDashboardNavbar :ui="{ root: 'sm:px-0 px-0' }">
+            <template #leading>
+              <div class="flex items-center gap-4">
+                <UAvatar
+                  :alt="projectName"
+                  :size="collapsed ? 'md' : 'lg'"
+                />
+                <p>
+                  {{ projectName }}
+                </p>
+              </div>
+            </template>
+          </UDashboardNavbar>
+
           <UDashboardSearchButton
             :collapsed="collapsed"
             :label="t('app.search.placeholder')"
@@ -84,12 +129,30 @@ const { collections } = useCollections()
           />
           <UNavigationMenu
             :collapsed="collapsed"
-            :items="collections"
+            :items="menuItems"
             orientation="vertical"
             tooltip
             popover
             :ui="{ list: 'flex flex-col gap-2' }"
-          />
+          >
+            <template #item="{ item }">
+              <div
+                :style="`color: ${item.color}`"
+                class="flex items-center gap-2"
+              >
+                <UIcon
+                  :name="item.icon"
+                  class="size-5"
+                />
+                <p
+                  class="text-md capitalize"
+                  :class="{ hidden: collapsed }"
+                >
+                  {{ item.label }}
+                </p>
+              </div>
+            </template>
+          </UNavigationMenu>
           <div class="flex-1" />
           <UNavigationMenu
             :collapsed="collapsed"
@@ -105,15 +168,17 @@ const { collections } = useCollections()
         </template>
       </UDashboardSidebar>
 
-      <UDashboardPanel>
+      <UDashboardPanel
+        id="main-panel"
+        :ui="{ body: 'flex flex-col gap-4 sm:gap-6 flex-1 overflow-y-auto p-0 sm:p-0' }"
+      >
         <template #header>
-          <UDashboardNavbar
-            :title="currentPageTitle || ''"
-            :ui="{ right: 'gap-3' }"
-          >
+          <UDashboardNavbar :ui="{ center: 'flex' }">
             <template #leading>
               <UDashboardSidebarCollapse />
             </template>
+
+            <CollectionTitle :collection="currentCollection" />
 
             <template #right>
               <UTooltip
@@ -124,7 +189,7 @@ const { collections } = useCollections()
                   color="neutral"
                   variant="ghost"
                   square
-                  @click="state.notifications = true"
+                  @click="state.options = !state.options"
                 >
                   <UChip
                     color="error"
@@ -141,7 +206,6 @@ const { collections } = useCollections()
             </template>
           </UDashboardNavbar>
         </template>
-
         <template #body>
           <NuxtPage />
         </template>

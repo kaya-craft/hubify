@@ -24,17 +24,12 @@ async function updateHubifyCollections(nitroApp: NitroApp) {
   const { find } = useDatabase()
 
   const collections = await find('hubify_collections', {
-    fields: ['name'],
-    where: {
-      name: {
-        $nstartsWith: 'hubify_'
-      }
-    }
+    fields: ['name']
   })
 
   const collectionsNames = collections.map(c => c.name)
 
-  const schemaTablesNames = Object.keys(schema).filter(t => !t.startsWith('hubify_'))
+  const schemaTablesNames = Object.keys(schema)
 
   const diff = schemaTablesNames.filter(name => !collectionsNames.includes(name))
 

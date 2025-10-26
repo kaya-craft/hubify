@@ -16,9 +16,11 @@ definePageMeta({
 
 const { collection } = defineProps<Props>()
 
-useSeoMeta({
-  title: () => collection,
-  description: () => ''
+const { getCollectionMeta } = useCollections()
+
+usePageTitle({
+  title: getCollectionMeta(collection)?.name || 'Hubify collections',
+  icon: getCollectionMeta(collection)?.icon
 })
 </script>
 

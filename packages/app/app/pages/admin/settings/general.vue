@@ -1,22 +1,26 @@
 <script setup lang="ts">
 const { t } = useI18n()
 
-useSeoMeta({
-  title: () => t('app.admin.settings.general.title'),
-  description: () => t('app.admin.settings.general.description')
+usePageTitle({
+  title: t('app.admin.settings.general.title'),
+  icon: 'heroicons:cog-6-tooth-solid'
 })
+
+const { data } = await useItems('hubify_settings', { id: 1 })
+
+const initialState = computed(() => data.value)
+
+const { columnNames } = useTable('hubify_settings')
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <p class="text-sm">
-        {{ t('app.admin.settings.general.description') }}
-      </p>
-    </template>
-
-    <CollectionForm
-      collection="hubify_collections"
+  <UContainer class="py-4 lg:py-8">
+    <Displays
+      v-for="column in columnNames"
+      :key="column"
+      collection="hubify_settings"
+      :column
+      :value="initialState[column]"
     />
-  </UCard>
+  </UContainer>
 </template>

@@ -22,8 +22,6 @@ export default defineEventHandler(async (event) => {
     password: z.string().min(8)
   }).parse)
 
-  console.log('COUCOU', email, password)
-
   const [user] = await find('hubify_users', {
     where: {
       email: {
@@ -32,8 +30,6 @@ export default defineEventHandler(async (event) => {
     },
     limit: 1
   })
-
-  console.log('User found:', user)
 
   if (!user) {
     throw invalidCredentialsError

@@ -1,14 +1,28 @@
 <script setup lang="ts" generic="T extends TableNames">
-import { CollectionTableActions, UCheckbox, UTable } from '#components'
+import { CollectionTableActions } from '#components'
 import type { TableColumn } from '@nuxt/ui'
+import type { Table } from '@tanstack/vue-table'
 
-type Props = {
+const { selectable, collection, baseQueryRouter } = defineProps<{
   collection: T
-  where?: Where<T>
+  baseQueryRouter?: QueryParams<T>
   selectable?: boolean
-}
+}>()
 
-const { selectable, collection, where } = defineProps<Props>()
+/**
+ * Router query state
+ */
+const { query, queryOrderBy } = useQueryRouter(collection, baseQueryRouter)
+
+/**
+ * Pagination
+ */
+const { pagination } = usePagination(collection)
+
+/**
+ * Column visibility
+ */
+const columnVisibility = useLocalStorage(`hubify.collection.${collection}.columnVisibility`, {} as Record<string, boolean>)
 
 /**
  * Collection definition.
@@ -16,16 +30,9 @@ const { selectable, collection, where } = defineProps<Props>()
 const { displayedColumns, getDisplayComponent, getColumnLabel } = useTable(collection)
 
 /**
- * Where query.
+ * Table reference.
  */
-const { queryWhere, validatedWhere } = useQueryWhere(collection, where)
-
-/**
- * Fetch data for the collection.
- */
-const { data, status, refresh } = await useFetch<TableItem<T>[]>(`/api/items/${collection}` as `/api/items/:collection`, {
-  query: { where: validatedWhere }
-})
+const table = useTemplateRef<{ tableApi: Table<T> }>('table')
 
 /**
  * List of collection columns.
@@ -34,7 +41,24 @@ const collectionColumns = computed(() => {
   return toValue(displayedColumns).map(name => ({
     id: name,
     accessorKey: name,
-    header: getColumnLabel(name),
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+      return h(resolveComponent('UButton'), {
+        color: 'neutral',
+        variant: 'ghost',
+        label: getColumnLabel(name),
+        icon: isSorted
+          ? isSorted === 'asc'
+            ? 'i-lucide-arrow-up-narrow-wide'
+            : 'i-lucide-arrow-down-wide-narrow'
+          : 'i-lucide-arrow-up-down',
+        class: '-mx-2.5',
+        onClick: () => {
+          queryOrderBy.value = (column.getIsSorted() === 'asc' ? `-${name}` : name) as unknown as QueryParams<T>['orderBy']
+          return column.toggleSorting(column.getIsSorted() === 'asc')
+        }
+      })
+    },
     cell: ({ row }) => {
       const value = row.original[name as keyof typeof row.original]
       const component = getDisplayComponent(name)
@@ -64,7 +88,7 @@ const prependColumns = computed(() => {
   {
     id: 'select',
     header: ({ table }) =>
-      h(UCheckbox, {
+      h(resolveComponent('UCheckbox'), {
         'modelValue': table.getIsSomePageRowsSelected()
           ? 'indeterminate'
           : table.getIsAllPageRowsSelected(),
@@ -73,7 +97,7 @@ const prependColumns = computed(() => {
         'aria-label': 'Select all'
       }),
     cell: ({ row }) =>
-      h(UCheckbox, {
+      h(resolveComponent('UCheckbox'), {
         'modelValue': row.getIsSelected(),
         'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
         'aria-label': 'Select row'
@@ -82,16 +106,9 @@ const prependColumns = computed(() => {
 })
 
 /**
- * Table reference.
+ * Fetch items
  */
-const table = useTemplateRef('table')
-
-/**
- * Selected items
- */
-const selected = computed((): TableItem<T>[] => {
-  return (table.value?.tableApi.getSelectedRowModel().flatRows.map(row => row.original) ?? []) as TableItem<T>[]
-})
+const { refresh, data } = useItems(collection, { query, paginate: true })
 
 /**
  * Refresh the collection when the collection is updated.
@@ -105,48 +122,32 @@ onHubifyHook('items', ({ collection: name }) => {
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <div class="flex items-center gap-4">
-        <slot
-          name="prepend-header"
-          :selected
-        />
-
-        <h2 class="text-lg font-semibold">
-          {{ collection }}
-        </h2>
-
-        <div class="flex-1" />
-
-        <slot
-          name="append-header"
-          :selected
-        />
-
-        <CollectionFilter
-          v-model="queryWhere"
-          :collection
-        />
-      </div>
-    </template>
-
+  <div
+    data-testid="collection-table"
+    class="flex min-h-[calc(100vh-var(--ui-header-height))] flex-col overflow-hidden"
+  >
+    <CollectionTableHeader
+      :collection
+      :table="table?.tableApi"
+      :base-query-router
+      :total-count="data?.total"
+    />
     <UTable
       ref="table"
+      v-model:pagination="pagination"
+      v-model:column-visibility="columnVisibility"
+      class="flex-1 overflow-y-auto"
       :columns="[...prependColumns, ...collectionColumns, ...actionColumns]"
-      :data
+      :data="data?.items"
       sticky
-      :loading="status === 'pending'"
     />
 
-    <template
-      v-if="$slots.footer"
-      #footer
-    >
-      <slot
-        name="footer"
-        :selected
+    <div class="sticky bottom-0 bg-default shrink-0">
+      <CollectionTableFooter
+        :collection="collection"
+        :total-items="data?.total || 0"
+        :displayed-items="table?.tableApi.getRowCount() || 0"
       />
-    </template>
-  </UCard>
+    </div>
+  </div>
 </template>

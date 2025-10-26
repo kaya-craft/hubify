@@ -8,12 +8,22 @@ export default defineEventHandler(async (event) => {
 
   const { removeOne } = useDatabase()
 
-  return removeOne(collection, id).then((id) => {
+  try {
+    const itemId = await removeOne(collection, id)
+
+    if (!itemId) {
+      throw createError({
+        status: 404,
+        message: 'Item not found'
+      })
+    }
     emitMessage(event, {
       type: 'items:deleted',
       data: { collection, id }
     })
-
-    return id
-  })
+    return itemId
+  }
+  catch (e) {
+    throw createError(e)
+  }
 })

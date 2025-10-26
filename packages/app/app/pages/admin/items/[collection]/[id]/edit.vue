@@ -67,9 +67,7 @@ async function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
           icon="heroicons:arrow-left"
           :aria-label="t('app.back')"
         />
-        <h2 class="text-lg font-semibold">
-          {{ collection }}
-        </h2>
+        <CollectionTitle :collection />
       </div>
     </template>
 

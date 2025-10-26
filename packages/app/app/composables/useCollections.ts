@@ -3,32 +3,15 @@
  */
 export function useCollections() {
   /**
-     * Locale path.
-     */
-  const localePath = useLocalePath()
-
-  /**
- * List of collections.
- **/
-  const { data: collections, refresh } = useFetch('/api/items/hubify_collections', {
-    transform: (data) => {
-      return data.map(item => ({
-        label: item.name,
-        icon: item.icon || 'i-lucide-folder',
-        color: item.color || 'primary',
-        style: { color: `text-[${item.color}]` },
-        description: item.description,
-        displayTemplate: item.displayTemplate,
-        to: localePath({ name: 'admin-items-collection', params: { collection: item.name } })
-      }))
-    }
-  })
+   * List of collections.
+   **/
+  const { data: collections, refresh } = useFetch('/api/items/hubify_collections')
 
   /**
    * Extract display columns from collection.
    */
   function extractDisplayColumns<T extends TableNames>(name: T) {
-    const collection = toValue(collections)?.find(collection => collection.label === name)
+    const collection = toValue(collections)?.find(collection => collection.name === name)
 
     if (!collection?.displayTemplate) return
 
@@ -43,7 +26,7 @@ export function useCollections() {
    * Get display value from item and columns.
    */
   function getDisplay<T extends TableNames>(name: T, item: TableItem<T>) {
-    const collection = toValue(collections)?.find(collection => collection.label === name)
+    const collection = toValue(collections)?.find(collection => collection.name === name)
 
     if (!collection?.displayTemplate) return
 
@@ -52,7 +35,8 @@ export function useCollections() {
     if (!columns?.length) return
 
     return collection.displayTemplate.replace(REGEX_EXTRACT_TEMPLATE_VARIABLE, (_, col) => {
-      return item[col as keyof TableItem<T>]?.toString() ?? ''
+      const value = item[col as keyof TableItem<T>]
+      return value !== undefined ? String(value) : ''
     }).trim()
   }
 
@@ -61,10 +45,18 @@ export function useCollections() {
     refresh()
   })
 
+  /**
+   * Get collection meta by name.
+   */
+  function getCollectionMeta<T extends TableNames>(name: T) {
+    return toValue(collections)?.find(collection => collection.name === name)
+  }
+
   return {
     collections,
     extractDisplayColumns,
-    getDisplay
+    getDisplay,
+    getCollectionMeta
   }
 }
 

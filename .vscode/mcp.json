@@ -1,9 +1,9 @@
 {
     "servers": {
-        "nuxt-mcp-server": {
-            "url": "https://mcp.nuxt.com/",
-            "type": "http"
-        }   
+        "nuxt": {
+            "command": "npx",
+            "args": ["mcp-remote", "https://mcp.nuxt.com/sse"]
+        }
     },
     "inputs": []
 }

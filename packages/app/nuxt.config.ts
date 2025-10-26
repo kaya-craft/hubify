@@ -1,6 +1,6 @@
+import { defineNuxtConfig } from 'nuxt/config'
 import { resolve } from 'path'
 import i18nConfig from './i18n/config'
-import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   extends: ['@hubify/api'],
@@ -15,6 +15,8 @@ export default defineNuxtConfig({
      */
     process.env.VITEST ? '' : '@nuxtjs/i18n'
   ],
+
+  ssr: false,
 
   pages: true,
 

@@ -44,7 +44,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
    */
   async function save(data: TableFormSubmitEvent<T>['data'], id: string) {
     try {
-      await $fetch('/api/items/' + collection + '/' + id, {
+      await $fetch(`/api/items/${collection}/${id}` as '/api/items/:collection/:id', {
         method: 'put',
         body: data
       })
