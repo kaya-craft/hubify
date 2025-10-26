@@ -22,8 +22,8 @@ export default defineEventHandler(async (event) => {
 
     return paginateOutput(items, total, params.limit, params.offset)
   }
-  catch (e) {
-    throw createError(e)
+  catch (error) {
+    throw createError(String(error) || 'An error occurred while fetching items')
   }
 })
 

@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 
     return item
   }
-  catch (e) {
-    throw createError(e)
+  catch (error) {
+    throw createError(String(error) || 'An error occurred while fetching the item')
   }
 })

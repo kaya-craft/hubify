@@ -21,9 +21,10 @@ export default defineEventHandler(async (event) => {
       type: 'items:deleted',
       data: { collection, id }
     })
+
     return itemId
   }
-  catch (e) {
-    throw createError(e)
+  catch (error) {
+    throw createError(String(error) || 'An error occurred while deleting the item')
   }
 })
