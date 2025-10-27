@@ -13,12 +13,15 @@ const { selectable, collection, baseQueryRouter } = defineProps<{
 /**
  * Router query state
  */
-const { query, queryOrderBy } = useQueryRouter(collection, baseQueryRouter)
+const { query, orderBy, page, limit } = useQueryRouter(collection, baseQueryRouter)
 
 /**
- * Pagination
+ * Pagination state
  */
-const { pagination } = usePagination(collection)
+const pagination = reactive({
+  page,
+  pageSize: limit
+})
 
 /**
  * Column visibility
@@ -55,7 +58,7 @@ const collectionColumns = computed(() => {
           : 'i-lucide-arrow-up-down',
         class: '-mx-2.5',
         onClick: () => {
-          queryOrderBy.value = (column.getIsSorted() === 'asc' ? `-${name}` : name) as unknown as QueryParams<Schema, T>['orderBy']
+          orderBy.value = (column.getIsSorted() === 'asc' ? `-${name}` : name) as unknown as QueryParams<Schema, T>['orderBy']
           return column.toggleSorting(column.getIsSorted() === 'asc')
         }
       })
@@ -109,7 +112,9 @@ const prependColumns = computed(() => {
 /**
  * Fetch items
  */
-const { refresh, data } = useItems(collection, { query })
+const { refresh, data } = useItems(collection, {
+  query
+})
 
 /**
  * Refresh the collection when the collection is updated.
@@ -125,7 +130,7 @@ onHubifyHook('items', ({ collection: name }) => {
 <template>
   <div
     data-testid="collection-table"
-    class="flex min-h-[calc(100vh_-_var(--ui-header-height))] flex-col overflow-hidden"
+    class="flex min-h-[calc(100vh-var(--ui-header-height))] flex-col overflow-hidden"
   >
     <CollectionTableHeader
       :collection
@@ -133,6 +138,7 @@ onHubifyHook('items', ({ collection: name }) => {
       :base-query-router
       :total-count="data?.total_count"
     />
+
     <UTable
       ref="table"
       v-model:pagination="pagination"
@@ -143,7 +149,7 @@ onHubifyHook('items', ({ collection: name }) => {
       sticky
     />
 
-    <div class="sticky bottom-0 bg-(--ui-bg) shrink-0">
+    <div class="sticky bottom-0 bg-default shrink-0">
       <CollectionTableFooter
         :collection="collection"
         :total-items="data?.total_count || 0"

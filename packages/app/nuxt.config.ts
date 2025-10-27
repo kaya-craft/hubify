@@ -9,11 +9,7 @@ export default defineNuxtConfig({
     '@nuxt/test-utils/module',
     '@nuxt/ui',
     '@vueuse/nuxt',
-
-    /**
-     * Fix: cannot use i18n in vitest browser mode.
-     */
-    process.env.VITEST ? '' : '@nuxtjs/i18n'
+    '@nuxtjs/i18n'
   ],
 
   ssr: false,

@@ -18,8 +18,11 @@ const { t } = useI18n()
 /**
  * Handle table row size
  */
-const { updatePageSize, pagination } = usePagination(collection)
+const { limit, where } = useQueryRouter(collection, baseQueryRouter)
 
+/**
+ * Page sizes options
+ */
 const pageSizes: DropdownMenuItem[] = [{
   label: '10 items',
   value: 10
@@ -34,7 +37,7 @@ const pageSizes: DropdownMenuItem[] = [{
   value: 100
 }].map(item => ({
   ...item,
-  onSelect: () => updatePageSize(item.value as number)
+  onSelect: () => limit.value = Number(item.value)
 }))
 
 /**
@@ -56,11 +59,6 @@ const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
       }
     }))
 })
-
-/**
- * Handle table filters
- */
-const { queryWhere } = useQueryRouter(collection, baseQueryRouter)
 
 /**
  * Handle delete items
@@ -89,7 +87,7 @@ const localeRoute = useLocaleRoute()
 </script>
 
 <template>
-  <div class="grid grid-col-1 lg:grid-flow-col gap-2 lg:gap-6 justify-between bg-(--ui-bg) sticky top-0 z-10  shrink-0 px-6 pt-4 pb-0">
+  <div class="grid grid-col-1 lg:grid-flow-col gap-2 lg:gap-6 justify-between bg-default sticky top-0 z-10  shrink-0 px-6 pt-4 pb-0">
     <div class="flex gap-4 overflow-x-scroll pb-2">
       <!-- Page size -->
       <div data-testid="table-page-size">
@@ -99,7 +97,7 @@ const localeRoute = useLocaleRoute()
           <UButton
             color="neutral"
             variant="soft"
-            :label="t('app.admin.collection.page-size', { pageSize: pagination.pageSize })"
+            :label="t('app.admin.collection.page-size', { pageSize: limit })"
             icon="lucide:list-ordered"
             trailing-icon="i-lucide-chevron-down"
           />
@@ -124,7 +122,7 @@ const localeRoute = useLocaleRoute()
 
       <!-- Filter -->
       <CollectionFilter
-        v-model="queryWhere"
+        v-model="where"
         :collection
       />
     </div>

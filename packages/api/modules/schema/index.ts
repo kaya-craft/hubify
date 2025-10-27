@@ -44,8 +44,8 @@ export default defineNuxtModule<HubifyModuleOptions>({
     })
 
     nuxt.options.nitro.alias ??= {}
-    nuxt.options.nitro.alias['#hubify/schema'] = schemaPath
-    nuxt.options.alias['#hubify/schema'] = schemaPath
+    nuxt.options.nitro.alias['#hubify/schema'] ??= schemaPath
+    nuxt.options.alias['#hubify/schema'] ??= schemaPath
 
     nuxt.options.runtimeConfig.hubify = {
       systemCollections: getSystemCollections(schemaDirs)

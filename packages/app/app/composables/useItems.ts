@@ -8,17 +8,17 @@ type SingleItemResponse<T extends TableNames> = TableItem<T>
  */
 export function useItems<T extends TableNames>(
   collection: T,
-  options: { id: MaybeRef<string | number>, query?: ComputedRef<QueryParams<Schema, T>> }
+  options: { id: MaybeRef<string | number>, query?: MaybeRefOrGetter<QueryParams<Schema, T>> }
 ): ReturnType<typeof useFetch<SingleItemResponse<T>>>
 
 export function useItems<T extends TableNames>(
   collection: T,
-  options?: { id?: undefined, query?: ComputedRef<QueryParams<Schema, T>> }
+  options?: { id?: undefined, query?: MaybeRefOrGetter<QueryParams<Schema, T>> }
 ): ReturnType<typeof useFetch<ListItemsResponse<T>>>
 
 export function useItems<T extends TableNames>(
   collection: T,
-  { id, query }: { id?: MaybeRef<string | number>, query?: ComputedRef<QueryParams<Schema, T>> } = {}
+  { id, query }: { id?: MaybeRef<string | number>, query?: MaybeRefOrGetter<QueryParams<Schema, T>> } = {}
 ) {
   const url = computed(() =>
     id

@@ -1,101 +1,11 @@
-/// <reference types="@vitest/browser/providers/playwright" />
-import { CollectionTable, DisplaysText } from '#components'
-import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-vue'
-import { computed, ref } from 'vue'
+import { CollectionTable } from '#components'
+import { page } from '@vitest/browser/context'
+import { describe, expect, it } from 'vitest'
 import { DEFAULT_PAGE_SIZE } from '~/composables/useQueryRouter'
-
-const mockedCountries = (await import('./countries.mock.json')).default
-
-vi.stubGlobal('useI18n', () => ({
-  t: (value: string, params: Record<string, unknown>) => {
-    if (value === 'app.admin.items-number') {
-      return '{displayedItems}/{totalItems} items'
-        .replace('{displayedItems}', (params as { displayedItems: string, totalItems: string }).displayedItems)
-        .replace('{totalItems}', (params as { displayedItems: string, totalItems: string }).totalItems)
-    }
-    return value
-  }
-}))
-
-afterAll(() => {
-  vi.unstubAllGlobals()
-})
-
-const pagination = ref({
-  pageIndex: 1,
-  pageSize: 10
-})
-const queryOffset: Ref<number | undefined> = ref()
-const queryLimit: Ref<number | undefined> = ref()
-
-beforeEach(() => {
-  pagination.value.pageIndex = 1
-  pagination.value.pageSize = DEFAULT_PAGE_SIZE
-  queryLimit.value = undefined
-  queryOffset.value = undefined
-})
-
-mockNuxtImport('useQueryRouter', () => {
-  return () => {
-    return {
-      queryLimit,
-      queryOffset
-    }
-  }
-})
-
-mockNuxtImport('useTable', () => {
-  return () => {
-    return {
-      primaryKey: 'id',
-      columnNames: ['id', 'name', 'emoji', 'code'],
-      getColumn: (key: string) => ({
-        type: key === 'id' ? 'integer' : 'text'
-      }),
-      getPrimaryKeyValue: () => 'id',
-      displayedColumns: computed(() => ['id', 'name', 'emoji', 'code']),
-      getDisplayComponent: () => DisplaysText,
-      getColumnLabel: (column: string) => column
-    }
-  }
-})
-
-mockNuxtImport('useItems', () => {
-  return () => {
-    const items = computed(() => {
-      const limit = Number(queryLimit.value ?? 10)
-      const offset = Number(queryOffset.value ?? 0)
-
-      if (!Number.isFinite(limit) || limit <= 0) return []
-
-      return mockedCountries.items.slice(offset, offset + limit)
-    })
-
-    const totalCount = computed(() => mockedCountries.total_count)
-
-    return {
-      refresh: vi.fn(),
-      data: computed(() => ({
-        items: items.value,
-        total_count: totalCount.value
-      }))
-    }
-  }
-})
-
-mockNuxtImport('useCollection', () => {
-  return () => {
-    return {
-      remove: vi.fn()
-    }
-  }
-})
 
 describe('CollectionTable', () => {
   it('renders correctly', async () => {
-    const screen = render(CollectionTable, {
+    const screen = page.render(CollectionTable, {
       props: {
         collection: 'test' as TableNames
       }
@@ -107,7 +17,7 @@ describe('CollectionTable', () => {
     const itemCell = screen.getByText('France')
     await expect.element(itemCell).toBeVisible()
     const tableRows = table.element().querySelectorAll('tbody > tr')
-    expect(tableRows?.length).toEqual(queryLimit.value)
+    expect(tableRows?.length).toEqual(DEFAULT_PAGE_SIZE)
 
     // Render Page size button
     const pageSizeButton = screen.getByTestId('table-page-size')

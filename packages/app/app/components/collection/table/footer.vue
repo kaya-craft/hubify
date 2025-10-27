@@ -5,10 +5,7 @@ const { collection, totalItems } = defineProps<{
   displayedItems: number
 }>()
 
-/**
- * Pagination
- */
-const { updatePageIndex, pagination } = usePagination(collection)
+const { page, limit } = useQueryRouter(collection)
 
 /**
  * Translations
@@ -17,13 +14,12 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="flex justify-center items-center p-4 border-t-1 border-slate-600">
+  <div class="flex justify-center items-center p-4 border-t border-slate-600">
     <UPagination
-      v-model:page="pagination.pageIndex"
+      v-model:page="page"
       data-testid="table-pagination"
-      :items-per-page="pagination.pageSize"
+      :items-per-page="limit"
       :total="totalItems"
-      @update:page="(p: number) => updatePageIndex(p)"
     />
     <p class="text-xs ml-6">
       ({{ t('app.admin.items-number', { displayedItems, totalItems }) }})

@@ -13,6 +13,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "test": "vitest run",
     "test:browser": "vitest watch --project browser",
     "test:composables": "vitest watch --project composables"
   },
@@ -28,7 +29,7 @@
     "@iconify-json/simple-icons": "^1.2.50",
     "@internationalized/date": "^3.9.0",
     "@nuxt/ui": "catalog:",
-    "@nuxtjs/i18n": "^10.0.6",
+    "@nuxtjs/i18n": "^10.1.2",
     "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^13.9.0",
     "@vueuse/integrations": "^13.9.0",

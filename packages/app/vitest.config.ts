@@ -2,6 +2,7 @@ import { defineVitestProject } from '@nuxt/test-utils/config'
 import { defineConfig } from 'vitest/config'
 
 import { resolveModule } from 'nuxt/kit'
+import { resolve } from 'path'
 
 export default defineConfig({
   test: {
@@ -24,7 +25,16 @@ export default defineConfig({
             instances: [{ browser: 'chromium' }]
           },
           environment: 'nuxt',
-          setupFiles: ['vitest-browser-vue', './app/tests/browser/setup.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: {
+                alias: {
+                  '#hubify/schema': resolve(__dirname, 'app/tests/browser/__mocks__/schema.ts')
+                }
+              }
+            }
+          },
+          setupFiles: ['./app/tests/browser/setup.ts'],
           include: ['./app/tests/browser/**/*.test.ts'],
           alias: {
             'bind-event-listener': resolveModule('bind-event-listener')
