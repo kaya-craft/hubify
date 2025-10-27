@@ -3,18 +3,23 @@ packages:
   - playground/**
 
 catalog:
-  '@nuxt/eslint': 1.9.0
-  '@nuxt/scripts': 0.13.0
-  '@nuxt/test-utils': 3.20.1
-  '@nuxt/ui': ^4.0.0
-  '@unhead/vue': ^2.0.12
-  eslint: ^9.34.0
-  nuxt: ^4.1.0
-  typescript: ^5.9.2
-  vitest: ^3.2.4
-  vue: ^3.5.21
-  vue-router: ^4.5.1
-  zod: ^4.1.5
+  '@nuxt/eslint-config': latest
+  '@nuxt/scripts': latest
+  '@nuxt/test-utils': latest
+  '@nuxt/ui': latest
+  eslint: latest
+  nuxt: 4.1.0
+  typescript: latest
+  vue: latest
+  vue-router: latest
+  zod: latest
+  vitest: latest
+  vite: latest
+  '@vitest/browser-playwright': latest
+  'vitest-browser-vue': latest
+  playwright: latest
+  '@playwright/test': latest
+  'happy-dom': latest
 
 onlyBuiltDependencies:
   - better-sqlite3
