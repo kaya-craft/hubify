@@ -1,17 +1,7 @@
-/// <reference types="@vitest/browser/providers/playwright" />
-<<<<<<< HEAD
 import { describe, expect, it } from 'vitest'
-import 'vitest-browser-vue'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { page, userEvent, type Locator } from '@vitest/browser/context'
 import { CollectionFilterContent } from '#components'
-=======
-import { CollectionFilterContent } from '#components'
-import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { page, userEvent, type Locator } from '@vitest/browser/context'
-import { describe, expect, it } from 'vitest'
-import 'vitest-browser-vue'
->>>>>>> feat/improve_layout
+import { page, userEvent, type Locator } from 'vitest/browser'
 
 mockNuxtImport('useTable', () => {
   return () => {

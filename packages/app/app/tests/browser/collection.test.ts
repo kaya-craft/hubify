@@ -1,10 +1,9 @@
-/// <reference types="@vitest/browser/providers/playwright" />
 import { CollectionTable, DisplaysText } from '#components'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { render } from 'vitest-browser-vue'
 import { computed, ref } from 'vue'
 import { DEFAULT_PAGE_SIZE } from '~/composables/useQueryRouter'
+import { page } from 'vitest/browser'
 
 const mockedCountries = (await import('./countries.mock.json')).default
 
@@ -95,7 +94,7 @@ mockNuxtImport('useCollection', () => {
 
 describe('CollectionTable', () => {
   it('renders correctly', async () => {
-    const screen = render(CollectionTable, {
+    const screen = page.render(CollectionTable, {
       props: {
         collection: 'test' as TableNames
       }

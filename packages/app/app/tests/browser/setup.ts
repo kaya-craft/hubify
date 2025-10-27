@@ -1,5 +1,6 @@
-import { locators } from '@vitest/browser/context'
-
+import { locators } from 'vitest/browser'
+import type { Locator } from 'vitest/browser'
+import 'vitest-browser-vue'
 import { vi } from 'vitest'
 
 import heroicons from '@iconify-json/heroicons/icons.json'
@@ -41,7 +42,7 @@ locators.extend({
   }
 })
 
-declare module '@vitest/browser/context' {
+declare module 'vitest/browser' {
   interface LocatorSelectors {
     getById: (id: string) => Locator
     getByTag: (tag: string) => Locator

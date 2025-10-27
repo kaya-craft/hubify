@@ -1,10 +1,9 @@
-/// <reference types="@vitest/browser/providers/playwright" />
 import { CollectionTableFooter, CollectionTableHeader } from '#components'
 import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { page, type Locator } from '@vitest/browser/context'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import 'vitest-browser-vue'
+import { page, type Locator } from 'vitest/browser'
 import { ref, type Ref } from 'vue'
+import 'vitest-browser-vue'
 
 const pagination = ref({
   pageIndex: 1,

@@ -1,6 +1,6 @@
+import { playwright } from '@vitest/browser-playwright'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 import { defineConfig } from 'vitest/config'
-
 import { resolveModule } from 'nuxt/kit'
 
 export default defineConfig({
@@ -10,7 +10,6 @@ export default defineConfig({
         test: {
           name: 'composables',
           include: ['./app/tests/composables/**/*.test.ts'],
-          environment: 'nuxt',
           setupFiles: ['./app/tests/composables/setup.ts']
         }
       }),
@@ -20,12 +19,12 @@ export default defineConfig({
           browser: {
             viewport: { width: 1280, height: 720 },
             enabled: true,
-            provider: 'playwright',
+            provider: playwright(),
             instances: [{ browser: 'chromium' }]
           },
           environment: 'nuxt',
-          setupFiles: ['vitest-browser-vue', './app/tests/browser/setup.ts'],
           include: ['./app/tests/browser/**/*.test.ts'],
+          setupFiles: ['./app/tests/browser/setup.ts'],
           alias: {
             'bind-event-listener': resolveModule('bind-event-listener')
           }
