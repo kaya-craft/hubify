@@ -83,7 +83,7 @@
   "app.admin.items.attach-items": "Attach {name}",
   "app.admin.form.cancel": "Cancel",
   "app.admin.items.detatch-items": "Detach {name}",
-  "app.admin.items-number": "{displayedItems}/{totalItems} items",
+  "app.admin.items-number": "{displayedItems} out of {totalItems} item | {displayedItems} out of {totalItems} items",
   "app.admin.confirm-delete-items": "Are you sure to delete the selected items?",
   "app.admin.confirm-action": "Confirm",
   "app.toast.create-item.title": "Create item",
@@ -101,5 +101,10 @@
   "app.toast.detach-item.title": "Detach item",
   "app.toast.detach-item.success": "The item has been successfully detached.",
   "app.toast.detach-item.error": "There was an error detaching the item.",
-  "app.admin.collection.page-size": "Page size: {pageSize}"
+  "app.admin.collection.page-size": "Page size: {pageSize}",
+  "app.form.actions.view": "View",
+  "app.form.actions.duplicate": "Duplicate",
+  "app.toast.duplicate-item.title": "Duplicate item",
+  "app.toast.duplicate-item.success": "The item was successfully duplicated",
+  "app.toast.duplicate-item.error": "The item could not be duplicated"
 }

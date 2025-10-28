@@ -8,7 +8,7 @@ describe('CollectionFilter', () => {
 
     const result = page.render(CollectionFilterContent, {
       props: {
-        'collection': 'test' as TableNames,
+        'collection': 'countries',
         modelValue,
         'onUpdate:modelValue': (val) => {
           if (JSON.stringify(val) === JSON.stringify(modelValue)) return
@@ -139,13 +139,24 @@ describe('CollectionFilter', () => {
       ]
     })
 
+    const copyItem = getClause(0, 0).getByTestId('copy-item')
+    await expect.element(copyItem).toBeVisible()
+    await copyItem.click()
+
+    expect(modelValue).toMatchObject({
+      $and: [
+        { $and: [{ name: { $contains: 'test' } }, { name: { $contains: 'test' } }] },
+        { $and: [{ name: { $contains: 'test' } }] }
+      ]
+    })
+
     const removeClause = getClause(0, 0).getByTestId('remove-clause')
     await expect.element(removeClause).toBeVisible()
     await removeClause.click()
 
     expect(modelValue).toMatchObject({
       $and: [
-        { $and: [] },
+        { $and: [{ name: { $contains: 'test' } }] },
         { $and: [{ name: { $contains: 'test' } }] }
       ]
     })
@@ -155,7 +166,7 @@ describe('CollectionFilter', () => {
     await removeGroup.click()
 
     expect(modelValue).toMatchObject({
-      $and: [{ $and: [] }]
+      $and: [{ $and: [{ name: { $contains: 'test' } }] }]
     })
   })
 })

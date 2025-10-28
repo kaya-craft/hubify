@@ -130,13 +130,16 @@ onHubifyHook('items', ({ collection: name }) => {
 <template>
   <div
     data-testid="collection-table"
-    class="flex min-h-[calc(100vh-var(--ui-header-height))] flex-col overflow-hidden"
+    class="flex min-h-[calc(100vh-var(--ui-header-height))] flex-col overflow-hidden divide-y divide-muted"
   >
     <CollectionTableHeader
       :collection
       :table="table?.tableApi"
       :base-query-router
       :total-count="data?.total_count"
+      size="sm"
+      variant="soft"
+      color="neutral"
     />
 
     <UTable
@@ -149,12 +152,14 @@ onHubifyHook('items', ({ collection: name }) => {
       sticky
     />
 
-    <div class="sticky bottom-0 bg-default shrink-0">
-      <CollectionTableFooter
-        :collection="collection"
-        :total-items="data?.total_count || 0"
-        :displayed-items="table?.tableApi.getRowCount()"
-      />
-    </div>
+    <CollectionTableFooter
+      :collection="collection"
+      :total-items="data?.total_count || 0"
+      :displayed-items="table?.tableApi.getRowCount()"
+      size="sm"
+      variant="soft"
+      color="neutral"
+      class="sticky bottom-0 shrink-0"
+    />
   </div>
 </template>

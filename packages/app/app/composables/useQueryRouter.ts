@@ -67,7 +67,7 @@ export function useQueryRouter<T extends TableNames>(table: T, baseQueryRouter?:
     mode: 'replace',
     transform(val) {
       const offset = Number(val)
-      if (isNaN(offset) || offset < 1) return toValue(baseQuery)?.offset ?? 0
+      if (Number.isNaN(offset) || offset < 1) return toValue(baseQuery)?.offset ?? 0
       return offset
     },
     router,
@@ -81,7 +81,7 @@ export function useQueryRouter<T extends TableNames>(table: T, baseQueryRouter?:
     mode: 'replace',
     transform(val) {
       const limit = Number(val)
-      if (isNaN(limit) || limit < 1) return toValue(baseQuery)?.limit ?? DEFAULT_PAGE_SIZE
+      if (Number.isNaN(limit) || limit < 1) return toValue(baseQuery)?.limit ?? DEFAULT_PAGE_SIZE
       return limit
     },
     router,

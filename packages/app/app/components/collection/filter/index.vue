@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
 import { CollectionFilterContent, UModal, UPopover } from '#components'
 import type { ConditionTree, Operator } from '@hubify/restql'
+import type { ButtonProps } from '@nuxt/ui'
 import type { ComponentInstance } from 'vue'
 
 export type Clause<T extends TableNames> = {
@@ -17,7 +18,7 @@ export type AndOrClause<T extends TableNames> = {
 
 export type ConditionTreeAsArray<T extends TableNames> = AndOrClause<T> | Clause<T>
 
-type Props = {
+type Props = ButtonProps & {
   collection: T
 }
 
@@ -125,8 +126,7 @@ const filterCount = computed(() => filter.value ? countConditions(filter.value) 
   >
     <UButton
       :label="t('app.admin.filters.label') + ` (${filterCount})`"
-      variant="soft"
-      color="neutral"
+      v-bind="{ variant, color, size }"
       leading-icon="heroicons:funnel"
       @click.prevent="open = !open"
     />

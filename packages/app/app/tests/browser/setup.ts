@@ -1,19 +1,14 @@
 import { locators } from '@vitest/browser/context'
 import { config } from 'vitest-browser-vue'
 import '@vitest/browser/providers/playwright'
-import { i18n } from './__mocks__/i18n'
-import { beforeEach } from 'vitest'
+import { i18n } from '../__mocks__/i18n'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
-import countries from './__mocks__/countries'
+import countries from '../__mocks__/countries'
 
 config.global.plugins.push(i18n)
 config.global.components.RouterLink = { render: () => null }
 
-beforeEach(() => {
-  useRouter().push({ query: {} })
-})
-
-registerEndpoint('/api/items/test', {
+registerEndpoint('/api/items/countries', {
   method: 'GET',
   handler: () => ({
     items: countries.slice(0, DEFAULT_PAGE_SIZE),

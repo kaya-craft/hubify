@@ -1,5 +1,5 @@
 export default {
-  test: {
+  countries: {
     columns: {
       id: { type: 'integer', primaryKey: true },
       name: { type: 'text' }
@@ -9,5 +9,11 @@ export default {
       name: {}
     },
     relations: {}
+  }
+}
+
+declare module '#hubify/schema' {
+  interface HubifySchema {
+    countries: typeof import('./schema').default['countries']
   }
 }

@@ -135,8 +135,14 @@ function createSchemaContent(schemaDirs: string[]) {
   return [
     ...data.map(d => d.import),
     '\n',
-    'export default {',
+    'const schema = {',
     data.map(d => '\t' + d.export).join(',\n'),
-    '}'
+    '}',
+    '\n',
+    'export interface HubifySchema {',
+    collections.map(collection => `\t${collection}: typeof schema.${collection}`).join('\n'),
+    '}',
+    '\n',
+    'export default schema'
   ].join('\n')
 }

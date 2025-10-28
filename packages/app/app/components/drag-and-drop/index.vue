@@ -194,13 +194,6 @@ function onPreview(data: ItemData<T>, container: HTMLElement) {
   }
 }
 
-/**
- * Compute the list with unique ids for rendering.
- */
-const listWithIds = computed(() => {
-  return toValue(list)?.map(item => ({ item, id: crypto.randomUUID() })) ?? []
-})
-
 watchEffect(initialize)
 </script>
 
@@ -211,8 +204,8 @@ watchEffect(initialize)
   >
     <template v-if="list && list.length > 0">
       <DragAndDropChild
-        v-for="({ item, id }, index) of listWithIds"
-        :key="id"
+        v-for="(item, index) of list"
+        :key="index"
         v-slot="{ edge }"
         :group-id="groupId"
         :has-preview="!!$slots['item-preview']"

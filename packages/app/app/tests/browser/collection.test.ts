@@ -7,7 +7,7 @@ describe('CollectionTable', () => {
   it('renders correctly', async () => {
     const screen = page.render(CollectionTable, {
       props: {
-        collection: 'test' as TableNames
+        collection: 'countries'
       }
     })
 

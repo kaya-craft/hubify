@@ -1,5 +1,4 @@
 <script setup lang="ts" generic="T extends TableNames">
-import { CollectionFilterAndOrClause, CollectionFilterClause } from '#components'
 import type { ConditionTreeAsArray } from './index.vue'
 
 type Props = {
@@ -57,6 +56,17 @@ watch(clauses, (newValue) => {
             v-model="propsData.item"
             :collection
           >
+            <UButton
+              icon="heroicons:document-duplicate"
+              size="xs"
+              color="info"
+              :ui="{ base: 'rounded-full' }"
+              square
+              variant="ghost"
+              data-testid="copy-item"
+              @click="copy(propsData.item, propsData.index)"
+            />
+
             <UButton
               icon="heroicons:x-mark"
               size="xs"

@@ -12,6 +12,15 @@ export default defineConfig({
           name: 'composables',
           include: ['./app/tests/composables/**/*.test.ts'],
           environment: 'nuxt',
+          environmentOptions: {
+            nuxt: {
+              overrides: {
+                alias: {
+                  '#hubify/schema': resolve(__dirname, 'app/tests/__mocks__/schema.ts')
+                }
+              }
+            }
+          },
           setupFiles: ['./app/tests/composables/setup.ts']
         }
       }),
@@ -29,7 +38,7 @@ export default defineConfig({
             nuxt: {
               overrides: {
                 alias: {
-                  '#hubify/schema': resolve(__dirname, 'app/tests/browser/__mocks__/schema.ts')
+                  '#hubify/schema': resolve(__dirname, 'app/tests/__mocks__/schema.ts')
                 }
               }
             }

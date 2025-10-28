@@ -1,13 +1,16 @@
 import { CollectionTableFooter, CollectionTableHeader } from '#components'
 import { page, type Locator } from '@vitest/browser/context'
-import { describe, expect, it } from 'vitest'
-import countries from './__mocks__/countries'
+import { beforeEach, describe, expect, it } from 'vitest'
 
-describe('CollectionTableFooter ', () => {
+describe('Pagination ', () => {
+  beforeEach(async () => {
+    await useRouter().replace({ query: {} })
+  })
+
   it('Renders corectly CollectionTableFooter', async () => {
     page.render(CollectionTableFooter, {
       props: {
-        collection: 'test' as TableNames,
+        collection: 'countries',
         totalItems: 100,
         displayedItems: 10
       }
@@ -18,7 +21,7 @@ describe('CollectionTableFooter ', () => {
 
     const paginationButtons = page.getByTag('button').all()
 
-    expect(paginationButtons.length).toEqual(10 + 4) // +4 for next, prev, first, last buttons
+    expect(paginationButtons.length).toEqual(5 + 4) // +4 for next, prev, first, last buttons
 
     const firstPageButton = paginationButtons.find(b => b.element().ariaLabel === 'Page 1')
 
@@ -38,7 +41,7 @@ describe('CollectionTableFooter ', () => {
   it('Update offset query correctly', async () => {
     page.render(CollectionTableFooter, {
       props: {
-        collection: 'test' as TableNames,
+        collection: 'countries',
         totalItems: 100,
         displayedItems: 10
       }
@@ -52,35 +55,32 @@ describe('CollectionTableFooter ', () => {
     if (!page2Button) throw new Error('Page 2 button not found')
 
     await page2Button.click()
+    await waitForRouteUpdate()
     expect(route.query.offset).toBe('10')
 
     const lastPageButton = paginationButtons[paginationButtons.length - 1]
     await lastPageButton?.click()
-
-    await nextTick()
+    await waitForRouteUpdate()
     expect(route.query.offset).toBe('90')
   })
-})
 
-describe('CollectionTableHeader', () => {
   it('Renders corectly CollectionTableHeader', async () => {
     page.render(CollectionTableHeader, {
       props: {
-        collection: 'test' as TableNames,
-        totalCount: countries.length,
+        collection: 'countries',
+        totalCount: 100,
         displayedItems: 10
       }
     })
 
     const route = useRoute()
-    route.query.limit = DEFAULT_PAGE_SIZE.toString()
 
     const pageSizeElement = page.getByTestId('table-page-size').getByTag('button')
     await expect(pageSizeElement).toBeVisible()
-    expect(route.query.limit).toBe('10')
+    expect(route.query.limit).toBeUndefined()
 
-    await selectOption(pageSizeElement, '20 items')
-    await nextTick()
+    selectOption(pageSizeElement, '20 items')
+    await waitForRouteUpdate()
     expect(route.query.limit).toBe('20')
   })
 })
@@ -103,4 +103,12 @@ async function selectOption(selector: Locator, option: string) {
 
   await expect.element(el).toBeVisible()
   await el.click()
+}
+
+/**
+ * Wait for next route update
+ */
+async function waitForRouteUpdate() {
+  const route = useRouter().currentRoute
+  return new Promise(resolve => watch(route, resolve, { once: true }))
 }

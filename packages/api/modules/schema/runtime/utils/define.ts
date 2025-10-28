@@ -9,9 +9,9 @@ export function defineTableRelations<const R extends SchemaRelations>(relations:
   return relations
 }
 
-export type Schema = typeof import('#hubify/schema').default
+export type Schema = import('#hubify/schema').HubifySchema extends infer U extends _Schema ? U : never
 export type SchemaColumns = Record<string, _TableColumn>
-export type TableNames = keyof Schema
+export type TableNames = keyof Schema & string
 export type Table<T extends TableNames> = Schema[T] & _Schema[string]
 export type SchemaRelations = Record<string, Omit<_TableRelation, 'table'> & { table: TableNames }>
 
