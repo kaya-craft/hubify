@@ -44,7 +44,7 @@ export async function ensureValidQueryParams<T extends TableNames>(
     where: asObject(whereValidation(collection)).optional(),
     groupBy: asEnumArray(columnNames).optional(),
     orderBy: asEnumArray([...columnNames, ...columnNames.map(name => `-${name}` as const)]).optional()
-  }).parse)
+  }).parse) as QueryParams<T>
 }
 
 /**

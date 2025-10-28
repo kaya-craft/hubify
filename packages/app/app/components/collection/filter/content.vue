@@ -28,7 +28,7 @@ const fullscreen = defineModel<boolean>('fullscreen')
 
 const { collection } = defineProps<Props>()
 
-const { primaryKey } = useTable(collection)
+const { primaryKey } = useTable(() => collection)
 
 /**
  * Turns an array of clauses into an object suitable for RESTQL queries.

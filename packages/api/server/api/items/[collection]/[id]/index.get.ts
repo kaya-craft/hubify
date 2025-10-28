@@ -3,16 +3,21 @@
  */
 export default defineEventHandler(async (event) => {
   const collection = await ensureValidCollection(event)
-
-  const { findOne } = useDatabase()
-
-  const [id, params] = await Promise.all([
+  const [pk, params] = await Promise.all([
     ensureValidId(collection, event),
     ensureValidQueryParams(collection, event)
   ])
 
+  await ensureUserHasPermission(event, {
+    collection,
+    params,
+    action: 'read'
+  })
+
+  const { findOne } = useDatabase()
+
   try {
-    const item = await findOne(collection, id, params)
+    const item = await findOne(collection, pk, params)
 
     if (!item) {
       throw createError({

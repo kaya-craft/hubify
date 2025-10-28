@@ -26,5 +26,12 @@ export default defineCollection(withDefaults({
     onUpdate: 'CASCADE',
     through: 'hubify_policies_roles',
     throughKey: 'role'
+  },
+  users: {
+    type: 'one-to-many',
+    table: 'hubify_users',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    foreignKey: 'role'
   }
 }))

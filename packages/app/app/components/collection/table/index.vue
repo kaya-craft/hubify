@@ -119,7 +119,7 @@ const { refresh, data } = useItems(collection, { query, paginate: true })
  * Refresh the collection when the collection is updated.
  */
 onHubifyHook('items', ({ collection: name }) => {
-  if (String(name) !== String(collection)) return
+  if (![collection, 'hubify_permissions'].includes(name)) return
   refresh()
   table.value?.tableApi.resetRowSelection()
 })

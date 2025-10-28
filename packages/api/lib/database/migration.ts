@@ -1,7 +1,7 @@
 import type { Knex } from 'knex'
 import type { FieldDefinition, Schema, TableDefinition } from './types'
 import { getDataTypeCreator, type DataTypes } from './data-types'
-import { getRelationForeignKey, isManyToManyRelation, isRelation } from './helpers'
+import { getRelationForeignKey, isManyToManyRelation, isOneToManyRelation, isRelation } from './helpers'
 import { SchemaInspector } from 'knex-schema-inspector'
 
 /**
@@ -95,7 +95,7 @@ function createTable(knex: Knex, schema: Schema, name: string, definition: Table
  */
 function createColumn(knex: Knex, schema: Schema, table: Knex.CreateTableBuilder, tableName: string, name: string, definition: FieldDefinition) {
   // Many-to-many relations are handled via join tables, so we skip them here.
-  if (isManyToManyRelation(definition)) return
+  if (isManyToManyRelation(definition) || isOneToManyRelation(definition)) return
 
   // For one-to-one, one-to-many, and many-to-one relations, we add a foreign key column.
   if (isRelation(definition)) {

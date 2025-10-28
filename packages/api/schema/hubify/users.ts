@@ -21,7 +21,7 @@ export default defineCollection(withDefaults({
     nullable: true
   },
   role: {
-    type: 'one-to-many',
+    type: 'many-to-one',
     table: 'hubify_roles',
     onDelete: 'SET NULL',
     onUpdate: 'CASCADE',

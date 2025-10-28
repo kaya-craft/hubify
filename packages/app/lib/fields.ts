@@ -3,7 +3,7 @@ import type { FieldOption, FieldOptions, Input, TableFieldOptions } from '@hubif
 import tables from '#hubify/schema'
 import type { FieldDefinition } from '@hubify/api/database/types'
 import { defu } from 'defu'
-import { isManyToManyRelation, isOneToManyRelation, isPrimaryColumn, isTimestampField } from '@hubify/api/database/helpers'
+import { isManyToManyRelation, isManyToOneRelation, isOneToManyRelation, isOneToOneRelation, isPrimaryColumn, isTimestampField } from '@hubify/api/database/helpers'
 import { getDataTypeGroup } from '@hubify/api/database/data-types/index'
 
 /**
@@ -47,14 +47,14 @@ function normalizeFieldOption(collection: string, column: string, columnDef: Fie
  * Get default input type based on column definition.
  */
 function getDefaultInputType(collection: string, column: string, columnDef: FieldDefinition): Input<TableNames, TableColumnNames<TableNames>> | false {
-  if (isManyToManyRelation(columnDef) || isPrimaryColumn(columnDef) || isTimestampField(columnDef)) return false
+  if (isManyToManyRelation(columnDef) || isOneToManyRelation(columnDef) || isPrimaryColumn(columnDef) || isTimestampField(columnDef)) return false
 
   const baseProps = {
     collection,
     column
   } as Record<string, unknown>
 
-  if (isOneToManyRelation(columnDef)) {
+  if (isManyToOneRelation(columnDef) || isOneToOneRelation(columnDef)) {
     return {
       component: 'system-one-to-many',
       props: {
@@ -113,14 +113,14 @@ function getDefaultInputType(collection: string, column: string, columnDef: Fiel
  * Get default display type based on column definition.
  */
 function getDefaultDisplayType(collection: string, column: string, columnDef: FieldDefinition) {
-  if (isManyToManyRelation(columnDef) || isPrimaryColumn(columnDef)) return false
+  if (isManyToManyRelation(columnDef) || isOneToManyRelation(columnDef) || isPrimaryColumn(columnDef)) return false
 
   const baseProps = {
     collection,
     column
   } as Record<string, unknown>
 
-  if (isOneToManyRelation(columnDef)) {
+  if (isManyToOneRelation(columnDef) || isOneToOneRelation(columnDef)) {
     return {
       component: 'system-one-to-many',
       props: {

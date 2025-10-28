@@ -1,5 +1,5 @@
 import type { ColumnDefinition, FieldDefinition, Prettify, RelationDefinition, Schema, TableDefinition } from '@hubify/api/database/types.d'
-import { getRelationForeignKey, isRelation } from '@hubify/api/database/helpers'
+import { getRelationForeignKey, isManyToManyRelation, isRelation } from '@hubify/api/database/helpers'
 
 /**
  * Normalize a schema by ensuring all optional properties are set to their default values.
@@ -35,19 +35,19 @@ function normalizeFieldDefinition<N, F extends FieldDefinition>(schema: Schema, 
       default: fieldDef.default
     }
 
-    if (fieldDef.type === 'one-to-many' || fieldDef.type === 'many-to-one') {
+    if (isManyToManyRelation(fieldDef)) {
       return {
         ...baseRelation,
         type: fieldDef.type,
-        foreignKey: getRelationForeignKey(schema as Schema, tableName, fieldDef)
+        through: fieldDef.through,
+        throughKey: fieldDef.throughKey
       }
     }
 
     return {
       ...baseRelation,
       type: fieldDef.type,
-      through: fieldDef.through,
-      throughKey: fieldDef.throughKey
+      foreignKey: getRelationForeignKey(schema as Schema, tableName, fieldDef)
     }
   }
 

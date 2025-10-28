@@ -3,8 +3,13 @@
  */
 export default defineEventHandler(async (event) => {
   const collection = await ensureValidCollection(event)
-
   const payload = await ensureValidInputItem(collection, false, event)
+
+  await ensureUserHasPermission(event, {
+    collection,
+    item: payload,
+    action: 'create'
+  })
 
   const { createOne } = useDatabase()
 

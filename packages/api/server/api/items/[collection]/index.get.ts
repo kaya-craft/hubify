@@ -4,7 +4,15 @@
 export default defineEventHandler(async (event) => {
   const collection = await ensureValidCollection(event)
   const params = await ensureValidQueryParams(collection, event)
+
+  await ensureUserHasPermission(event, {
+    collection,
+    params,
+    action: 'read'
+  })
+
   const paginate = getQuery(event).paginate !== 'false' && (isNumber(params.limit) || isNumber(params.offset))
+
   const { find, db } = useDatabase()
 
   try {

@@ -16,7 +16,7 @@ export interface BaseColumnDefinition {
   length?: number
   precision?: number
   scale?: number
-  options?: string[]
+  options?: string[] | readonly string[]
 }
 
 type BaseRelationDefinition = BaseColumnDefinition & {
@@ -34,7 +34,7 @@ export type ColumnDefinition = BaseColumnDefinition & {
   autoIncrement?: boolean
 }
 
-export type OneRelationTypes = 'one-to-many'
+export type OneRelationTypes = 'one-to-many' | 'many-to-one' | 'one-to-one'
 export type ManyRelationTypes = 'many-to-many'
 
 export type RelationDefinition = BaseRelationDefinition & ({

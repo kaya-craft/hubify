@@ -104,12 +104,13 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
   /**
    * Update an item in a table.
    */
-  function updateOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, data: Partial<TableItem<S, T, false>>) {
+  function updateOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, data: Partial<TableItem<S, T, false>>, where?: QueryParams<S, T>['where']) {
     const key = getPrimaryKeyColumn(schema, table)
 
     const builder = db(table)
+      .where(buildWhereQuery(schema, table, where))
+      .andWhere(key, '=', pk)
       .update(data)
-      .where(key, '=', pk)
       .returning(key)
 
     return wrapSingleResult(builder) as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>>
@@ -132,12 +133,13 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
   /**
    * Delete an item in a table.
    */
-  function removeOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>) {
+  function removeOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, where?: QueryParams<S, T>['where']) {
     const key = getPrimaryKeyColumn(schema, table)
 
     const builder = db(table)
       .delete()
-      .where(key, '=', pk)
+      .where(buildWhereQuery(schema, table, where))
+      .andWhere(key, '=', pk)
       .returning(key)
 
     return wrapSingleResult(builder) as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>>

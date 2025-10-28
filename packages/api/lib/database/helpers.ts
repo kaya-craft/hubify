@@ -159,7 +159,7 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
   if (!joins.size) return
 
   for (const [fromKey, relation] of joins) {
-    if (relation.type === 'many-to-many') {
+    if (isManyToManyRelation(relation)) {
       const [throughForeignKey, throughRelation] = Object.entries(schema[relation.through] ?? {}).find(([_, col]) => {
         return isRelation(col) && col.table === relation.table
       }) || []
@@ -172,6 +172,11 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
 
       builder.leftJoin(relation.through, `${throughRelation2.table}.${relationLocalKey}`, '=', `${relation.through}.${relation.throughKey}`)
       builder.leftJoin(relation.table, `${relation.through}.${throughForeignKey}`, '=', `${throughRelation.table}.${throughLocalKey}`)
+    }
+    else if (isOneToManyRelation(relation)) {
+      const foreignKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, relation.table)
+      const primaryKey = getPrimaryKeyColumn(schema, table)
+      builder.leftJoin(relation.table, `${relation.table}.${foreignKey}`, '=', `${table}.${primaryKey}`)
     }
     else {
       const foreignKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, relation.table)
@@ -233,8 +238,22 @@ export function isManyToManyRelation(field: unknown): field is (RelationDefiniti
 /**
  * Check if a field definition is a one-to-many relation.
  */
-export function isOneToManyRelation(field: unknown): field is RelationDefinition {
+export function isOneToManyRelation(field: unknown): field is RelationDefinition & { type: 'one-to-many' } {
   return isRelation(field) && field.type === 'one-to-many'
+}
+
+/**
+ * Check if a field definition is a many-to-one relation.
+ */
+export function isManyToOneRelation(field: unknown): field is RelationDefinition & { type: 'many-to-one' } {
+  return isRelation(field) && field.type === 'many-to-one'
+}
+
+/**
+ * Check if a field definition is a one-to-one relation.
+ */
+export function isOneToOneRelation(field: unknown): field is RelationDefinition & { type: 'one-to-one' } {
+  return isRelation(field) && field.type === 'one-to-one'
 }
 
 /**

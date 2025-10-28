@@ -3,13 +3,20 @@
  */
 export default defineEventHandler(async (event) => {
   const collection = await ensureValidCollection(event)
+  const [pk, params] = await Promise.all([
+    ensureValidId(collection, event),
+    ensureValidQueryParams(collection, event)
+  ])
 
-  const id = await ensureValidId(collection, event)
+  await ensureUserHasPermission(event, {
+    collection,
+    action: 'remove'
+  })
 
   const { removeOne } = useDatabase()
 
   try {
-    const itemId = await removeOne(collection, id)
+    const itemId = await removeOne(collection, pk, params.where)
 
     if (!itemId) {
       throw createError({
@@ -19,7 +26,7 @@ export default defineEventHandler(async (event) => {
     }
     emitMessage(event, {
       type: 'items:deleted',
-      data: { collection, id }
+      data: { collection, id: pk }
     })
 
     return itemId

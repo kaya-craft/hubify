@@ -9,6 +9,13 @@ export default defineEventHandler(async (event) => {
     ensureValidInputItem(collection, true, event)
   ])
 
+  await ensureUserHasPermission(event, {
+    collection,
+    params,
+    item,
+    action: 'update'
+  })
+
   const { update } = useDatabase()
 
   try {

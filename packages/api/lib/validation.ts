@@ -1,8 +1,8 @@
 import z from 'zod'
 import tables from '#hubify/schema'
 import { getDataTypeOperators, getDataTypeValidator } from './database/data-types'
-import type { ColumnDefinition, Operator } from './database/types'
-import { isRelation } from './database/helpers'
+import type { ColumnDefinition, FieldDefinition, Operator } from './database/types'
+import { isManyToManyRelation, isRelation } from './database/helpers'
 
 /**
  * Special validation for the `where` clause in query parameters.
@@ -105,12 +105,13 @@ export function asNonEmptyArray(value: unknown[]) {
 /**
  * Column validation type.
  */
-function columnValidation(column: ColumnDefinition, operator: Operator) {
+function columnValidation(column: FieldDefinition, operator: Operator) {
   if (isRelation(column)) {
-    const table = column.type === 'one-to-many' ? column.table : column.through
-    const relatedColumn = column.type === 'one-to-many' ? column.foreignKey : column.throughKey
+    const isManyRelation = isManyToManyRelation(column)
+    const table = isManyRelation ? column.through : column.table
+    const relatedColumn = isManyRelation ? column.throughKey : column.foreignKey
     const relatedTable = tables[table as keyof typeof tables]
-    const relatedColumnDef = relatedTable[relatedColumn as keyof typeof relatedTable] as ColumnDefinition
+    const relatedColumnDef = relatedTable[relatedColumn as keyof typeof relatedTable] as FieldDefinition
     return columnValidation(relatedColumnDef, operator)
   }
 

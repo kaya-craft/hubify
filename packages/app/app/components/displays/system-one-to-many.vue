@@ -13,7 +13,6 @@ defineFieldDataTypes('one-to-many')
 
 const { collection, value, column, relatedTable, displayColumn: _displayColumn } = defineProps<Props>()
 
-console.log('value', value, collection, column, value)
 /**
  * Use table composable
  */
