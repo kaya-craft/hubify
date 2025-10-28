@@ -1,5 +1,5 @@
-<script setup lang="ts" generic="T extends AcceptableValue = AcceptableValue">
-import type { AcceptableValue, BadgeProps, ComponentConfig, InputProps } from '@nuxt/ui'
+<script setup lang="ts" generic="T extends InputValue = InputValue">
+import type { InputValue, BadgeProps, ComponentConfig, InputProps } from '@nuxt/ui'
 import { tv } from '@nuxt/ui/utils/tv'
 import themeInput from '#build/ui/input'
 import type { AppConfig } from '@nuxt/schema'

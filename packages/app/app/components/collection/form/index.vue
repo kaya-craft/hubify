@@ -33,7 +33,7 @@ defineShortcuts({
     ref="form"
     :state
     :schema
-    class="gap-4 grid grid-cols-12 auto-cols-auto auto-rows-auto"
+    class="gap-8 grid grid-cols-12 auto-cols-auto auto-rows-auto"
     @submit="onSubmit"
   >
     <template #default="slotProps">

@@ -67,13 +67,13 @@ export default defineNuxtModule<FieldsModuleOptions>({
     generateDefineField(fieldsDirs)
 
     nuxt.options.nitro.alias ??= {}
-    nuxt.options.nitro.alias['#hubify/inputs'] = inputsPath
-    nuxt.options.nitro.alias['#hubify/displays'] = displaysPath
-    nuxt.options.nitro.alias['#hubify/fields'] = fieldsPath
+    nuxt.options.nitro.alias['#hubify/inputs'] ??= inputsPath
+    nuxt.options.nitro.alias['#hubify/displays'] ??= displaysPath
+    nuxt.options.nitro.alias['#hubify/fields'] ??= fieldsPath
 
-    nuxt.options.alias['#hubify/inputs'] = inputsPath
-    nuxt.options.alias['#hubify/displays'] = displaysPath
-    nuxt.options.alias['#hubify/fields'] = fieldsPath
+    nuxt.options.alias['#hubify/inputs'] ??= inputsPath
+    nuxt.options.alias['#hubify/displays'] ??= displaysPath
+    nuxt.options.alias['#hubify/fields'] ??= fieldsPath
 
     nuxt.options.typescript.tsConfig.vueCompilerOptions ??= {}
     nuxt.options.typescript.tsConfig.vueCompilerOptions.plugins ??= []

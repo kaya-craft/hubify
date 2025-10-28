@@ -8,7 +8,9 @@ export default defineEventHandler(async (event) => {
 
   const { remove } = useDatabase()
 
-  return remove(collection, params.where).then((ids) => {
+  try {
+    const ids = await remove(collection, params.where)
+
     for (const id of ids) {
       emitMessage(event, {
         type: 'items:deleted',
@@ -17,5 +19,8 @@ export default defineEventHandler(async (event) => {
     }
 
     return ids
-  })
+  }
+  catch (error) {
+    throw createError(String(error) || 'An error occurred while deleting the items')
+  }
 })

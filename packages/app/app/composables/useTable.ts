@@ -19,11 +19,6 @@ const defaultDisplays = {
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
-   * Toast.
-   */
-  const { add } = useToast()
-
-  /**
    * Loading state.
    */
   const loading = ref(false)
@@ -36,8 +31,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   })
 
   /**
-     * Table definition.
-     */
+   * Table definition.
+   */
   const table = computed(() => {
     const name = toValue(tableName)
     if (!tables[name]) throw new Error(`Table "${name}" does not exist.`)
@@ -56,8 +51,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   const tableFields = computed(() => {
     const name = toValue(tableName)
-    if (!fields[name]) throw new Error(`Fields for table "${name}" do not exist.`)
-    return fields[name]
+    if (!fields[name]) console.error(`Fields for table "${name}" do not exist.`)
+    return fields[name] || {}
   })
 
   /**
@@ -159,7 +154,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getDisplay<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
-
     if (columnOptions === false || columnOptions?.display === false) return false
 
     return columnOptions?.display
@@ -197,7 +191,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getDisplayComponent<C extends TableColumnNames<T>>(column: C) {
     const display = getDisplay(column)
-
     if (display === false) return
 
     if (!display?.component) {
@@ -215,7 +208,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     }
 
     const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
-
     return defineAsyncComponent(component as AsyncComponentLoader)
   }
 
@@ -226,101 +218,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
     const rels = toValue(relations)
     if (!rels || !isObject(rels) || !(name in rels)) throw new Error(`Relation "${String(name)}" does not exist in table "${toValue(tableName)}".`)
     return rels[name] as TableRelation<T, R>
-  }
-
-  /**
-   * Extract primary key values from IDs or items.
-   */
-  function extractPrimaryKeyValues<T extends TableNames>(table: T, idsOrItems: (TablePrimaryKeyValue<T> | TableItem<T>)[]) {
-    const primaryKey = getPrimaryKeyColumn(tables, table)
-
-    if (!primaryKey) throw new Error(`Primary key for table "${table}" is not defined.`)
-
-    const values = idsOrItems.map((idOrItem) => {
-      if (typeof idOrItem === 'object') return idOrItem[primaryKey as keyof typeof idOrItem]
-      return idOrItem
-    }).filter(isNonNullish) as TablePrimaryKeyValue<T>[]
-
-    return [primaryKey, [...new Set(values)]] as const
-  }
-
-  /**
-   * Detatch from the specified relation.
-   */
-  async function detach<R extends TableRelationNames<T>, RT extends TableRelation<T, R>['table']>(
-    relationName: R,
-    ...idOrItems: (TablePrimaryKeyValue<RT> | TableItem<RT>)[]) {
-    try {
-      loading.value = true
-
-      const relation = getRelation(relationName)
-
-      const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
-
-      await $fetch('/api/items/' + relation.table, {
-        method: 'put',
-        query: { where: { [primaryKey]: { $in: ids } } },
-        // @ts-expect-error - I don't understand why ts is complaining here
-        body: { [relation.foreignKey]: null }
-      })
-
-      add({
-        title: 'Items detatched successfully',
-        color: 'success',
-        description: 'The items have been successfully detatched.'
-      })
-    }
-    catch (error) {
-      add({
-        title: 'Error detatching items',
-        color: 'error',
-        description: 'There was an error detatching the items. ' + String(error)
-      })
-      throw error
-    }
-    finally {
-      loading.value = false
-    }
-  }
-
-  /**
-   * Attach to the specified relation.
-   */
-  async function attach<R extends TableRelationNames<T>, RT extends TableRelation<T, R>['table']>(
-    id: TablePrimaryKeyValue<T>,
-    relationName: R,
-    ...idOrItems: (TablePrimaryKeyValue<RT> | TableItem<RT>)[]) {
-    try {
-      loading.value = true
-
-      const relation = getRelation(relationName)
-
-      const [primaryKey, ids] = extractPrimaryKeyValues(relation.table, idOrItems)
-
-      await $fetch('/api/items/' + relation.table, {
-        method: 'put',
-        query: { where: { [primaryKey]: { $in: ids } } },
-        // @ts-expect-error - I don't understand why ts is complaining here
-        body: { [relation.foreignKey]: id }
-      })
-
-      add({
-        title: 'Items attached successfully',
-        color: 'success',
-        description: 'The items have been successfully attached.'
-      })
-    }
-    catch (error) {
-      add({
-        title: 'Error attaching items',
-        color: 'error',
-        description: 'There was an error attaching the items. ' + String(error)
-      })
-      throw error
-    }
-    finally {
-      loading.value = false
-    }
   }
 
   /**
@@ -373,8 +270,6 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     relations,
     getRelation,
-    detach,
-    attach,
 
     loading
   }

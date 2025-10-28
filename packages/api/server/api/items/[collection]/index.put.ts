@@ -11,7 +11,9 @@ export default defineEventHandler(async (event) => {
 
   const { update } = useDatabase()
 
-  return update(collection, item, params.where).then((items) => {
+  try {
+    const items = await update(collection, item, params.where)
+
     for (const item of items) {
       emitMessage(event, {
         type: 'items:updated',
@@ -20,5 +22,8 @@ export default defineEventHandler(async (event) => {
     }
 
     return items
-  })
+  }
+  catch (error) {
+    throw createError(String(error) || 'An error occurred while updating the items')
+  }
 })

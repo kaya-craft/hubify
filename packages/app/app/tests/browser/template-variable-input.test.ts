@@ -1,6 +1,4 @@
-/// <reference types="@vitest/browser/providers/playwright" />
 import { describe, expect, it } from 'vitest'
-import 'vitest-browser-vue'
 import { InputsTemplateVariable } from '#components'
 import { page, userEvent } from '@vitest/browser/context'
 

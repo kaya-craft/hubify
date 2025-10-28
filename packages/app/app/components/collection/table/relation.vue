@@ -15,7 +15,8 @@ const { t } = useI18n()
 /**
  * Table composable.
  */
-const { getRelation, loading, attach, detach } = useTable(collection)
+const { getRelation } = useTable(collection)
+const { attach, detach, loading } = useCollection(collection)
 
 /**
  * Current relation.
@@ -28,7 +29,7 @@ const relation = computed(() => {
 <template>
   <CollectionTable
     :collection="relation?.table"
-    :where="{ [relation.toKey]: { $eq: id } }"
+    :query-router="{ where: { [relation.foreignKey]: { $eq: id } } }"
     selectable
   >
     <template #append-header="{ selected: detaching }">
@@ -55,7 +56,7 @@ const relation = computed(() => {
         <template #content="{ close }">
           <CollectionTable
             :collection="relation.table"
-            :where="{ $or: [{ [relation.toKey]: { $neq: id } }, { [relation.toKey]: { $null: true } }] }"
+            :where="{ $or: [{ [relation.foreignKey]: { $neq: id } }, { [relation.foreignKey]: { $null: true } }] }"
             selectable
           >
             <template #footer="{ selected: attaching }">

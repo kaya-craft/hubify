@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
 import { CollectionFilterContent, UModal, UPopover } from '#components'
 import type { Operator } from '@hubify/api/database/types'
+import type { ButtonProps } from '@nuxt/ui'
 import type { ComponentInstance } from 'vue'
 
 export type Clause<T extends TableNames> = {
@@ -17,7 +18,7 @@ export type AndOrClause<T extends TableNames> = {
 
 export type ConditionTreeAsArray<T extends TableNames> = AndOrClause<T> | Clause<T>
 
-type Props = {
+type Props = ButtonProps & {
   collection: T
 }
 
@@ -84,6 +85,34 @@ useDraggable(modalContainer, {
  * Open state.
  */
 const open = ref(false)
+
+/**
+ * Filter count
+ */
+function countConditions(root: ConditionTree<T>): number {
+  if (root == null || typeof root !== 'object') return 0
+
+  let count = 0
+  const stack: ConditionTree<T>[] = [root]
+
+  while (stack.length) {
+    const node: ConditionTree<T> = stack.pop()!
+    if (node == null || typeof node !== 'object') continue
+    const group = node.$and ?? node.$or
+
+    if (Array.isArray(group)) {
+      for (let i = group.length - 1; i >= 0; i--) {
+        stack.push(group[i]!)
+      }
+    }
+    else {
+      count++
+    }
+  }
+
+  return count
+}
+const filterCount = computed(() => filter.value ? countConditions(filter.value) : 0)
 </script>
 
 <template>
@@ -96,9 +125,8 @@ const open = ref(false)
     :open="open"
   >
     <UButton
-      :label="t('app.admin.filters.label')"
-      variant="soft"
-      color="neutral"
+      :label="t('app.admin.filters.label') + ` (${filterCount})`"
+      v-bind="{ variant, color, size }"
       leading-icon="heroicons:funnel"
       @click.prevent="open = !open"
     />

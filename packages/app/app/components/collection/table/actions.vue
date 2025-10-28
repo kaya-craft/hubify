@@ -14,6 +14,11 @@ const { item, collection } = defineProps<Props>()
 const { getPrimaryKeyValue } = useTable(collection)
 
 /**
+ * Collection composable.
+ */
+const { duplicate } = useCollection(collection)
+
+/**
  * Translation
  */
 const { t } = useI18n()
@@ -35,6 +40,19 @@ const dropdownItems = computed(() => {
         params: { collection: collection, id: getPrimaryKeyValue(item) }
       }),
       icon: 'heroicons:pencil-square'
+    },
+    {
+      label: t('app.form.actions.view'),
+      to: localeRoute({
+        name: 'admin-items-collection-id-view',
+        params: { collection: collection, id: getPrimaryKeyValue(item) }
+      }),
+      icon: 'heroicons:eye'
+    },
+    {
+      label: t('app.form.actions.duplicate'),
+      onSelect: () => duplicate(item),
+      icon: 'heroicons:document-duplicate'
     },
     {
       label: t('app.form.actions.delete'),

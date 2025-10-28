@@ -4,9 +4,26 @@
 export default defineEventHandler(async (event) => {
   const collection = await ensureValidCollection(event)
 
-  const id = await ensureValidId(collection, event)
-
   const { findOne } = useDatabase()
 
-  return findOne(collection, id)
+  const [id, params] = await Promise.all([
+    ensureValidId(collection, event),
+    ensureValidQueryParams(collection, event)
+  ])
+
+  try {
+    const item = await findOne(collection, id, params)
+
+    if (!item) {
+      throw createError({
+        status: 404,
+        message: 'Item not found'
+      })
+    }
+
+    return item
+  }
+  catch (error) {
+    throw createError(String(error) || 'An error occurred while fetching the item')
+  }
 })

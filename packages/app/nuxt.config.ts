@@ -1,6 +1,6 @@
+import { defineNuxtConfig } from 'nuxt/config'
 import { resolve } from 'path'
 import i18nConfig from './i18n/config'
-import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   extends: ['@hubify/api'],
@@ -9,12 +9,10 @@ export default defineNuxtConfig({
     '@nuxt/test-utils/module',
     '@nuxt/ui',
     '@vueuse/nuxt',
-
-    /**
-     * Fix: cannot use i18n in vitest browser mode.
-     */
-    process.env.VITEST ? '' : '@nuxtjs/i18n'
+    '@nuxtjs/i18n'
   ],
+
+  ssr: false,
 
   pages: true,
 
@@ -41,6 +39,19 @@ export default defineNuxtConfig({
   vite: {
     optimizeDeps: {
       exclude: ['@nuxt/ui/utils/tv']
+    }
+  },
+
+  hooks: {
+    /**
+     * TEMPORARY WORKAROUND: Ensure that the `nuxt:environments` Vite plugin runs before other plugins.
+     * This is necessary to properly replace environment variables in the code during tests.
+     */
+    'vite:extendConfig'(config) {
+      const plugin = config.plugins?.find((plugin): plugin is import('vite').Plugin => {
+        return !!(plugin && typeof plugin === 'object' && 'name' in plugin && plugin.name === 'nuxt:environments')
+      })
+      if (plugin) plugin.enforce = 'pre'
     }
   },
 

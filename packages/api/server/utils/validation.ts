@@ -1,7 +1,8 @@
-import z from 'zod'
 import tables from '#hubify/schema'
 import { asEnumArray, asObject, itemValidation, whereValidation } from '@hubify/api/validation'
 import { columnTypeToZod } from '@hubify/api/column-types'
+import type { ZodError } from 'zod'
+import z from 'zod'
 
 /**
  * Validates the router parameters for a collection and returns the collection name.
@@ -73,7 +74,17 @@ export async function ensureValidOutputItem<T extends TableNames, I extends Tabl
     optional: true
   })
 
-  return validateItem.parse(await item) as I
+  try {
+    return validateItem.parse(await item) as I
+  }
+  catch (e) {
+    const error = e as ZodError
+    throw createError({
+      status: 500,
+      message: 'Validation error',
+      data: JSON.parse(error.message)
+    })
+  }
 }
 
 /**

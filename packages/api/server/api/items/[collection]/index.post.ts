@@ -8,12 +8,17 @@ export default defineEventHandler(async (event) => {
 
   const { createOne } = useDatabase()
 
-  return createOne(collection, payload).then((item) => {
+  try {
+    const item = await createOne(collection, payload)
+
     emitMessage(event, {
       type: 'items:created',
       data: { collection, item }
     })
 
     return item
-  })
+  }
+  catch (error) {
+    throw createError(String(error) || 'An error occurred while creating the item')
+  }
 })

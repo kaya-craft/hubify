@@ -1,17 +1,6 @@
-/// <reference types="@vitest/browser/providers/playwright" />
-import { describe, expect, it } from 'vitest'
-import 'vitest-browser-vue'
-import { mockNuxtImport } from '@nuxt/test-utils/runtime'
-import { page, userEvent, type Locator } from '@vitest/browser/context'
 import { CollectionFilterContent } from '#components'
-
-mockNuxtImport('useTable', () => () => ({
-  primaryKey: 'id',
-  columnNames: ['id', 'name'],
-  getColumn: (key: string) => ({
-    type: key === 'id' ? 'integer' : 'text'
-  })
-}))
+import { page, userEvent, type Locator } from '@vitest/browser/context'
+import { describe, expect, it } from 'vitest'
 
 describe('CollectionFilter', () => {
   it('renders correctly', async () => {
@@ -19,7 +8,7 @@ describe('CollectionFilter', () => {
 
     const result = page.render(CollectionFilterContent, {
       props: {
-        'collection': 'test' as TableNames,
+        'collection': 'countries',
         modelValue,
         'onUpdate:modelValue': (val) => {
           if (JSON.stringify(val) === JSON.stringify(modelValue)) return
@@ -150,13 +139,24 @@ describe('CollectionFilter', () => {
       ]
     })
 
+    const copyItem = getClause(0, 0).getByTestId('copy-item')
+    await expect.element(copyItem).toBeVisible()
+    await copyItem.click()
+
+    expect(modelValue).toMatchObject({
+      $and: [
+        { $and: [{ name: { $contains: 'test' } }, { name: { $contains: 'test' } }] },
+        { $and: [{ name: { $contains: 'test' } }] }
+      ]
+    })
+
     const removeClause = getClause(0, 0).getByTestId('remove-clause')
     await expect.element(removeClause).toBeVisible()
     await removeClause.click()
 
     expect(modelValue).toMatchObject({
       $and: [
-        { $and: [] },
+        { $and: [{ name: { $contains: 'test' } }] },
         { $and: [{ name: { $contains: 'test' } }] }
       ]
     })
@@ -166,7 +166,7 @@ describe('CollectionFilter', () => {
     await removeGroup.click()
 
     expect(modelValue).toMatchObject({
-      $and: [{ $and: [] }]
+      $and: [{ $and: [{ name: { $contains: 'test' } }] }]
     })
   })
 })

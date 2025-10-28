@@ -15,6 +15,6 @@ defineFieldDataTypes('text', 'varchar')
   <UBadge
     variant="soft"
     class="size-6 rounded-full"
-    :style="{ backgroundColor: value }"
+    :style="{ backgroundColor: value || '#fff' }"
   />
 </template>

@@ -1,0 +1,10 @@
+name: Nuxt MCP server
+version: 0.0.1
+schema: v1
+mcpServers:
+  - name: Nuxt MCP server
+    command: npx
+    args:
+      - mcp-remote
+      - https://mcp.nuxt.com/sse
+    env: {}
