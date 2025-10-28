@@ -35,7 +35,7 @@ function normalizeFieldDefinition<N, F extends FieldDefinition>(schema: Schema, 
       default: fieldDef.default
     }
 
-    if (fieldDef.type === 'one-to-many') {
+    if (fieldDef.type === 'one-to-many' || fieldDef.type === 'many-to-one') {
       return {
         ...baseRelation,
         type: fieldDef.type,
@@ -60,7 +60,8 @@ function normalizeFieldDefinition<N, F extends FieldDefinition>(schema: Schema, 
     default: fieldDef.default,
     length: fieldDef.length ?? (fieldDef.type === 'varchar' ? 255 : undefined),
     precision: fieldDef.precision,
-    scale: fieldDef.scale
+    scale: fieldDef.scale,
+    options: fieldDef.options
   }
 }
 

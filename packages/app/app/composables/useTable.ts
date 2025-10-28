@@ -3,19 +3,9 @@ import registeredInputs from '#hubify/inputs'
 import fields from '#hubify/fields'
 import tables from '#hubify/schema'
 
-import type { AsyncComponentLoader } from 'vue'
-import { getPrimaryKeyColumn, isOneToManyRelation, isRelation } from '@hubify/api/database/helpers'
+import { getPrimaryKeyColumn, isRelation } from '@hubify/api/database/helpers'
 import type { TableFieldOption } from '@@/types/fields'
-
-const defaultInputs = {
-  'text': defineAsyncComponent(registeredInputs.text),
-  'system-one-to-many': defineAsyncComponent(registeredInputs['system-one-to-many'])
-}
-
-const defaultDisplays = {
-  'text': defineAsyncComponent(registeredDisplays.text),
-  'system-one-to-many': defineAsyncComponent(registeredDisplays['system-one-to-many'])
-}
+import type { AsyncComponentLoader } from 'vue'
 
 export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) {
   /**
@@ -154,6 +144,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getDisplay<C extends TableColumnNames<T>>(column: C) {
     const columnOptions = getColumnOption(column)
+
     if (columnOptions === false || columnOptions?.display === false) return false
 
     return columnOptions?.display
@@ -167,23 +158,11 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
 
     if (input === false) return
 
-    if (!input?.component) {
-      const collection = toValue(tableName)
-      if (isOneToManyRelation(getColumn(column))) {
-        return h(defaultInputs['system-one-to-many'], {
-          inheritAttrs: false,
-          class: input?.class,
-          collection,
-          relation: column as never
-        })
-      }
+    const component = registeredInputs[input!.component as keyof typeof registeredInputs]
 
-      return h(defaultInputs.text, { class: input?.class })
-    }
+    if (!component) throw new Error(`Input component "${input?.component}" is not registered.`)
 
-    const component = registeredInputs[input.component as keyof typeof registeredInputs]
-
-    return defineAsyncComponent(component as AsyncComponentLoader)
+    return h(defineAsyncComponent(component as AsyncComponentLoader), input?.props)
   }
 
   /**
@@ -191,24 +170,17 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    */
   function getDisplayComponent<C extends TableColumnNames<T>>(column: C) {
     const display = getDisplay(column)
+
     if (display === false) return
 
-    if (!display?.component) {
-      const collection = toValue(tableName)
+    const component = registeredDisplays[display!.component as keyof typeof registeredDisplays]
 
-      if (isOneToManyRelation(getColumn(column))) {
-        return h(defaultDisplays['system-one-to-many'], {
-          class: display?.class,
-          collection,
-          relation: column as never
-        })
-      }
+    if (!component) throw new Error(`Display component "${display?.component}" is not registered.`)
 
-      return h(defaultDisplays.text, { class: display?.class })
-    }
-
-    const component = registeredDisplays[display.component as keyof typeof registeredDisplays]
-    return defineAsyncComponent(component as AsyncComponentLoader)
+    return h(defineAsyncComponent(component as AsyncComponentLoader), {
+      ...display?.props,
+      claass: display?.class
+    })
   }
 
   /**

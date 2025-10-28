@@ -116,7 +116,12 @@ function createColumn(knex: Knex, schema: Schema, table: Knex.CreateTableBuilder
     const column = getDataTypeCreator(definition.type)(table, name, definition)
     if (!definition.nullable) column.notNullable()
     if (definition.unique) column.unique()
-    if (definition.primary) column.primary()
+    if (definition.primary) {
+      column.primary()
+      if (definition.type === 'uuid' && definition.default === undefined) {
+        column.defaultTo(knex.fn.uuid())
+      }
+    }
     setColumnDefault(knex, column, definition)
   }
 }

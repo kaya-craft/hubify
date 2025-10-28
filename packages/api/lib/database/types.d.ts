@@ -16,6 +16,7 @@ export interface BaseColumnDefinition {
   length?: number
   precision?: number
   scale?: number
+  options?: string[]
 }
 
 type BaseRelationDefinition = BaseColumnDefinition & {
@@ -96,11 +97,11 @@ export type ConditionTree<S extends Schema, T extends TableNames<S>> = {
   $or?: ConditionTree<S, T>[]
 }
 
-export type RelatedFieldName<S extends Schema, T extends TableNames<S>, RootTable = T, Placeholder = true> = TableRelationNames<S, T> extends infer Names ? {
+export type RelatedFieldName<S extends Schema, T extends TableNames<S>, ParentTable = T, Placeholder = true> = TableRelationNames<S, T> extends infer Names ? {
   [K in Names]: TableRelation<S, T, K>['table'] extends infer RelatedTable
-    ? RelatedTable extends RootTable
+    ? RelatedTable extends ParentTable
       ? never
-      : `${K}.${FieldName<S, RelatedTable, RootTable, Placeholder>}` | (TableRelation<S, T, K> extends { type: OneRelationTypes } ? K : never)
+      : `${K}.${FieldName<S, RelatedTable, T, Placeholder>}` | (TableRelation<S, T, K> extends { type: OneRelationTypes } ? K : never)
     : never
 }[Names] & string : never
 
@@ -126,5 +127,3 @@ export type RelationForeignKey<S extends Schema, T extends TableNames<S>, R exte
 export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
 
 export type Prettify<T> = { [K in keyof T]: T[K] } & {}
-
-export * from './data-types'

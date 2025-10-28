@@ -3,5 +3,13 @@ export const fields = defineCollectionFields({
     input: {
       component: 'switch'
     }
+  },
+  icon: {
+    input: {
+      component: 'icon-picker'
+    },
+    display: {
+      component: 'icon'
+    }
   }
 })

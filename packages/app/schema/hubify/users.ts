@@ -1,5 +1,4 @@
 export const fields = defineCollectionFields({
-  id: false,
   password: false,
   email: {
     input: {
@@ -39,7 +38,5 @@ export const fields = defineCollectionFields({
     input: {
       class: 'col-span-6'
     }
-  },
-  createdAt: false,
-  updatedAt: false
+  }
 })

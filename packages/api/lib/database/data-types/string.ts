@@ -22,6 +22,10 @@ export default {
     uuid: {
       create: (knex, name) => knex.uuid(name),
       validate: () => z.uuid()
+    },
+    enum: {
+      create: (knex, name, def) => knex.enum(name, def.options || []),
+      validate: def => z.enum(def.options || [])
     }
   }
 } satisfies DataTypeGroupProps

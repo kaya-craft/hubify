@@ -1,19 +1,4 @@
 export const fields = defineCollectionFields({
-  id: {
-    input: false
-  },
-  createdAt: {
-    input: false,
-    display: {
-      component: 'date'
-    }
-  },
-  updatedAt: {
-    input: false,
-    display: {
-      component: 'date'
-    }
-  },
   color: {
     input: {
       component: 'color-picker',

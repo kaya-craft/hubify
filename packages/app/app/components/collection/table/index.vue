@@ -65,6 +65,7 @@ const collectionColumns = computed(() => {
     cell: ({ row }) => {
       const value = row.original[name as keyof typeof row.original]
       const component = getDisplayComponent(name)
+      if (!component) return
       return h(component, { value })
     }
   }) satisfies TableColumn<TableItem<T>>)

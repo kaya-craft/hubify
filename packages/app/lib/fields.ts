@@ -1,0 +1,166 @@
+import type { TableColumnNames, TableNames } from '@hubify/api/types/schema'
+import type { FieldOption, FieldOptions, Input, TableFieldOptions } from '@hubify/app/types/fields'
+import tables from '#hubify/schema'
+import type { FieldDefinition } from '@hubify/api/database/types'
+import { defu } from 'defu'
+import { isManyToManyRelation, isOneToManyRelation, isPrimaryColumn, isTimestampField } from '@hubify/api/database/helpers'
+import { getDataTypeGroup } from '@hubify/api/database/data-types/index'
+
+/**
+ * Define collection fields.
+ */
+export function defineCollectionFields<const F extends FieldOptions<TableNames>>(fields: F) {
+  return fields
+}
+
+/**
+ * Normalize fields.
+ */
+export function normalizeFields(fields: Record<TableNames, FieldOptions<TableNames>>) {
+  return Object.fromEntries(Object.keys(tables).map(table => [
+    table,
+    normalizeFieldOptions(table as TableNames, fields?.[table as keyof typeof fields])
+  ])) as { [K in TableNames]: TableFieldOptions<K> }
+}
+
+/**
+ * Normalize field options.
+ */
+export function normalizeFieldOptions(table: TableNames, fields?: FieldOptions<TableNames>) {
+  return Object.fromEntries(Object.entries(tables[table]).map(([column, def]) => [
+    column,
+    normalizeFieldOption(table, column, def, fields?.[column as keyof typeof fields])
+  ]))
+}
+
+/**
+ * Normalize field options.
+ */
+function normalizeFieldOption(collection: string, column: string, columnDef: FieldDefinition, fieldOption?: FieldOption<TableNames, TableColumnNames<TableNames>>) {
+  return defu(fieldOption || {}, {
+    input: getDefaultInputType(collection, column, columnDef),
+    display: getDefaultDisplayType(collection, column, columnDef)
+  } satisfies FieldOption<TableNames, TableColumnNames<TableNames>>)
+}
+
+/**
+ * Get default input type based on column definition.
+ */
+function getDefaultInputType(collection: string, column: string, columnDef: FieldDefinition): Input<TableNames, TableColumnNames<TableNames>> | false {
+  if (isManyToManyRelation(columnDef) || isPrimaryColumn(columnDef) || isTimestampField(columnDef)) return false
+
+  const baseProps = {
+    collection,
+    column
+  } as Record<string, unknown>
+
+  if (isOneToManyRelation(columnDef)) {
+    return {
+      component: 'system-one-to-many',
+      props: {
+        ...baseProps,
+        relatedTable: columnDef.table
+      }
+    }
+  }
+
+  if (columnDef.options && columnDef.options.length > 0) {
+    return {
+      component: 'select',
+      props: {
+        ...baseProps,
+        options: columnDef.options
+      }
+    }
+  }
+
+  switch (getDataTypeGroup(columnDef.type)) {
+    case 'number':
+      return {
+        component: 'number',
+        props: baseProps
+      }
+    case 'date':
+      return {
+        component: 'date-picker',
+        props: baseProps
+      }
+    case 'boolean':
+      return {
+        component: 'switch',
+        props: baseProps
+      }
+    case 'json':
+      return {
+        component: 'json-editor',
+        props: baseProps
+      }
+    case 'binary':
+      return {
+        component: 'file-upload',
+        props: baseProps
+      }
+    case 'string':
+    default:
+      return {
+        component: columnDef.type === 'text' || (columnDef.length && columnDef.length > 255) ? 'textarea' : 'text',
+        props: baseProps
+      }
+  }
+}
+
+/**
+ * Get default display type based on column definition.
+ */
+function getDefaultDisplayType(collection: string, column: string, columnDef: FieldDefinition) {
+  if (isManyToManyRelation(columnDef) || isPrimaryColumn(columnDef)) return false
+
+  const baseProps = {
+    collection,
+    column
+  } as Record<string, unknown>
+
+  if (isOneToManyRelation(columnDef)) {
+    return {
+      component: 'system-one-to-many',
+      props: {
+        ...baseProps,
+        relatedTable: columnDef.table
+      }
+    }
+  }
+
+  switch (getDataTypeGroup(columnDef.type)) {
+    case 'number':
+      return {
+        component: 'number',
+        props: baseProps
+      }
+    case 'date':
+      return {
+        component: 'date',
+        props: baseProps
+      }
+    case 'boolean':
+      return {
+        component: 'checkbox',
+        props: baseProps
+      }
+    case 'json':
+      return {
+        component: 'json-viewer',
+        props: baseProps
+      }
+    case 'binary':
+      return {
+        component: 'file-viewer',
+        props: baseProps
+      }
+    case 'string':
+    default:
+      return {
+        component: 'text',
+        props: baseProps
+      }
+  }
+}

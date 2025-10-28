@@ -1,8 +1,4 @@
 export const fields = defineCollectionFields({
-  id: false,
-  createdAt: false,
-  updatedAt: false,
-
   name: {
     order: 1,
     input: {

@@ -1,5 +1,5 @@
 import type { knex } from 'knex'
-import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition, TableDefinition } from './types'
+import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition, TableDefinition, ColumnDefinition } from './types'
 import { OPERATORS } from './operators'
 
 /**
@@ -226,13 +226,27 @@ export function isRelation(field: unknown): field is RelationDefinition {
 /**
  * Check if a field definition is a many-to-many relation.
  */
-export function isManyToManyRelation(field: unknown): field is RelationDefinition & { type: 'many-to-many' } {
+export function isManyToManyRelation(field: unknown): field is (RelationDefinition & { type: 'many-to-many' }) {
   return isRelation(field) && field.type === 'many-to-many'
 }
 
 /**
  * Check if a field definition is a one-to-many relation.
  */
-export function isOneToManyRelation(field: unknown): field is RelationDefinition & { type: 'one-to-many' } {
+export function isOneToManyRelation(field: unknown): field is RelationDefinition {
   return isRelation(field) && field.type === 'one-to-many'
+}
+
+/**
+ * Check if a field definition is a primary column.
+ */
+export function isPrimaryColumn(field: unknown): field is ColumnDefinition & { primary: true } {
+  return typeof field === 'object' && field !== null && 'primary' in field && field.primary === true
+}
+
+/**
+ * CHeck if a field is a timestamp default field.
+ */
+export function isTimestampField(field: unknown): field is ColumnDefinition & { default: '{CURRENT_TIMESTAMP}' } {
+  return typeof field === 'object' && field !== null && 'default' in field && field.default === '{CURRENT_TIMESTAMP}'
 }

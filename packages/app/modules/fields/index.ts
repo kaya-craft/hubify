@@ -118,10 +118,10 @@ async function generateFieldsContent(dirs: string[]) {
 
   return [
     includeDefu ? 'import { defu } from \'defu\'' : '',
-    'import type { TableFieldOptions } from \'@hubify/app/types/fields\'',
+    'import { normalizeFields } from \'@hubify/app/fields\'',
     ...imports,
     '',
-    'const hubifyFields: { [K in TableNames]?: TableFieldOptions<K> } = {\n' + items.join(',\n') + '\n}',
+    'const hubifyFields = normalizeFields({\n' + items.join(',\n') + '\n})',
     '',
     ...collections.map(name => `export const ${name} = hubifyFields.${name}`),
     '',
