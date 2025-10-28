@@ -1,4 +1,6 @@
 <script setup lang="ts" generic="T extends TableNames, C extends TableColumnNames<T>">
+import type { TableFieldOptionValue } from '@@/types/fields'
+
 type Props = {
   collection: T
   column: C

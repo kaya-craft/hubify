@@ -5,8 +5,8 @@ export default {
   }
 }
 
-declare module '#hubify/schema' {
-  interface HubifySchema {
-    countries: typeof import('./schema').default['countries']
-  }
-}
+// declare module '#hubify/schema' {
+//   interface HubifySchema {
+//     countries: typeof import('./schema').default['countries']
+//   }
+// }

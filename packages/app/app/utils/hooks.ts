@@ -9,7 +9,9 @@ import type { HubifyHooks, HubifyTookPayload, ScopedHubifyHooks } from '@hubify/
 export function callHubifyHook<K extends keyof ScopedHubifyHooks>(hook: K, payload: HubifyTookPayload<K>) {
   const nuxtApp = useNuxtApp()
   const [scope, type] = extractScopeAndType(hook)
+  // @ts-expect-error The type of `payload` is inferred from the hook name
   const result = nuxtApp.callHook(`hubify:${scope}:${type}`, payload)
+  // @ts-expect-error The type of `payload` is inferred from the hook name
   nuxtApp.callHook(`hubify:${scope}`, { type, ...payload })
   return result
 }

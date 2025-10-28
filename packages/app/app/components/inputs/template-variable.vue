@@ -35,7 +35,7 @@ const { size, color, highlight } = useFormField<InputProps>(props, {
 /**
  * Computed UI config for the input.
  */
-const ui = computed(() => tv({ extend: tv(themeInput), ...(appConfig.ui?.input || {}) })({
+const ui = computed(() => tv({ extend: tv(themeInput), ...appConfig.ui?.input })({
   type: props.type as Input['variants']['type'],
   color: color.value,
   variant: props.variant,

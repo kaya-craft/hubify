@@ -22,6 +22,21 @@ const { t } = useI18n()
 const { limit, where } = useQueryRouter(collection, baseQueryRouter)
 
 /**
+ * Collection definition.
+ */
+const { getPrimaryKeyValue } = useTable(collection)
+
+/**
+ * Handle delete items
+ */
+const { remove } = useCollection(collection)
+
+/**
+ * Locale route helper.
+ */
+const localeRoute = useLocaleRoute()
+
+/**
  * Page sizes options
  */
 const pageSizes: DropdownMenuItem[] = [{
@@ -61,10 +76,6 @@ const tableColumnsItems = computed(() => {
     }) satisfies DropdownMenuItem)
 })
 
-/**
- * Handle delete items
- */
-const { remove } = useCollection(collection)
 const deleteModalOpen = ref(false)
 /**
  * Selected items
@@ -74,17 +85,26 @@ const selectedItems = computed((): TableItem<T>[] => {
 })
 
 /**
- * Selected items IDs
+ * Selected items primary keys.
  */
-const selectedItemsId = computed(() => toValue(selectedItems)?.map(s => s.id))
+const selectedItemsPks = computed(() => {
+  return selectedItems.value.map(item => getPrimaryKeyValue(item))
+})
 
-const disableDeleteButton = computed(() => selectedItems.value.length === 0)
+/**
+ * Disable delete button if no items are selected
+ */
+const disableDeleteButton = computed(() => {
+  return selectedItems.value.length === 0
+})
 
+/**
+ * Handle delete items
+ */
 async function handleDeleteItems() {
-  await remove(selectedItemsId)
+  await remove(selectedItemsPks)
   deleteModalOpen.value = false
 }
-const localeRoute = useLocaleRoute()
 </script>
 
 <template>

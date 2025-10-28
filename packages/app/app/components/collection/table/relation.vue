@@ -16,6 +16,10 @@ const { t } = useI18n()
  * Table composable.
  */
 const { getRelation } = useTable(collection)
+
+/**
+ * Collection composable.
+ */
 const { attach, detach, loading } = useCollection(collection)
 
 /**
@@ -28,6 +32,7 @@ const relation = computed(() => {
 
 <template>
   <CollectionTable
+    v-if="relation.foreignKey"
     :collection="relation?.table"
     :query-router="{ where: { [relation.foreignKey]: { $eq: id } } }"
     selectable

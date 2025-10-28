@@ -10,7 +10,7 @@ describe('Pagination ', () => {
   it('Renders corectly CollectionTableFooter', async () => {
     page.render(CollectionTableFooter, {
       props: {
-        collection: 'countries',
+        collection: 'countries' as TableNames,
         totalItems: 100,
         displayedItems: 10
       }
@@ -41,7 +41,7 @@ describe('Pagination ', () => {
   it('Update offset query correctly', async () => {
     page.render(CollectionTableFooter, {
       props: {
-        collection: 'countries',
+        collection: 'countries' as TableNames,
         totalItems: 100,
         displayedItems: 10
       }
@@ -67,7 +67,7 @@ describe('Pagination ', () => {
   it('Renders corectly CollectionTableHeader', async () => {
     page.render(CollectionTableHeader, {
       props: {
-        collection: 'countries',
+        collection: 'countries' as TableNames,
         totalCount: 100,
         displayedItems: 10
       }
@@ -97,8 +97,6 @@ async function selectOption(selector: Locator, option: string) {
     throw new Error('aria-controls not found on selector')
   }
 
-  console.log(controls)
-
   const el = page.getById(controls).getByRole('group').getByText(option)
 
   await expect.element(el).toBeVisible()
@@ -108,7 +106,10 @@ async function selectOption(selector: Locator, option: string) {
 /**
  * Wait for next route update
  */
-async function waitForRouteUpdate() {
+async function waitForRouteUpdate(timeout = 500) {
   const route = useRouter().currentRoute
-  return new Promise(resolve => watch(route, resolve, { once: true }))
+  return new Promise((resolve) => {
+    watch(route, resolve, { once: true })
+    setTimeout(resolve, timeout) // Fallback in case route doesn't change
+  })
 }

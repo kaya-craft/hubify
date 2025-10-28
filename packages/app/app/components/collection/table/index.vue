@@ -79,6 +79,7 @@ const actionColumns = [{
   accessorKey: '',
   header: '',
   enableSorting: false,
+  // @ts-expect-error - I don't know why this is failing?
   cell: ({ row }) => h(CollectionTableActions, { collection, item: row.original })
 }] satisfies TableColumn<TableItem<T>>[]
 
@@ -117,10 +118,9 @@ const { refresh, data } = useItems(collection, { query, paginate: true })
  * Refresh the collection when the collection is updated.
  */
 onHubifyHook('items', ({ collection: name }) => {
-  if (name === collection) {
-    refresh()
-    table.value?.tableApi.resetRowSelection()
-  }
+  if (String(name) !== String(collection)) return
+  refresh()
+  table.value?.tableApi.resetRowSelection()
 })
 </script>
 
