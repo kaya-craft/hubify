@@ -9,6 +9,8 @@
       "import": "./lib/*.ts",
       "default": "./lib/*/index.ts"
     },
+    "./database/data-types": "./lib/database/data-types/index.ts",
+    "./database": "./lib/database/index.ts",
     "./collections": "./lib/collections/index.ts",
     "./utils/*": "./shared/utils/*.ts",
     "./modules/*": "./modules/*.ts",

@@ -7,9 +7,9 @@ type ItemsHooks = {
 }
 
 type CollectionHooks = {
-  [K in HookEventType as `collection:${K}`]: (payload: { collection: TableNames }) => void
+  [K in HookEventType as `collection:${K}`]: <T extends TableNames>(payload: { collection: T }) => void
 } & {
-  collection: (payload: { collection: TableNames, type: HookEventType }) => void
+  collection: <T extends TableNames> (payload: { collection: T, type: HookEventType }) => void
 }
 
 type ItemPayload<K extends keyof ItemsHooks, T extends TableNames> = K extends 'deleted' ? {
@@ -21,9 +21,9 @@ type ItemPayload<K extends keyof ItemsHooks, T extends TableNames> = K extends '
 }
 
 type TableHooks = {
-  [K in HookEventType as `table:${K}`]: (payload: { table: string }) => void
+  [K in HookEventType as `table:${K}`]: <T extends TableNames> (payload: { table: T }) => void
 } & {
-  table: (payload: { table: string, type: HookEventType }) => void
+  table: <T extends TableNames>(payload: { table: T, type: HookEventType }) => void
 }
 
 export type HubifyTookPayload<K extends keyof HubifyHooks> = Parameters<HubifyHooks[K]>[0]

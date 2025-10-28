@@ -207,6 +207,7 @@ export function getRelationForeignKey<S extends Schema, T extends TableNames<S>,
 export function wrapSingleResult<B extends knex.Knex.QueryBuilder>(builder: B) {
   const then = builder.then.bind(builder)
 
+  // oxlint-disable-next-line no-thenable
   builder.then = function (resolve, reject) {
     if (!resolve) return then(resolve, reject)
     return then(rows => resolve(rows[0]), reject)

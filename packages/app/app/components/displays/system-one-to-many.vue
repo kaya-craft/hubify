@@ -48,7 +48,7 @@ const { data: label } = useFetch(`/api/items/${toValue(name)}/${value}`, {
   query: {
     columns: toValue(displayColumns)
   },
-  transform: (item: TableItem<T>) => getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn)])
+  transform: (item: TableItem<TableNames>) => getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn)])
 })
 </script>
 

@@ -52,7 +52,7 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   const tableFields = computed(() => {
     const name = toValue(tableName)
     if (!fields[name]) console.error(`Fields for table "${name}" do not exist.`)
-    return fields[name] || {}
+    return fields[name]
   })
 
   /**
@@ -110,8 +110,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
    * Get the column with the specified name.
   */
   function getColumn<C extends TableColumnNames<T>>(name: C) {
-    if (!table.value || !isObject(table.value) || !(name in table.value)) throw new Error(`Column "${name}" does not exist in table "${table}".`)
-    return table.value[name as keyof typeof table.value] as TableColumn<T, C>
+    if (!table.value || !(name in table.value)) throw new Error(`Column "${name}" does not exist in table "${table}".`)
+    return table.value[name as keyof typeof table.value] as unknown as TableColumn<T, C>
   }
 
   /**
@@ -217,7 +217,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   function getRelation<R extends TableRelationNames<T>>(name: R) {
     const rels = toValue(relations)
     if (!rels || !isObject(rels) || !(name in rels)) throw new Error(`Relation "${String(name)}" does not exist in table "${toValue(tableName)}".`)
-    return rels[name] as TableRelation<T, R>
+    const relation = rels[name] as TableRelation<T, R>
+    return relation
   }
 
   /**
