@@ -4,12 +4,9 @@
 export default defineEventHandler(async (event) => {
   const collection = await ensureValidCollection(event)
 
-  const [id, params] = await Promise.all([
-    ensureValidId(collection, event),
-    ensureValidQueryParams(collection, event)
-  ])
+  const id = await ensureValidId(collection, event)
 
-  const { findOne } = useDb()
+  const { findOne } = useDatabase()
 
-  return ensureValidOutputItem(collection, findOne(collection, id, params))
+  return findOne(collection, id)
 })

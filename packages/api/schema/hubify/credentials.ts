@@ -1,33 +1,28 @@
-export const columns = defineTableColumns({
-  id: {
-    type: 'integer',
-    primaryKey: true
-  },
+import { withDefaults } from '@hubify/api/collections'
+
+/**
+ * Migration for creating the `hubify_credentials` table.
+ */
+export default defineCollection(withDefaults({
   publicKey: {
-    type: 'text',
-    notNull: true
+    type: 'text'
   },
   counter: {
-    type: 'int4',
-    notNull: true
+    type: 'integer'
   },
   backedUp: {
     type: 'boolean',
-    notNull: true,
     default: false
   },
   transports: {
-    type: 'text',
-    notNull: true
-  }
-})
-
-export const relations = defineTableRelations({
+    type: 'text'
+  },
   user: {
+    type: 'one-to-many',
     table: 'hubify_users',
-    fromKey: 'id',
-    toKey: 'id',
+    foreignKey: 'id',
     onDelete: 'CASCADE',
-    onUpdate: 'CASCADE'
+    onUpdate: 'CASCADE',
+    nullable: true
   }
-})
+}))

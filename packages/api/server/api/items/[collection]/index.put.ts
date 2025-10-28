@@ -9,9 +9,9 @@ export default defineEventHandler(async (event) => {
     ensureValidInputItem(collection, true, event)
   ])
 
-  const { update } = useDb()
+  const { update } = useDatabase()
 
-  return ensureValidOutputItems(collection, update(collection, item, params)).then((items) => {
+  return update(collection, item, params.where).then((items) => {
     for (const item of items) {
       emitMessage(event, {
         type: 'items:updated',

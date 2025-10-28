@@ -1,81 +1,34 @@
-export const columns = defineTableColumns({
-  /**
-   * Primary key for the table.
-   */
-  id: {
-    type: 'integer',
-    primaryKey: true
-  },
-  /**
-   * Name of the collection.
-   */
+import { withDefaults } from '@hubify/api/collections'
+
+/**
+ * Collection schema definition for "collections" table.
+ */
+export default defineCollection(withDefaults({
   name: {
-    type: 'text',
-    notNull: true
+    type: 'varchar'
   },
-  /**
-   * Description of the collection.
-   */
   description: {
     type: 'text',
-    notNull: false
+    nullable: true
   },
-  /**
-   * Color display for the collection.
-   * This can be used for UI purposes to visually distinguish collections.
-   */
   color: {
-    type: 'text',
-    notNull: false
+    type: 'varchar',
+    nullable: true
   },
-  /**
-   * Icon representing the collection.
-   * This can be a URL to an icon or a string representing an icon name.
-   */
   icon: {
-    type: 'text',
-    notNull: false
+    type: 'varchar',
+    nullable: true
   },
-  /**
-   * Hidden flag for the collection.
-   * If true, the collection will not be displayed in the UI.
-   */
-  hidden: {
-    type: 'boolean',
-    notNull: false,
-    default: false
-  },
-  /**
-   * Singleton flag for the collection.
-   * If true, only one instance of this collection can exist.
-   */
-  singleton: {
-    type: 'boolean',
-    notNull: false,
-    default: false
-  },
-
-  /**
-   * Display template for the collection.
-   */
   displayTemplate: {
     type: 'text',
-    notNull: false
+    nullable: true
   },
-
-  /**
-   * Timestamp when the collection was created.
-   */
-  createdAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
+  hidden: {
+    type: 'boolean',
+    default: false
   },
-  /**
-   * Timestamp when the collection was last updated.
-   * This is automatically set to the current timestamp when the record is updated.
-   */
-  updatedAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
+  singleton: {
+    type: 'boolean',
+    default: false
   }
-})
+}))

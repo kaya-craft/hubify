@@ -1,7 +1,4 @@
-<script setup lang="ts" generic="T extends TableNames, I extends PrimaryKeyValue<typeof schema, T>">
-import type schema from '#hubify/schema'
-import type { PrimaryKeyValue } from '@hubify/restql'
-
+<script setup lang="ts" generic="T extends TableNames, I extends TablePrimaryKeyValue<T>">
 interface Props {
   collection: T
   id?: I

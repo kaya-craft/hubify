@@ -15,12 +15,14 @@ const invalidCredentialsError = createError({
 })
 
 export default defineEventHandler(async (event) => {
-  const { find } = useDb()
+  const { find } = useDatabase()
 
   const { email, password } = await readValidatedBody(event, z.object({
     email: z.email(),
     password: z.string().min(8)
   }).parse)
+
+  console.log('COUCOU', email, password)
 
   const [user] = await find('hubify_users', {
     where: {
@@ -30,6 +32,8 @@ export default defineEventHandler(async (event) => {
     },
     limit: 1
   })
+
+  console.log('User found:', user)
 
   if (!user) {
     throw invalidCredentialsError

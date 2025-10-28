@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
 
   const params = await ensureValidQueryParams(collection, event)
 
-  const { find } = useDb()
+  const { find } = useDatabase()
 
-  return ensureValidOutputItems(collection, find(collection, params))
+  return find(collection, params)
 })

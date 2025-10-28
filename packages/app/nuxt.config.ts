@@ -44,11 +44,5 @@ export default defineNuxtConfig({
     }
   },
 
-  hubify: {
-    inputs: [resolve(__dirname, 'app/components/inputs')],
-    displays: [resolve(__dirname, 'app/components/displays')],
-    schema: [resolve(__dirname, 'schema')]
-  },
-
   i18n: i18nConfig
 })

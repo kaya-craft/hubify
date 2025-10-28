@@ -1,17 +1,17 @@
-import type { Schema } from '@hubify/restql'
 import type { NitroApp } from 'nitropack'
+import schema from '#hubify/schema'
+import { runMigrations } from '@hubify/api/database/migration'
+
 /**
  * Update schema upon modification.
  */
 export default defineNitroPlugin(async (nitroApp) => {
-  const { schema, updateSchema, retrieveSchema } = useDb()
+  const { db } = useDatabase()
 
-  const currentSchema = await retrieveSchema()
+  await runMigrations(db, schema)
 
-  await updateSchema(schema)
-
-  if (needsInitialSeed(currentSchema)) {
-    await seedDatabase()
+  if (await needsAdminUser()) {
+    await createAdminUser()
   }
 
   await updateHubifyCollections(nitroApp)
@@ -19,13 +19,12 @@ export default defineNitroPlugin(async (nitroApp) => {
 
 /**
  * Update Hubify collections based on the current schema.
- * @returns {Promise<void>}
  */
 async function updateHubifyCollections(nitroApp: NitroApp) {
-  const { schema, find } = useDb()
+  const { find } = useDatabase()
 
   const collections = await find('hubify_collections', {
-    columns: ['name'],
+    fields: ['name'],
     where: {
       name: {
         $nstartsWith: 'hubify_'
@@ -49,38 +48,45 @@ async function updateHubifyCollections(nitroApp: NitroApp) {
 /**
  * Check if the database needs initial seeding.
  */
-function needsInitialSeed(currentSchema: Schema | null) {
-  if (!currentSchema) return true
+async function needsAdminUser() {
+  const { find } = useDatabase()
 
-  const { hubify } = useRuntimeConfig()
-
-  return hubify.systemCollections.some(collection => !(collection in currentSchema))
+  return find('hubify_users', {
+    where: {
+      'role.admin': {
+        $eq: true
+      }
+    },
+    limit: 1
+  }).then(users => users.length === 0)
 }
 
 /**
  * Seed the database with initial data.
  */
-async function seedDatabase() {
-  const db = useDb()
+async function createAdminUser() {
+  const { db, createOne } = useDatabase()
 
   try {
-    await db.transaction(async () => {
-      const role = await db.createOne('hubify_roles', {
-        name: 'Administrator',
-        admin: true,
-        description: 'Full access to the system',
-        icon: 'heroicons:shield-check'
-      }) as TableItem<'hubify_roles'>
+    console.info('Seeding the database with initial data...')
 
-      await db.createOne('hubify_users', {
-        firstname: 'Admin',
-        email: 'admin@example.com',
-        password: await hashPassword('password'),
-        role: role.id
-      })
-
-      console.info('Database seeded with initial data')
+    const role = await createOne('hubify_roles', {
+      name: 'Administrator',
+      admin: true,
+      description: 'Full access to the system',
+      icon: 'heroicons:shield-check'
     })
+
+    if (!role) throw new Error('Failed to create the Administrator role')
+
+    await db('hubify_users').insert({
+      firstname: 'Admin',
+      email: 'admin@example.com',
+      password: await hashPassword('password'),
+      role: role.id
+    })
+
+    console.info('Database seeded with initial data')
   }
   catch (error) {
     console.error('Failed to seed the database:', error)

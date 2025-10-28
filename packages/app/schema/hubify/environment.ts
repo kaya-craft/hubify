@@ -1,16 +1,13 @@
-import { columns } from '@hubify/api/schema/hubify/environment'
-import type { ZodString } from 'zod'
-
-export const fields = defineFieldOptions(columns, {
+export const fields = defineCollectionFields({
   id: false,
-  created_at: false,
-  updated_at: false,
+  createdAt: false,
+  updatedAt: false,
   key: {
     input: {
       component: 'text',
       label: 'Key',
       class: 'col-span-6',
-      rules: rules => (rules as ZodString).regex(/^[a-zA-Z0-9_]+$/, 'Key can only contain letters, numbers, and underscores'),
+      rules: rules => rules.regex(/^[a-zA-Z0-9_]+$/, 'Key can only contain letters, numbers, and underscores'),
       props: {
         placeholder: 'Enter key here'
       }

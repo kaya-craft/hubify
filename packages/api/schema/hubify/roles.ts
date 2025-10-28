@@ -1,54 +1,22 @@
-export const columns = defineTableColumns({
-  /**
-   * Primary key for the table.
-   */
-  id: {
-    type: 'integer',
-    primaryKey: true
-  },
+import { withDefaults } from '@hubify/api/collections'
 
-  /**
-   * Name of the role.
-   */
+/**
+ * Migration for creating the `hubify_roles` table.
+ */
+export default defineCollection(withDefaults({
   name: {
-    type: 'varchar',
-    notNull: true
+    type: 'varchar'
   },
-
-  /**
-   * Description of the role.
-   */
   description: {
-    type: 'text'
+    type: 'text',
+    nullable: true
   },
-
-  /**
-   * Icon representing the role.
-   */
   icon: {
     type: 'varchar',
-    default: 'heroicons:user-circle'
+    default: 'heroicons:shield-check'
   },
-
-  /**
-   * Is admin?
-   */
   admin: {
     type: 'boolean',
     default: false
   }
-})
-
-export const relations = defineTableRelations({
-  /**
-     * Relation to the users table.
-     * A role can have many users.
-     */
-  users: {
-    table: 'hubify_users',
-    fromKey: 'id',
-    toKey: 'role',
-    onDelete: 'SET NULL',
-    onUpdate: 'CASCADE'
-  }
-})
+}))

@@ -50,11 +50,12 @@ jobs:
             with:
                node-version: 22
                cache: pnpm
-         -  name: Install Playwright Browsers
-            run: npx playwright install chromium --with-deps
 
          -  name: Install dependencies
             run: pnpm install
+
+         - name: Install playwright browsers
+           run: npx playwright install chromium --with-deps
 
          -  name: Run e2e tests
             run: pnpm test

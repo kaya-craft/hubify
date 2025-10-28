@@ -1,7 +1,6 @@
-import { columns } from '@hubify/api/schema/hubify/users'
-
-export const fields = defineFieldOptions(columns, {
+export const fields = defineCollectionFields({
   id: false,
+  password: false,
   email: {
     input: {
       component: 'text',
@@ -14,7 +13,6 @@ export const fields = defineFieldOptions(columns, {
       }
     }
   },
-  password: false,
   firstname: {
     input: {
       component: 'text',

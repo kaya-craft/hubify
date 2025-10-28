@@ -13,6 +13,8 @@ type Props = {
   collection: TableNames
 }
 
+defineFieldDataTypes('text', 'varchar')
+
 const value = defineModel<string>()
 
 const { collectionKey, state, collection } = defineProps<Props>()
@@ -28,8 +30,6 @@ const collectionName = computed(() => {
  * Composable to interact with collections
  */
 const { columnNames } = useTable(collectionName)
-
-defineFieldDataTypes('text', 'varchar')
 </script>
 
 <template>

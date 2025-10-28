@@ -1,78 +1,30 @@
-export const columns = defineTableColumns({
-  /**
-   * Primary key for the table.
-   */
-  id: {
-    type: 'integer',
-    primaryKey: true
-  },
-  /**
-   * Email address of the user.
-   * This must be unique across all users.
-   */
-  email: {
-    type: 'text',
-    unique: true,
-    notNull: true
-  },
-  /**
-   * Password for the user account.
-   */
-  password: {
-    type: 'text',
-    notNull: false
-  },
-
-  /**
-   * Firstname of the user.
-   */
-  firstname: {
-    type: 'text',
-    notNull: false
-  },
-
-  /**
-   * Lastname of the user.
-   */
-  lastname: {
-    type: 'text',
-    notNull: false
-  },
-
-  /**
-   * Role of the user.
-   */
-  role: {
-    type: 'integer',
-    notNull: false
-  },
-
-  /**
-   * Timestamp when the user was created.
-   */
-  createdAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
-  },
-  /**
-   * Timestamp when the user was last updated.
-   * This is automatically set to the current timestamp when the record is updated.
-   */
-  updatedAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
-  }
-})
+import { withDefaults } from '@hubify/api/collections'
 
 /**
- * Define relationships between tables.
+ * Migration for creating the `hubify_users` table.
  */
-export const relations = defineTableRelations({
+
+export default defineCollection(withDefaults({
+  email: {
+    type: 'varchar',
+    unique: true
+  },
+  password: {
+    type: 'varchar'
+  },
+  firstname: {
+    type: 'varchar',
+    nullable: true
+  },
+  lastname: {
+    type: 'varchar',
+    nullable: true
+  },
   role: {
-    fromKey: 'id',
-    toKey: 'id',
+    type: 'one-to-many',
     table: 'hubify_roles',
     onDelete: 'SET NULL',
-    onUpdate: 'CASCADE'
+    onUpdate: 'CASCADE',
+    nullable: true
   }
-})
+}))

@@ -1,22 +1,15 @@
-export const columns = defineTableColumns({
-  id: {
-    type: 'integer',
-    primaryKey: true
-  },
+import { withDefaults } from '@hubify/api/collections'
+
+/**
+ * Migration for creating the `hubify_environment` table.
+ */
+export default defineCollection(withDefaults({
   key: {
     type: 'varchar',
-    notNull: true
+    unique: true
   },
   value: {
-    type: 'varchar',
-    notNull: false
-  },
-  created_at: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
-  },
-  updated_at: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
+    type: 'text',
+    nullable: true
   }
-})
+}))

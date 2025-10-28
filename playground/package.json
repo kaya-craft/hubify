@@ -13,6 +13,7 @@
     "nuxt": "catalog:",
     "vue": "catalog:",
     "vue-router": "catalog:",
-    "@hubify/app": "workspace:*"
+    "@hubify/app": "workspace:*",
+    "@hubify/api": "workspace:*"
   }
 }

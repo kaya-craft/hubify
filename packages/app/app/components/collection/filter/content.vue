@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends TableNames">
-import type { ConditionTree, Operator } from '@hubify/restql'
+import type { Operator } from '@hubify/api/database/types'
 import type { AndOrClause } from './index.vue'
 import type { DropdownMenuItem } from '@nuxt/ui'
 
@@ -19,7 +19,7 @@ type Props = {
   collection: T
 }
 
-const filter = defineModel<ConditionTree<Schema, T>, string, ConditionTreeAsArray<T>[], ConditionTreeAsArray<T>[]>({
+const filter = defineModel<ConditionTree<T>, string, ConditionTreeAsArray<T>[], ConditionTreeAsArray<T>[]>({
   get: value => clausesObjectToArray(value || {}),
   set: value => ({ $and: clausesArrayToObject(value) })
 })
@@ -33,33 +33,37 @@ const { primaryKey } = useTable(collection)
 /**
  * Turns an array of clauses into an object suitable for RESTQL queries.
  */
-function clausesArrayToObject(clauses: ConditionTreeAsArray<T>[]): ConditionTree<Schema, T>[] {
+function clausesArrayToObject(clauses: ConditionTreeAsArray<T>[]): ConditionTree<T>[] {
   return clauses.reduce((acc, clause) => {
     if (clause.type === '$and' || clause.type === '$or') {
       return acc.concat({
         [clause.type]: clausesArrayToObject(clause.children ?? []).filter(isNonNullish)
-      } as ConditionTree<Schema, T>)
+      } as unknown as ConditionTree<T>)
     }
     else if (clause.type === 'clause') {
       return acc.concat({
         [clause.column ?? toValue(primaryKey)]: { [clause.operator ?? '$eq']: clause.value ?? null }
-      } as ConditionTree<Schema, T>)
+      } as ConditionTree<T>)
     }
 
     return acc
-  }, [] as ConditionTree<Schema, T>[])
+  }, [] as ConditionTree<T>[])
 }
 
 /**
  * Converts a condition tree object into an array of clauses.
  */
-function clausesObjectToArray(clauses: ConditionTree<Schema, T>, root = true) {
+function clausesObjectToArray(clauses: ConditionTree<T>, root = true) {
   const array = Object.entries(clauses).flatMap(([key, value], _, array): ConditionTreeAsArray<T>[] => {
     if (root && array.length === 1 && key === '$and') {
+      if (!isArray(value)) return []
+
       return value.flatMap(value => clausesObjectToArray(value, false)) as ConditionTreeAsArray<T>[]
     }
 
     if (key === '$and' || key === '$or') {
+      if (!isArray(value)) return []
+
       return [{ type: key, children: value.flatMap(value => clausesObjectToArray(value, false)) }] as AndOrClause<T>[]
     }
 

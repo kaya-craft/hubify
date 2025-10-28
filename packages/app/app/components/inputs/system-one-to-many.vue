@@ -7,6 +7,8 @@ type Props = {
   displayColumn?: TableColumnNames<RelatedTable>
 }
 
+defineFieldDataTypes('one-to-many')
+
 const value = defineModel<TablePrimaryKeyValue<RelatedTable>>()
 
 const { collection, relation, displayColumn: _displayColumn } = defineProps<Props>()
@@ -48,8 +50,8 @@ const { data: items } = useFetch(`/api/items/${toValue(name)}`, {
     columns: [toValue(primaryKey), ...toValue(displayColumns)]
   },
   transform: (items: TableItem<T>[]) => items.map(item => ({
-    label: getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn)]),
-    value: item[toValue(primaryKey)]
+    label: getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn) as keyof typeof item]),
+    value: item[toValue(primaryKey) as keyof typeof item]
   }))
 })
 </script>

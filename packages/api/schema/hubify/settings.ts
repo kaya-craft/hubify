@@ -1,38 +1,14 @@
-export const columns = defineTableColumns({
-  /**
-   * Primary key for the table.
-   */
-  id: {
-    type: 'uuid',
-    primaryKey: true
-  },
-  /**
-   * Name of the project.
-   */
+import { withDefaults } from '@hubify/api/collections'
+
+/**
+ * Migration for creating the `hubify_settings` table.
+ */
+export default defineCollection(withDefaults({
   projectName: {
-    type: 'text',
-    notNull: true
+    type: 'varchar'
   },
-  /**
-   * Description of the project.
-   */
   projectDescription: {
     type: 'text',
-    notNull: true
-  },
-  /**
-   * Timestamp when the settings table was created.
-   */
-  createdAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
-  },
-  /**
-   * Timestamp when the settings table was last updated.
-   * This is automatically set to the current timestamp when the record is updated.
-   */
-  updatedAt: {
-    type: 'timestamp',
-    default: 'CURRENT_TIMESTAMP'
+    nullable: true
   }
-})
+}))
