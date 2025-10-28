@@ -141,5 +141,3 @@ export function getRelationMock() {
 export function setRelationResult(relation: { table: TableNames, foreignKey: string }) {
   shared.relation = relation
 }
-
-export { }

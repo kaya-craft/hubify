@@ -39,8 +39,8 @@ export default defineNuxtModule<HubifyModuleOptions>({
 
     nuxt.options.nitro.alias ??= {}
     nuxt.options.alias ??= {}
-    nuxt.options.nitro.alias['#hubify/schema'] = schema
-    nuxt.options.alias['#hubify/schema'] = schema
+    nuxt.options.nitro.alias['#hubify/schema'] ??= schema
+    nuxt.options.alias['#hubify/schema'] ??= schema
 
     nuxt.hook('builder:watch', async (_, path) => {
       const isSchemaFile = dirs.some(dir => path.startsWith(dir))
@@ -103,6 +103,10 @@ async function generateSchemaContent(dirs: string[]) {
     'const schema = normalizeSchema({\n' + items.join(',\n') + '\n})',
     '',
     ...collections.map(name => `export const ${name} = schema.${name}`),
+    '',
+    'export interface HubifySchema {',
+    collections.map(collection => `\t${collection}: typeof schema.${collection}`).join('\n'),
+    '}',
     '',
     'export default schema'
   ].join('\n')

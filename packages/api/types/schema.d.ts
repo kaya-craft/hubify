@@ -5,7 +5,7 @@ declare global {
   const defineCollection: typeof _defineCollection
 }
 
-export type Schema = typeof import('#hubify/schema').default
+export type Schema = import('#hubify/schema').HubifySchema
 export type Table<T extends TableNames> = Schema[T]
 export type TableNames = _TableNames<Schema> & string
 export type TableColumns<T extends TableNames> = _TableColumns<Schema, T>

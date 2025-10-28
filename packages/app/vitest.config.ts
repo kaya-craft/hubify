@@ -1,7 +1,7 @@
-import { playwright } from '@vitest/browser-playwright'
 import { defineVitestProject } from '@nuxt/test-utils/config'
 import { defineConfig } from 'vitest/config'
 import { resolveModule } from 'nuxt/kit'
+import { resolve } from 'path'
 
 export default defineConfig({
   test: {
@@ -10,6 +10,16 @@ export default defineConfig({
         test: {
           name: 'composables',
           include: ['./app/tests/composables/**/*.test.ts'],
+          environment: 'nuxt',
+          environmentOptions: {
+            nuxt: {
+              overrides: {
+                alias: {
+                  '#hubify/schema': resolve(__dirname, 'app/tests/__mocks__/schema.ts')
+                }
+              }
+            }
+          },
           setupFiles: ['./app/tests/composables/setup.ts']
         }
       }),
@@ -19,10 +29,19 @@ export default defineConfig({
           browser: {
             viewport: { width: 1280, height: 720 },
             enabled: true,
-            provider: playwright(),
+            provider: 'playwright',
             instances: [{ browser: 'chromium' }]
           },
           environment: 'nuxt',
+          environmentOptions: {
+            nuxt: {
+              overrides: {
+                alias: {
+                  '#hubify/schema': resolve(__dirname, 'app/tests/__mocks__/schema.ts')
+                }
+              }
+            }
+          },
           include: ['./app/tests/browser/**/*.test.ts'],
           setupFiles: ['./app/tests/browser/setup.ts'],
           alias: {

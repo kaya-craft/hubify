@@ -6,7 +6,7 @@ import type z from 'zod'
 export function useCollection<T extends TableNames>(collection: T) {
   const { alert, success } = useCustomToast()
   const { t } = useI18n()
-
+  const { getRelation, columnNames, getColumn } = useTable(collection)
   const loading = ref(false)
 
   /**
@@ -83,7 +83,35 @@ export function useCollection<T extends TableNames>(collection: T) {
     }
   }
 
-  const { getRelation } = useTable(collection)
+  /**
+   * Duplicate an item
+   */
+  async function duplicate(item: TableItem<T>) {
+    try {
+      loading.value = true
+
+      const columnsToRemove = toValue(columnNames).filter(col => getColumn(col)?.primary || getColumn(col)?.default === 'CURRENT_TIMESTAMP')
+
+      const copy = Object.fromEntries(
+        Object.entries(item).filter(([key]) => !columnsToRemove.includes(key as TableColumnNames<T>))
+      )
+
+      const response = await $fetch(`/api/items/${collection}` as `/api/items/:collection`, {
+        method: 'post',
+        body: copy
+      })
+      success(t('app.toast.duplicate-item.title'), t('app.toast.duplicate-item.success'))
+      return response
+    }
+    catch (e) {
+      console.error(e)
+      alert(t('app.toast.duplicate-item.title'), t('app.toast.duplicate-item.error') + ' ' + String(e))
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
   /**
    * Extract primary key values from IDs or items.
    */
@@ -167,6 +195,7 @@ export function useCollection<T extends TableNames>(collection: T) {
     remove,
     update,
     attach,
-    detach
+    detach,
+    duplicate
   }
 }

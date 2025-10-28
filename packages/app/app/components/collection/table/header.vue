@@ -1,13 +1,15 @@
 <script lang="ts" setup generic="T extends TableNames">
-import type { DropdownMenuItem } from '@nuxt/ui'
+import type { ButtonProps, DropdownMenuItem } from '@nuxt/ui'
 import type { Column, Row, Table } from '@tanstack/vue-table'
 
-const { collection, table, baseQueryRouter } = defineProps<{
+interface Props extends ButtonProps {
   collection: T
   table?: Table<T>
   baseQueryRouter?: QueryParams<T>
   totalCount?: number
-}>()
+}
+
+const { collection, table, baseQueryRouter } = defineProps<Props>()
 
 /**
  * Translations
@@ -17,8 +19,11 @@ const { t } = useI18n()
 /**
  * Handle table row size
  */
-const { updatePageSize, pagination } = usePagination(collection)
+const { limit, where } = useQueryRouter(collection, baseQueryRouter)
 
+/**
+ * Page sizes options
+ */
 const pageSizes: DropdownMenuItem[] = [{
   label: '10 items',
   value: 10
@@ -33,18 +38,18 @@ const pageSizes: DropdownMenuItem[] = [{
   value: 100
 }].map(item => ({
   ...item,
-  onSelect: () => updatePageSize(item.value as number)
+  onSelect: () => limit.value = Number(item.value)
 }))
 
 /**
  * Handle column visibility
  */
-const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
+const tableColumnsItems = computed(() => {
   return table?.getAllColumns()
     .filter((column: Column<T>) => column.getCanHide())
     .filter((column: Column<T>) => column.id !== 'select' && column.id !== 'actions')
     .map((column: Column<T>) => ({
-      label: column.id,
+      label: String(column.id),
       type: 'checkbox' as const,
       checked: column.getIsVisible(),
       onUpdateChecked(checked: boolean) {
@@ -53,13 +58,8 @@ const tableColumnsItems = computed<DropdownMenuItem[]>(() => {
       onSelect(e?: Event) {
         e?.preventDefault()
       }
-    }))
+    }) satisfies DropdownMenuItem)
 })
-
-/**
- * Handle table filters
- */
-const { queryWhere } = useQueryRouter(collection, baseQueryRouter)
 
 /**
  * Handle delete items
@@ -88,17 +88,16 @@ const localeRoute = useLocaleRoute()
 </script>
 
 <template>
-  <div class="grid grid-col-1 lg:grid-flow-col gap-2 lg:gap-6 justify-between bg-(--ui-bg) sticky top-0 z-10  shrink-0 px-6 pt-4 pb-0">
-    <div class="flex gap-4 overflow-x-scroll pb-2">
+  <div class="grid grid-col-1 lg:grid-flow-col gap-2 lg:gap-6 justify-between bg-default sticky top-0 z-10 shrink-0 px-6 py-2">
+    <div class="flex gap-4 overflow-x-scroll">
       <!-- Page size -->
       <div data-testid="table-page-size">
         <UDropdownMenu
           :items="pageSizes"
         >
           <UButton
-            color="neutral"
-            variant="soft"
-            :label="t('app.admin.collection.page-size', { pageSize: pagination.pageSize })"
+            v-bind="{ size, variant, color }"
+            :label="t('app.admin.collection.page-size', { pageSize: limit })"
             icon="lucide:list-ordered"
             trailing-icon="i-lucide-chevron-down"
           />
@@ -113,8 +112,7 @@ const localeRoute = useLocaleRoute()
         >
           <UButton
             label="Columns"
-            color="neutral"
-            variant="soft"
+            v-bind="{ size, variant, color }"
             trailing-icon="i-lucide-chevron-down"
             icon="lucide:columns-3-cog"
           />
@@ -123,12 +121,13 @@ const localeRoute = useLocaleRoute()
 
       <!-- Filter -->
       <CollectionFilter
-        v-model="queryWhere"
+        v-model="where"
+        v-bind="{ size, color, variant }"
         :collection
       />
     </div>
 
-    <div class="flex gap-4 overflow-x-scroll pb-2">
+    <div class="flex gap-4 overflow-x-scroll">
       <!-- Delete -->
       <UModal
         v-model:open="deleteModalOpen"
@@ -138,7 +137,7 @@ const localeRoute = useLocaleRoute()
           data-testid="table-delete-button"
           :disabled="disableDeleteButton"
           color="error"
-          variant="soft"
+          v-bind="{ size, variant }"
           :label="t('app.form.actions.delete')"
           icon="heroicons:trash"
         />
@@ -147,15 +146,14 @@ const localeRoute = useLocaleRoute()
           <div class="flex justify-between">
             <UButton
               color="error"
-              variant="outline"
+              v-bind="{ size, variant }"
               icon="heroicons:trash"
               :label="t('app.admin.confirm-action')"
               @click="handleDeleteItems"
             />
 
             <UButton
-              color="neutral"
-              variant="outline"
+              v-bind="{ size, variant, color }"
               :label="t('app.admin.form.cancel')"
             />
           </div>
@@ -165,8 +163,8 @@ const localeRoute = useLocaleRoute()
       <!-- Create -->
       <UButton
         :to="localeRoute({ name: 'admin-items-collection-create', params: { collection } })"
-        variant="soft"
         color="secondary"
+        v-bind="{ size, variant }"
         leading-icon="heroicons:plus"
       >
         {{ t('app.admin.items.create') }}

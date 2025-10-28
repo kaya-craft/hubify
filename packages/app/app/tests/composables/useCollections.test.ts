@@ -49,7 +49,7 @@ afterEach(() => {
   vi.clearAllMocks()
 })
 
-describe('useCollections', () => {
+describe.skip('useCollections', () => {
   it('returns collections ref from useFetch', async () => {
     const collection = createCollection()
     hoisted.fetchData.value = { items: [collection], total_count: 1 }

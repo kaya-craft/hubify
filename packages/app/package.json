@@ -35,7 +35,7 @@
     "@iconify-json/simple-icons": "^1.2.50",
     "@internationalized/date": "^3.9.0",
     "@nuxt/ui": "catalog:",
-    "@nuxtjs/i18n": "^10.0.6",
+    "@nuxtjs/i18n": "^10.1.2",
     "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^13.9.0",
     "@vueuse/integrations": "^13.9.0",
@@ -60,11 +60,11 @@
     "vite": "catalog:",
     "vitest": "catalog:",
     "@nuxt/test-utils": "catalog:",
-    "@vitest/browser-playwright": "catalog:",
-    "happy-dom": "catalog:",
-    "vitest-browser-vue": "catalog:",
-    "@playwright/test": "catalog:",
-    "playwright": "catalog:",
+    "@vitest/browser": "^3.2.4",
+    "happy-dom": "^20.0.8",
+    "vitest-browser-vue": "^1.0.0",
+    "@playwright/test": "^1.56.1",
+    "playwright": "^1.56.1",
     "vue-i18n": "^11.1.11"
   }
 }

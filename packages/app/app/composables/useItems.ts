@@ -6,10 +6,10 @@ export function useItems<T extends TableNames, P extends boolean = false>(
   options?: UseItemsOptions<T, undefined, P>
 ): ReturnType<typeof useFetch<UseItemsOutput<T, undefined, P>>>
 
-// export function useItems<T extends TableNames, PK extends TablePrimaryKeyValue<T>>(
-//   collection: T,
-//   options: UseItemsOptions<T, PK, undefined>
-// ): ReturnType<typeof useFetch<UseItemsOutput<T, PK>>>
+export function useItems<T extends TableNames, PK extends TablePrimaryKeyValue<T>>(
+  collection: T,
+  options: UseItemsOptions<T, PK, undefined>
+): ReturnType<typeof useFetch<UseItemsOutput<T, PK>>>
 
 export function useItems<T extends TableNames = TableNames, PK extends TablePrimaryKeyValue<T> | undefined = undefined, P extends boolean | undefined = undefined>(collection: T, options?: UseItemsOptions<T, PK, P>): ReturnType<typeof useFetch<UseItemsOutput>> {
   const url = computed(() => {

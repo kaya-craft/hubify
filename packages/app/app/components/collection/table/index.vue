@@ -12,12 +12,15 @@ const { selectable, collection, baseQueryRouter } = defineProps<{
 /**
  * Router query state
  */
-const { query, queryOrderBy } = useQueryRouter(collection, baseQueryRouter)
+const { query, orderBy, page, limit } = useQueryRouter(collection, baseQueryRouter)
 
 /**
- * Pagination
+ * Pagination state
  */
-const { pagination } = usePagination(collection)
+const pagination = reactive({
+  page,
+  pageSize: limit
+})
 
 /**
  * Column visibility
@@ -54,7 +57,7 @@ const collectionColumns = computed(() => {
           : 'i-lucide-arrow-up-down',
         class: '-mx-2.5',
         onClick: () => {
-          queryOrderBy.value = (column.getIsSorted() === 'asc' ? `-${name}` : name) as unknown as QueryParams<T>['orderBy']
+          orderBy.value = (column.getIsSorted() === 'asc' ? `-${name}` : name) as unknown as QueryParams<T>['orderBy']
           return column.toggleSorting(column.getIsSorted() === 'asc')
         }
       })
@@ -124,14 +127,18 @@ onHubifyHook('items', ({ collection: name }) => {
 <template>
   <div
     data-testid="collection-table"
-    class="flex min-h-[calc(100vh-var(--ui-header-height))] flex-col overflow-hidden"
+    class="flex min-h-[calc(100vh-var(--ui-header-height))] flex-col overflow-hidden divide-y divide-muted"
   >
     <CollectionTableHeader
       :collection
       :table="table?.tableApi"
       :base-query-router
       :total-count="data?.total"
+      size="sm"
+      variant="soft"
+      color="neutral"
     />
+
     <UTable
       ref="table"
       v-model:pagination="pagination"
@@ -142,12 +149,14 @@ onHubifyHook('items', ({ collection: name }) => {
       sticky
     />
 
-    <div class="sticky bottom-0 bg-default shrink-0">
-      <CollectionTableFooter
-        :collection="collection"
-        :total-items="data?.total || 0"
-        :displayed-items="table?.tableApi.getRowCount() || 0"
-      />
-    </div>
+    <CollectionTableFooter
+      :collection="collection"
+      :total-items="data?.total || 0"
+      :displayed-items="table?.tableApi.getRowCount()"
+      size="sm"
+      variant="soft"
+      color="neutral"
+      class="sticky bottom-0 shrink-0"
+    />
   </div>
 </template>

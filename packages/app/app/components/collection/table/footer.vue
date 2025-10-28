@@ -1,15 +1,15 @@
 <script lang="ts" setup>
-const { collection, totalItems } = defineProps<{
+import type { ButtonProps } from '@nuxt/ui'
+
+interface Props extends ButtonProps {
   collection: TableNames
   totalItems: number
   displayedItems: number
-}>()
+}
 
-/**
- * Pagination
- */
-const { updatePageIndex, pagination } = usePagination(collection)
+const { collection, totalItems } = defineProps<Props>()
 
+const { page, limit } = useQueryRouter(collection)
 /**
  * Translations
  */
@@ -17,16 +17,16 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="flex justify-center items-center p-4 border-t-1 border-slate-600">
+  <div class="flex justify-center items-center p-4">
     <UPagination
-      v-model:page="pagination.pageIndex"
+      v-model:page="page"
       data-testid="table-pagination"
-      :items-per-page="pagination.pageSize"
+      :items-per-page="limit"
       :total="totalItems"
-      @update:page="(p: number) => updatePageIndex(p)"
+      v-bind="{ variant, size, color }"
     />
     <p class="text-xs ml-6">
-      ({{ t('app.admin.items-number', { displayedItems, totalItems }) }})
+      {{ t('app.admin.items-number', { displayedItems, totalItems }, totalItems) }}
     </p>
   </div>
 </template>
