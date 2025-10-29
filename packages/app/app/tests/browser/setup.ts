@@ -18,7 +18,7 @@ registerEndpoint('/api/items/countries', {
 
 locators.extend({
   getById(id: string) {
-    return '#' + id
+    return `#${id}`
   },
   getByTag(tag: string) {
     return tag

@@ -121,7 +121,7 @@ async function generateFieldsContent(dirs: string[]) {
     'import { normalizeFields } from \'@hubify/app/fields\'',
     ...imports,
     '',
-    'const hubifyFields = normalizeFields({\n' + items.join(',\n') + '\n})',
+    `const hubifyFields = normalizeFields({\n${items.join(',\n')}\n})`,
     '',
     ...collections.map(name => `export const ${name} = hubifyFields.${name}`),
     '',
@@ -170,7 +170,7 @@ async function generateDefineField(fieldsDirs: string[]) {
       'import type schema from \'./../schema\'',
       '',
       'declare global {',
-      '\texport function defineCollectionFields<const F extends FieldOptions<\'' + file.name + '\'>>(fields: F): F',
+      `\texport function defineCollectionFields<const F extends FieldOptions<'${file.name}'>>(fields: F): F`,
       '}',
       '\n',
       'export {}'
@@ -193,7 +193,7 @@ async function generateDefineField(fieldsDirs: string[]) {
         include: [
           resolve('./lib/fields/index.ts'),
           file.path + file.ext,
-          file.name + '.imports.d.ts'
+          `${file.name}.imports.d.ts`
         ]
       }, null, 2)
     })

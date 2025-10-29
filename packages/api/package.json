@@ -16,7 +16,8 @@
     "./modules/*": "./modules/*.ts",
     "./types/*": "./types/*.d.ts",
     "./schema/*": "./schema/*.ts",
-    "./hooks": "./hooks.d.ts"
+    "./hooks": "./hooks.d.ts",
+    "./server/*": "./server/*.ts"
   },
   "scripts": {
     "build": "nuxt build",

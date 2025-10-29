@@ -100,7 +100,7 @@ async function generateSchemaContent(dirs: string[]) {
     includeDefu ? 'import { defu } from \'defu\'' : '',
     ...imports,
     '',
-    'const schema = normalizeSchema({\n' + items.join(',\n') + '\n})',
+    `const schema = normalizeSchema({\n${items.join(',\n')}\n})`,
     '',
     ...collections.map(name => `export const ${name} = schema.${name}`),
     '',
@@ -130,7 +130,7 @@ export async function getFilesFromDir(dir: string, exportName: string | null = '
 
   return list.filter(i => exportName ? i.name === exportName : true).map(i => ({
     path: i.from.replace(extname(i.from), ''),
-    name: i.from.replace(dir + '/', '').replace(extname(i.from), '').split('/').join(delimiter),
+    name: i.from.replace(`${dir}/`, '').replace(extname(i.from), '').split('/').join(delimiter),
     ext: extname(i.from)
   }))
 }

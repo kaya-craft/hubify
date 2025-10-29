@@ -18,11 +18,11 @@ export default defineEventHandler(async (event) => {
   try {
     const { removeOne } = useDatabase()
 
-    await removeOne(collection, pk, params.where)
+    const item = await removeOne(collection, pk, params.where)
 
     emitMessage(event, {
       type: 'items:deleted',
-      data: { collection, id: pk }
+      data: { collection, item }
     })
 
     return pk

@@ -1,4 +1,4 @@
-import type { knex } from 'knex'
+import type knex from 'knex'
 import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition, TableDefinition, ColumnDefinition } from './types'
 import { OPERATORS } from './operators'
 
@@ -98,7 +98,7 @@ export function normalizeField<S extends Schema, T extends TableNames<S>>(schema
     if (isRelation(field) && index < array.length - 1) {
       table = field.table as T
     }
-    return table + '.' + part
+    return `${table}.${part}`
   }, '')
 }
 
@@ -216,6 +216,21 @@ export function wrapSingleResult<B extends knex.Knex.QueryBuilder>(builder: B) {
   builder.then = function (resolve, reject) {
     if (!resolve) return then(resolve, reject)
     return then(rows => resolve(rows[0]), reject)
+  }
+
+  return builder
+}
+
+/**
+ * Wrap returning for sqlite to support returning clause.
+ */
+export function wrapReturning<B extends knex.Knex.QueryBuilder>(builder: B, returning: knex.Knex.QueryBuilder) {
+  const then = builder.then.bind(builder)
+
+  // oxlint-disable-next-line no-thenable
+  builder.then = function (resolve, reject) {
+    if (!resolve) return then(resolve, reject)
+    return returning.then(results => then(() => resolve(results), reject))
   }
 
   return builder

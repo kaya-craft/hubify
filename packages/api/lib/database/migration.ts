@@ -261,7 +261,7 @@ function getDefaultValue(knex: Knex, table: TableInfo, column: Column) {
   }
 
   if (column.default_value === knex.fn.now().toQuery()) {
-    return '{' + column.default_value + '}'
+    return `{${column.default_value}}`
   }
 
   if (column.default_value === '0') {

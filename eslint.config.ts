@@ -11,7 +11,13 @@ export default createConfigForNuxt({
     }
   }
 })
+  .append({
+    rules: {
+      'prefer-template': 'error'
+    }
+  })
   .overrideRules({
     'vue/multi-word-component-names': 'off',
     '@typescript-eslint/no-empty-object-type': 'off'
+
   })

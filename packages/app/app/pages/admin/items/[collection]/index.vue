@@ -1,7 +1,6 @@
-<script setup lang="ts" generic="T extends TableNames, I extends TablePrimaryKeyValue<T>">
+<script setup lang="ts" generic="T extends TableNames">
 interface Props {
   collection: T
-  id?: I
 }
 
 const { collection } = defineProps<Props>()
@@ -31,8 +30,5 @@ const { canCreate } = useTable(collection)
     </template>
   </CollectionTable>
 
-  <NuxtPage
-    :id
-    :collection
-  />
+  <NuxtPage :collection />
 </template>

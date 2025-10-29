@@ -1,4 +1,9 @@
 <script setup lang="ts" generic="T extends TableNames">
+definePageMeta({
+  validate: to => isString(to.params.id) || isNumber(to.params.id),
+  props: to => to.params
+})
+
 interface Props {
   collection: T
   id: TablePrimaryKeyValue<T>
@@ -9,12 +14,7 @@ const { id, collection } = defineProps<Props>()
 /**
  * Fetch the item to edit.
  */
-const { data: item } = await useFetch('/api/items/' + collection + '/' + id)
-
-/**
- * List of relations for the current collection.
- */
-const { relations } = useTable(collection)
+const { data: item } = await useFetch(`/api/items/${collection}/${id}`)
 
 /**
  * If the item does not exist, throw a 404 error.
@@ -25,11 +25,6 @@ if (!toValue(item)) {
     statusMessage: 'Item not found'
   })
 }
-
-/**
- * Translation.
- */
-const { t } = useI18n()
 
 /**
  * Locale path instance.
@@ -57,7 +52,6 @@ async function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
 <template>
   <CollectionForm
     v-if="item"
-    class="p-8"
     :collection
     :initial-state="item"
     @success="onSuccess"

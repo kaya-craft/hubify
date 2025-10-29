@@ -148,41 +148,17 @@ async function handleDeleteItems() {
     </div>
 
     <div class="flex gap-4 overflow-x-scroll">
-      <!-- Delete -->
-      <UModal
-        v-model:open="deleteModalOpen"
-        :title="t('app.admin.confirm-delete-items')"
-      >
-        <UButton
-          data-testid="table-delete-button"
-          :disabled="disableDeleteButton"
-          color="error"
-          v-bind="{ size, variant }"
-          :label="t('app.form.actions.delete')"
-          icon="heroicons:trash"
-        />
-
-        <template #body>
-          <div class="flex justify-between">
-            <UButton
-              color="error"
-              v-bind="{ size, variant }"
-              icon="heroicons:trash"
-              :label="t('app.admin.confirm-action')"
-              @click="handleDeleteItems"
-            />
-
-            <UButton
-              v-bind="{ size, variant, color }"
-              :label="t('app.admin.form.cancel')"
-            />
-          </div>
-        </template>
-      </UModal>
+      <UButton
+        color="error"
+        v-bind="{ size, variant }"
+        icon="heroicons:trash"
+        :label="t('app.form.actions.delete')"
+        :to="localeRoute('/admin/items/'+collection+'/remove?items='+selectedItemsPks)"
+      />
 
       <!-- Create -->
       <UButton
-        :to="localeRoute({ name: 'admin-items-collection-create', params: { collection } })"
+        :to="localeRoute(`/admin/items/${collection}/create`)"
         color="secondary"
         v-bind="{ size, variant }"
         leading-icon="heroicons:plus"

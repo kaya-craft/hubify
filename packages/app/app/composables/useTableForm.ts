@@ -59,7 +59,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
       add({
         title: 'Failed to update item',
         color: 'error',
-        description: 'There was an error updating the item. ' + String(error)
+        description: `There was an error updating the item. ${String(error)}`
       })
       throw error
     }
@@ -70,7 +70,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
    */
   async function create(data: TableFormSubmitEvent<T>['data']) {
     try {
-      await $fetch('/api/items/' + collection, {
+      await $fetch(`/api/items/${collection}`, {
         method: 'post',
         body: data
       })
@@ -87,7 +87,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
       add({
         title: 'Failed to create item',
         color: 'error',
-        description: 'There was an error creating the item. ' + String(error)
+        description: `There was an error creating the item. ${String(error)}`
       })
       throw error
     }

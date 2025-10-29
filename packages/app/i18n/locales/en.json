@@ -117,5 +117,8 @@
   "app.admin.settings.security.policies.create.description": "Create a new policy and set its permissions",
   "app.admin.settings.security.permissions.title": "Permissions",
   "app.admin.settings.security.permissions.create.title": "Create a permission",
-  "app.admin.settings.security.permissions.create.description": "Create a new permission"
+  "app.admin.settings.security.permissions.create.description": "Create a new permission",
+  "app.items.remove.confirmation": "Are you sure you want to remove this item? | Are you sure you want to remove these {count} items?",
+  "app.admin.test-permissions.select-collection": "Select a collection",
+  "app.admin.test-permissions.primary-key-placeholder": ":id"
 }

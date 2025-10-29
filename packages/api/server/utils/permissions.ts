@@ -3,6 +3,8 @@ import type { PERMISSION_ACTIONS } from '@@/schema/hubify/permissions'
 import { whereValidation } from '@hubify/api/validation'
 import type { QueryParams } from '@hubify/api/types/schema'
 
+export const TEST_PERMISSIONS_HEADER = 'X-Hubify-Permissions'
+
 /**
  * Get the role of the current user
  */
@@ -45,7 +47,7 @@ export async function isTestingPermissions(event: H3Event) {
  * Get test permissions header.
  */
 export function getTestPermissionsHeader(event: H3Event) {
-  const value = getHeader(event, 'X-Hubify-Permissions')
+  const value = getHeader(event, TEST_PERMISSIONS_HEADER)
 
   if (isString(value)) {
     return JSON.parse(value) as TableItem<'hubify_permissions'>[]

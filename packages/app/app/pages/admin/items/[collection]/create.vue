@@ -21,7 +21,6 @@ function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
   <CollectionForm
     v-model="value"
     :collection
-    class="p-8"
     @success="onSuccess"
   />
 </template>
