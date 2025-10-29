@@ -1,4 +1,4 @@
-import type { ColumnDefinition, FieldDefinition, RelationDefinition, Schema, TableDefinition } from '@hubify/api/database/types.d'
+import type { ColumnDefinition, FieldDefinition, Prettify, RelationDefinition, Schema, TableDefinition } from '@hubify/api/database/types.d'
 import { getRelationForeignKey, isRelation } from '@hubify/api/database/helpers'
 
 /**
@@ -63,8 +63,6 @@ function normalizeFieldDefinition<N, F extends FieldDefinition>(schema: Schema, 
     scale: fieldDef.scale
   }
 }
-
-type Prettify<T> = { [K in keyof T]: T[K] } & {}
 
 type NormalizedSchema<T extends Schema> = Prettify<{
   [K in keyof T]: Prettify<{

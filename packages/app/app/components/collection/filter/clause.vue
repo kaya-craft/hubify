@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { Clause } from './index.vue'
-import { columnTypeToOperators } from '@hubify/api/column-types'
+import { getDataTypeGroup, getDataTypeOperators } from '@hubify/api/database/data-types'
 
 type Props = {
   collection: T
@@ -44,7 +44,10 @@ const column = computed(() => {
  * List of items for the dropdown menu to select an operation.
  */
 const operatorItems = computed(() => {
-  return columnTypeToOperators(toValue(column)!).map(op => ({
+  const type = toValue(column)?.type
+  if (!type) return []
+
+  return getDataTypeOperators(type).map(op => ({
     label: t(`app.admin.filters.${op}`),
     value: op
   })) satisfies DropdownMenuItem[]
@@ -54,23 +57,18 @@ const operatorItems = computed(() => {
  * Get input type based on column type.
  */
 const inputType = computed(() => {
-  switch (toValue(column)?.type) {
-    case 'integer':
-    case 'float4':
-    case 'numeric':
-    case 'int8':
-    case 'int4':
+  const type = toValue(column)?.type
+  if (!type) return 'text'
+
+  switch (getDataTypeGroup(type)) {
+    case 'number':
       return 'number'
     case 'boolean':
       return 'checkbox'
     case 'date':
-    case 'timestamp':
-    case 'timestamptz':
       return 'date'
     case 'json':
       return 'json'
-    case 'text':
-    case 'varchar':
     default:
       return 'text'
   }

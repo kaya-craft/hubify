@@ -139,12 +139,13 @@ export function useCollection<T extends TableNames>(collection: T) {
       loading.value = true
 
       const relation = getRelation(relationName)
+      if (!relation.foreignKey) throw new Error(`Relation "${String(relationName)}" does not have a foreign key defined.`)
+
       const [primaryKey, ids] = _extractPrimaryKeyValues(relation.table, idOrItems)
 
       await $fetch('/api/items/' + relation.table as `/api/items/:collection`, {
         method: 'put',
         query: { where: { [primaryKey]: { $in: ids } } },
-        // @ts-expect-error - I don't understand why ts is complaining here
         body: { [relation.foreignKey]: id }
       })
 
@@ -169,12 +170,13 @@ export function useCollection<T extends TableNames>(collection: T) {
       loading.value = true
 
       const relation = getRelation(relationName)
+      if (!relation.foreignKey) throw new Error(`Relation "${String(relationName)}" does not have a foreign key defined.`)
+
       const [primaryKey, ids] = _extractPrimaryKeyValues(relation.table, idOrItems)
 
       await $fetch('/api/items/' + relation.table, {
         method: 'put',
         query: { where: { [primaryKey]: { $in: ids } } },
-        // @ts-expect-error - I don't understand why ts is complaining here
         body: { [relation.foreignKey]: null }
       })
 

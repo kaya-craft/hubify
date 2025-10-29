@@ -49,7 +49,7 @@ const { data: items } = useFetch(`/api/items/${toValue(name)}`, {
   query: {
     columns: [toValue(primaryKey), ...toValue(displayColumns)]
   },
-  transform: (items: TableItem<T>[]) => items.map(item => ({
+  transform: (items: TableItem<TableNames>[]) => items.map(item => ({
     label: getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn) as keyof typeof item]),
     value: item[toValue(primaryKey) as keyof typeof item]
   }))

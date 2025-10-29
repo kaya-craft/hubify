@@ -1,25 +1,14 @@
 import z from 'zod'
 import tables from '#hubify/schema'
-import { columnTypeToOperators, columnTypeToZod, columnValidation } from './column-types'
+import { getDataTypeOperators, getDataTypeValidator } from './database/data-types'
+import type { ColumnDefinition, Operator } from './database/types'
+import { isRelation } from './database/helpers'
 
 /**
  * Special validation for the `where` clause in query parameters.
  */
-export function whereValidation<T extends TableNames>(
-  collection: T
-) {
-  const columns = Object.entries(tables[collection])
-
-  const obj = columns.reduce((acc, [column, def]) => {
-    const operators = columnTypeToOperators(def)
-    acc[column] = z.strictObject({
-      ...operators.reduce((opAcc, operator) => {
-        opAcc[operator] = columnValidation(def, operator).optional()
-        return opAcc
-      }, {} as Record<typeof operators[number], z.ZodTypeAny>)
-    }).transform(asNonEmptyObject).optional()
-    return acc
-  }, {} as Record<string, z.ZodTypeAny>)
+export function whereValidation<T extends TableNames>(collection: T) {
+  const obj = getTableValidators(collection)
 
   const rule = z.strictObject(obj).transform(asNonEmptyObject)
 
@@ -36,6 +25,27 @@ export function whereValidation<T extends TableNames>(
 }
 
 /**
+ * Get table column operators.
+ */
+function getTableValidators<T extends TableNames>(table: T) {
+  return Object.entries(tables[table]).reduce((acc, [column, def]) => {
+    if (isRelation(def)) return acc
+    acc[column] = z.strictObject(getColumnValidators(def)).optional()
+    return acc
+  }, {} as Record<string, z.ZodTypeAny>)
+}
+
+/**
+ * Get column operators validators.
+ */
+function getColumnValidators(def: ColumnDefinition) {
+  return getDataTypeOperators(def.type).reduce((opAcc, operator) => {
+    opAcc[operator] = columnValidation(def, operator).optional()
+    return opAcc
+  }, {} as Record<Operator, z.ZodTypeAny>)
+}
+
+/**
  * Item validation.
  */
 export function itemValidation<T extends TableNames>(collection: T, options: ItemValidationOptions = {}) {
@@ -45,7 +55,7 @@ export function itemValidation<T extends TableNames>(collection: T, options: Ite
     Object.entries(columns).map(([name, column]) => {
       if (!options.includePrimaryKey && column.primaryKey) return
 
-      const rule = columnTypeToZod(column.type)
+      const rule = columnValidation(column, '$eq')
 
       if (!column.notNull) {
         return [name, rule.optional().nullable()]
@@ -90,6 +100,45 @@ export function asNonEmptyObject(value: Record<string, unknown>) {
 export function asNonEmptyArray(value: unknown[]) {
   const newValue = value.filter(isNotEmpty)
   return newValue.length > 0 ? newValue : undefined
+}
+
+/**
+ * Column validation type.
+ */
+function columnValidation(column: ColumnDefinition, operator: Operator) {
+  if (isRelation(column)) {
+    const table = column.type === 'one-to-many' ? column.table : column.through
+    const relatedColumn = column.type === 'one-to-many' ? column.foreignKey : column.throughKey
+    const relatedTable = tables[table as keyof typeof tables]
+    const relatedColumnDef = relatedTable[relatedColumn as keyof typeof relatedTable] as ColumnDefinition
+    return columnValidation(relatedColumnDef, operator)
+  }
+
+  if (expectsBooleanValue(operator)) {
+    return z.boolean()
+  }
+
+  const validator = getDataTypeValidator(column.type)
+
+  if (expectsArrayValue(operator)) {
+    return z.array(validator(column))
+  }
+
+  return validator(column)
+}
+
+/**
+ * The operator expects an array value.
+ */
+function expectsArrayValue(operator: Operator) {
+  return ['$in', '$nin', '$between', '$nbetween'].includes(operator)
+}
+
+/**
+ * The operator expects a boolean value.
+ */
+function expectsBooleanValue(operator: Operator) {
+  return ['$null', '$nnull'].includes(operator)
 }
 
 interface ItemValidationOptions {

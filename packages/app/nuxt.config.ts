@@ -32,26 +32,9 @@ export default defineNuxtConfig({
     }
   },
 
-  experimental: {
-    typedPages: true
-  },
-
   vite: {
     optimizeDeps: {
       exclude: ['@nuxt/ui/utils/tv']
-    }
-  },
-
-  hooks: {
-    /**
-     * TEMPORARY WORKAROUND: Ensure that the `nuxt:environments` Vite plugin runs before other plugins.
-     * This is necessary to properly replace environment variables in the code during tests.
-     */
-    'vite:extendConfig'(config) {
-      const plugin = config.plugins?.find((plugin): plugin is import('vite').Plugin => {
-        return !!(plugin && typeof plugin === 'object' && 'name' in plugin && plugin.name === 'nuxt:environments')
-      })
-      if (plugin) plugin.enforce = 'pre'
     }
   },
 

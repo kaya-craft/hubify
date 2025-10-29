@@ -64,15 +64,15 @@ export type TableColumns<S extends Schema, T extends TableNames<S>> = Pick<Table
 export type TableColumn<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = TableColumns<S, T>[C]
 
 export type TableRelations<S extends Schema, T extends TableNames<S>> = Pick<TableFields<S, T>, TableRelationNames<S, T>>
-export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R] extends infer F ? F & Omit<RelationDefinition, F> : never
+export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R] extends infer F extends RelationDefinition ? F & Omit<RelationDefinition, F> : never
 
-export type TableItem<S extends Schema, T extends TableNames<S>, Deep = true> = Simplify<{
+export type TableItem<S extends Schema, T extends TableNames<S>, Deep = true> = Prettify<{
   [K in TableFieldNames<S, T>]: K extends TableRelationNames<S, T>
     ? TableRelation<S, T, K> extends infer Relation
       ? Relation extends { type: OneRelationTypes }
-        ? TableColumnType<S, Relation['table'], RelationForeignKey<S, T, K>> | (Deep extends true ? Item<S, Relation['table']> | null : never)
+        ? TableColumnType<S, Relation['table'], RelationForeignKey<S, T, K>> | (Deep extends true ? Prettify<Item<S, Relation['table']>> | null : never)
         : Relation extends { type: ManyRelationTypes }
-          ? Deep extends true ? Item<S, Relation['table']>[] : never
+          ? Deep extends true ? Prettify<Item<S, Relation['table']>>[] : never
           : never
       : never
     : K extends TableColumnNames<S, T>
@@ -123,8 +123,8 @@ export type TablePrimaryKeyValue<S extends Schema, T extends TableNames<S>> = Ta
 
 export type RelationForeignKey<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelation<S, T, R> extends { foreignKey: infer FK } ? FK : PrimaryKeyColumn<S, TableRelation<S, T, R>['table']>
 
-type Simplify<T> = { [K in keyof T]: T[K] } & {}
-
 export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
+
+export type Prettify<T> = { [K in keyof T]: T[K] } & {}
 
 export * from './data-types'

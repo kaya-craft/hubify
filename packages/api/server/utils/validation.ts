@@ -1,8 +1,8 @@
 import tables from '#hubify/schema'
 import { asEnumArray, asObject, itemValidation, whereValidation } from '@hubify/api/validation'
-import { columnTypeToZod } from '@hubify/api/column-types'
 import type { ZodError } from 'zod'
 import z from 'zod'
+import { getDataTypeValidator } from '@hubify/api/database/data-types'
 
 /**
  * Validates the router parameters for a collection and returns the collection name.
@@ -20,8 +20,9 @@ export async function ensureValidCollection(event = useEvent()) {
  */
 export async function ensureValidId<T extends TableNames>(collection: T, event = useEvent()) {
   const primaryKeyColumn = Object.values(tables[collection]).find(column => column.primary)
+  const rule = getDataTypeValidator(primaryKeyColumn.type)
   const { id } = await getValidatedRouterParams(event, z.object({
-    id: columnTypeToZod(primaryKeyColumn.type)
+    id: rule(primaryKeyColumn)
   }).parse)
 
   return id
