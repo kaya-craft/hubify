@@ -13,14 +13,9 @@ const { id, collection, relation: relationName } = defineProps<Props>()
 const { t } = useI18n()
 
 /**
- * Table composable.
- */
-const { getRelation } = useTable(collection)
-
-/**
  * Collection composable.
  */
-const { attach, detach, loading } = useCollection(collection)
+const { getRelation, attach, detach, loading } = useCollection(collection)
 
 /**
  * Current relation.

@@ -29,7 +29,7 @@ const collectionName = computed(() => {
 /**
  * Composable to interact with collections
  */
-const { columnNames } = useTable(collectionName)
+const { columnNames } = useCollection(collectionName)
 </script>
 
 <template>

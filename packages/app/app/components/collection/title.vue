@@ -8,7 +8,7 @@ const { collection } = defineProps<{
  */
 const { getCollectionMeta } = useCollections()
 const collectionMeta = computed(() => getCollectionMeta(collection))
-const { getDisplayComponent: getHubifyDisplayComponent } = useTable('hubify_collections')
+const { getDisplayComponent: getHubifyDisplayComponent } = useCollection('hubify_collections')
 const collectionIconComponent = computed(() => h(getHubifyDisplayComponent('icon'), { value: collectionMeta.value?.icon }))
 </script>
 

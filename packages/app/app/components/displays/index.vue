@@ -5,7 +5,7 @@ const { collection, column } = defineProps<{
   value: string | number
 }>()
 
-const { getDisplayComponent, getColumnLabel } = useTable(collection)
+const { getDisplayComponent, getColumnLabel } = useCollection(collection)
 </script>
 
 <template>

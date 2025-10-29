@@ -1,6 +1,6 @@
+import { itemValidation } from '@hubify/api/validation'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import type z from 'zod'
-import { itemValidation } from '@hubify/api/validation'
 
 export type TableFormState<T extends TableNames> = {
   [C in TableColumnNames<T>]: TableColumnType<T, C> | undefined
@@ -16,7 +16,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
   /**
    * Table definition.
    */
-  const { primaryKey, getColumnLabel, columnNames, getInput, getColumn, getInputComponent } = useTable(collection)
+  const { primaryKey, getColumnLabel, columnNames, getInput, getColumn, getInputComponent } = useCollection(collection)
 
   /**
    * Toast.

@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends TableNames">
-import type { DropdownMenuItem } from '@nuxt/ui'
+import type { DropdownMenuItem } from '@nuxt/ui';
 
 interface Props {
   collection: T
@@ -11,7 +11,7 @@ const { item, collection } = defineProps<Props>()
 /**
  * Collection definition.
  */
-const { getPrimaryKeyValue } = useTable(collection)
+const { getPrimaryKeyValue } = useCollection(collection)
 
 /**
  * Collection composable.

@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
-import type { DropdownMenuItem } from '@nuxt/ui'
-import type { Clause } from './index.vue'
-import { getDataTypeGroup, getDataTypeOperators } from '@hubify/api/database/data-types'
+import { getDataTypeGroup, getDataTypeOperators } from '@hubify/api/database/data-types';
+import type { DropdownMenuItem } from '@nuxt/ui';
+import type { Clause } from './index.vue';
 
 type Props = {
   collection: T
@@ -14,9 +14,9 @@ const clause = defineModel<Clause<T>>({
 })
 
 /**
- * Tabloe information.
+ * Collection information.
  */
-const { columnNames, getColumn } = useTable(collection)
+const { columnNames, getColumn } = useCollection(collection)
 
 /**
  * List of items for the dropdown menu to select a column.

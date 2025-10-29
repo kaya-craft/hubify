@@ -1,7 +1,7 @@
-import { extname, resolve, isAbsolute, join } from 'node:path'
-import { existsSync } from 'node:fs'
-import { addTemplate, defineNuxtModule, updateRuntimeConfig, updateTemplates, useNuxt } from 'nuxt/kit'
 import type { Knex } from 'knex'
+import { existsSync } from 'node:fs'
+import { extname, isAbsolute, join, resolve } from 'node:path'
+import { addTemplate, defineNuxtModule, updateRuntimeConfig, updateTemplates, useNuxt } from 'nuxt/kit'
 import { scanDirExports } from 'unimport'
 
 export interface HubifyModuleOptions extends Omit<Knex.Config, 'client'> {
@@ -74,6 +74,7 @@ async function generateSchemaContent(dirs: string[]) {
 
   await nuxt.callHook('hubify:schema', files)
 
+  
   const collections = Array.from(new Set(files.map(f => f.name))).sort()
 
   const imports: string[] = []
@@ -83,7 +84,7 @@ async function generateSchemaContent(dirs: string[]) {
 
   for (const name of collections) {
     const match = files.filter(file => file.name === name)
-
+    
     if (match.length > 1) {
       includeDefu = true
       imports.push(...match.map((file, index) => `import ${name}_${index} from '${file.path}'`))

@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
 import type { Operator } from '@hubify/api/database/types'
-import type { AndOrClause } from './index.vue'
 import type { DropdownMenuItem } from '@nuxt/ui'
+import type { AndOrClause } from './index.vue'
 
 export type Clause<T extends TableNames> = {
   type: 'clause'
@@ -28,7 +28,7 @@ const fullscreen = defineModel<boolean>('fullscreen')
 
 const { collection } = defineProps<Props>()
 
-const { primaryKey } = useTable(collection)
+const { primaryKey } = useCollection(collection)
 
 /**
  * Turns an array of clauses into an object suitable for RESTQL queries.

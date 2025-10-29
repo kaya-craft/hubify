@@ -10,7 +10,7 @@ const { t } = useI18n()
 
 const localeRoute = useLocaleRoute()
 
-const { canCreate } = useTable(collection)
+const { canCreate } = useCollection(collection)
 </script>
 
 <template>

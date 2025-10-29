@@ -39,6 +39,7 @@ const backRoute = localePath({
   params: { collection: collection }
 })
 
+
 /**
  * Handle form success event.
  */

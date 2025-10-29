@@ -16,12 +16,12 @@ const { collection, relation, displayColumn: _displayColumn } = defineProps<Prop
 /**
  * Use table composable
  */
-const { getRelation } = useTable(collection)
+const { getRelation } = useCollection(collection)
 
 /**
  * Get related table info
  */
-const { primaryKey, name } = useTable(getRelation(relation).table)
+const { primaryKey, name } = useCollection(getRelation(relation).table)
 
 /**
  * Use collections composable

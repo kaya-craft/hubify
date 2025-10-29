@@ -10,7 +10,7 @@ const { data } = await useItems('hubify_settings', { id: 1 })
 
 const initialState = computed(() => data.value)
 
-const { columnNames } = useTable('hubify_settings')
+const { columnNames } = useCollection('hubify_settings')
 </script>
 
 <template>

@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="T extends TableNames">
-import { CollectionTableActions } from '#components'
-import type { TableColumn } from '@nuxt/ui'
-import type { Table } from '@tanstack/vue-table'
+import { CollectionTableActions } from '#components';
+import type { TableColumn } from '@nuxt/ui';
+import type { Table } from '@tanstack/vue-table';
 
 const { selectable, collection, baseQueryRouter } = defineProps<{
   collection: T
@@ -30,7 +30,7 @@ const columnVisibility = useLocalStorage(`hubify.collection.${collection}.column
 /**
  * Collection definition.
  */
-const { displayedColumns, getDisplayComponent, getColumnLabel } = useTable(collection)
+const { displayedColumns, getDisplayComponent, getColumnLabel } = useCollection(collection)
 
 /**
  * Table reference.
