@@ -12,7 +12,7 @@ export function defineFieldDataTypes(..._dataTypes: FieldDefinition['type'][]) {
 /**
  * Normalize JSON input value
  */
-export function normalizeJSONValue<I, O>(value: MaybeRef<I>, onlyIf: MaybeRefOrGetter<boolean> = true): ComputedRef<O | null> {
+export function normalizeJSONValue<I, O = I>(value: MaybeRef<I>, onlyIf: MaybeRefOrGetter<boolean> = true): WritableComputedRef<O | null> {
   return computed({
     get() {
       const val = toValue(value)

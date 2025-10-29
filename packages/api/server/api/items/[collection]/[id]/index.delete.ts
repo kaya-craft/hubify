@@ -8,14 +8,16 @@ export default defineEventHandler(async (event) => {
     ensureValidQueryParams(collection, event)
   ])
 
-  await ensureUserHasPermission(event, {
+  const shouldProceed = await ensureUserHasPermission(event, {
     collection,
     action: 'remove'
   })
 
-  const { removeOne } = useDatabase()
+  if (!shouldProceed) return { succes: true }
 
   try {
+    const { removeOne } = useDatabase()
+
     await removeOne(collection, pk, params.where)
 
     emitMessage(event, {

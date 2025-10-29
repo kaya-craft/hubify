@@ -34,19 +34,63 @@ export async function isUserAdmin(event: H3Event) {
 }
 
 /**
+ * Check if a permissions test value is set.
+ */
+export async function isTestingPermissions(event: H3Event) {
+  return await isUserAdmin(event) && !!getTestPermissionsHeader(event)
+}
+
+/**
+ *
+ * Get test permissions header.
+ */
+export function getTestPermissionsHeader(event: H3Event) {
+  const value = getHeader(event, 'X-Hubify-Permissions')
+
+  if (isString(value)) {
+    return JSON.parse(value) as TableItem<'hubify_permissions'>[]
+  }
+}
+
+/**
  * Check if the user has the required permission.
  */
 export async function userHasPermission<T extends TableNames>(
   event: H3Event,
   options: Options<T>
 ) {
+  const role = await getUserRole(event)
+  const testPermissions = role?.admin && getTestPermissionsHeader(event)
+
+  if (role?.admin && !testPermissions) return {
+    where: [],
+    shouldProceed: true
+  }
+
+  const permissions = await getPermissionsList(event, options, testPermissions)
+
+  if (!permissions.length) return false
+
+  return {
+    shouldProceed: !testPermissions,
+    where: permissions.flatMap(p => p.where).filter(isNonNullish).map(value => JSON.parse(value))
+  }
+}
+
+/**
+ * Get application permissions for a specific collection and action.
+ */
+async function getPermissionsList<T extends TableNames>(event: H3Event, options: Options<T>, testPermissions?: TableItem<'hubify_permissions'>[]) {
+  if (testPermissions) {
+    return testPermissions.filter((permission) => {
+      return permission.collection === options.collection && permission.action.includes(options.action)
+    })
+  }
+
   const db = useDatabase()
   const role = await getUserRole(event)
 
-  if (role?.admin) return {}
-
   const permissions = await db.find('hubify_permissions', {
-    fields: ['where'],
     where: {
       'policies.roles.id': role ? { $eq: role.id } : { $null: true },
       'collection.name': { $eq: options.collection },
@@ -54,11 +98,7 @@ export async function userHasPermission<T extends TableNames>(
     }
   })
 
-  if (!permissions.length) return false
-
-  return {
-    where: permissions.flatMap(p => p.where).filter(isNonNullish).map(value => JSON.parse(value))
-  }
+  return permissions
 }
 
 /**
@@ -76,7 +116,7 @@ export async function ensureUserHasPermission<T extends TableNames>(event: H3Eve
     options.params.where = { $and: [options.params.where, where].filter(isNonNullish) } as QueryParams<T>['where']
   }
 
-  return true
+  return result.shouldProceed
 }
 
 interface Options<T extends TableNames> {

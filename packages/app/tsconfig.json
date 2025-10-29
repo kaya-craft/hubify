@@ -14,8 +14,5 @@
     {
       "path": "./.nuxt/tsconfig.node.json"
     }
-  ],
-  "typeAcquisition": {
-    "include": ["@nuxt/ui"]
-  }
+  ]
 }

@@ -3,46 +3,25 @@ interface Props {
   collection: T
 }
 
+const value = defineModel<TableFormState<T>>()
+
 const { collection } = defineProps<Props>()
-
-const { t } = useI18n()
-
-const localePath = useLocalePath()
-
-const backRoute = localePath({
-  name: 'admin-items-collection',
-  params: { collection }
-})
 
 const router = useRouter()
 
+/**
+ * Handle form success event
+ */
 function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
-  if (!stay && backRoute) {
-    router.push(backRoute)
-  }
+  if (!stay) router.back()
 }
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <div class="flex items-center gap-4">
-        <UButton
-          :to="backRoute"
-          variant="ghost"
-          color="secondary"
-          icon="heroicons:arrow-left"
-          :aria-label="t('app.back')"
-        />
-        <h2 class="text-lg font-semibold">
-          {{ collection }}
-        </h2>
-      </div>
-    </template>
-
-    <CollectionForm
-      :collection
-      @success="onSuccess"
-    />
-  </UCard>
+  <CollectionForm
+    v-model="value"
+    :collection
+    class="p-8"
+    @success="onSuccess"
+  />
 </template>

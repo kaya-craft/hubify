@@ -10,16 +10,18 @@ export default defineEventHandler(async (event) => {
 
   const inputItem = await ensureValidInputItem(collection, true, event)
 
-  await ensureUserHasPermission(event, {
+  const shouldProceed = await ensureUserHasPermission(event, {
     collection,
     action: 'update',
     params,
     item: inputItem
   })
 
-  const { updateOne } = useDatabase()
+  if (!shouldProceed) return { succes: true }
 
   try {
+    const { updateOne } = useDatabase()
+
     const item = await updateOne(collection, pk, inputItem, params.where)
 
     if (!item) {

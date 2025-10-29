@@ -30,6 +30,7 @@ const { canCreate } = useTable(collection)
       </UButton>
     </template>
   </CollectionTable>
+
   <NuxtPage
     :id
     :collection

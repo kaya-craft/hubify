@@ -10,7 +10,6 @@ interface Props extends /* @vue-ignore */ Omit<CheckboxGroupProps, 'items' | 'mo
 const modelValue = defineModel<string | string[]>()
 
 defineFieldDataTypes('enum', 'enum-array', 'varchar', 'text', 'json', 'jsonb')
-defineOptions({ inheritAttrs: false })
 
 const { options, collection, column, ...checkboxProps } = defineProps<Props>()
 

@@ -8,6 +8,8 @@ const emit = defineEmits<{
   success: [event: TableFormSubmitEvent<T>, stay: boolean]
 }>()
 
+const value = defineModel<TableFormState<T>>()
+
 const { collection, initialState } = defineProps<Props>()
 
 const { columnNames, state, schema, submit } = useTableForm(collection, initialState)
@@ -20,6 +22,10 @@ async function onSubmit(event: TableFormSubmitEvent<T>) {
   await submit(event)
   emit('success', event, !event.target)
 }
+
+watchEffect(() => {
+  value.value = state as TableFormState<T>
+})
 
 defineShortcuts({
   meta_s: () => {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { UDashboardSidebarCollapse } from '#components'
 import type { NavigationMenuItem } from '@nuxt/ui'
 
 /**
@@ -93,7 +94,9 @@ const projectName = computed(() => {
 */
 const route = useRoute()
 
-const currentCollection = computed(() => route.params.collection)
+const currentCollection = computed(() => {
+  return route.params.collection?.toString() as TableNames
+})
 </script>
 
 <template>
@@ -105,20 +108,26 @@ const currentCollection = computed(() => route.params.collection)
         collapsible
         resizable
         class="bg-elevated/25"
-        :ui="{ footer: 'lg:border-t lg:border-default', body: 'pt-0', header: state.sidebar ? 'hidden': 'flex' }"
+        :ui="{ root: 'transition-[width]', footer: 'lg:border-t lg:border-default', body: 'pt-0', header: state.sidebar ? 'hidden': 'flex' }"
       >
-        <template #default="{ collapsed }">
+        <template #default="{ collapsed, collapse }">
           <UDashboardNavbar :ui="{ root: 'sm:px-0 px-0' }">
             <template #leading>
               <div class="flex items-center gap-4">
                 <UAvatar
                   :alt="projectName"
                   :size="collapsed ? 'md' : 'lg'"
+                  :class="{ 'cursor-pointer': collapsed }"
+                  @click="collapsed ? collapse?.(false) : null"
                 />
-                <p>
+                <p v-if="!collapsed">
                   {{ projectName }}
                 </p>
               </div>
+            </template>
+
+            <template #right>
+              <UDashboardSidebarCollapse v-if="!collapsed" />
             </template>
           </UDashboardNavbar>
 
@@ -127,6 +136,7 @@ const currentCollection = computed(() => route.params.collection)
             :label="t('app.search.placeholder')"
             class="bg-transparent ring-default"
           />
+
           <UNavigationMenu
             :collapsed="collapsed"
             :items="menuItems"
@@ -175,7 +185,12 @@ const currentCollection = computed(() => route.params.collection)
         <template #header>
           <UDashboardNavbar :ui="{ center: 'flex' }">
             <template #leading>
-              <UDashboardSidebarCollapse />
+              <UButton
+                variant="ghost"
+                color="neutral"
+                icon="heroicons:arrow-left"
+                @click="$router.back()"
+              />
             </template>
 
             <CollectionTitle :collection="currentCollection" />

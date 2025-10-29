@@ -11,11 +11,11 @@ export default defineEventHandler(async (event) => {
     action: 'read'
   })
 
-  const paginate = getQuery(event).paginate !== 'false' && (isNumber(params.limit) || isNumber(params.offset))
-
-  const { find, db } = useDatabase()
-
   try {
+    const paginate = getQuery(event).paginate !== 'false' && (isNumber(params.limit) || isNumber(params.offset))
+
+    const { find, db } = useDatabase()
+
     const [items, total] = await Promise.all([
       find(collection, params),
       paginate ? db(collection).count({ count: '*' }).then(res => res?.[0]?.count ? Number(res[0].count) : 0) : null

@@ -12,6 +12,11 @@ const { id, collection } = defineProps<Props>()
 const { data: item } = await useFetch('/api/items/' + collection + '/' + id)
 
 /**
+ * List of relations for the current collection.
+ */
+const { relations } = useTable(collection)
+
+/**
  * If the item does not exist, throw a 404 error.
  */
 if (!toValue(item)) {
@@ -50,25 +55,11 @@ async function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <div class="flex items-center gap-4">
-        <UButton
-          :to="backRoute"
-          variant="ghost"
-          color="secondary"
-          icon="heroicons:arrow-left"
-          :aria-label="t('app.back')"
-        />
-        <CollectionTitle :collection />
-      </div>
-    </template>
-
-    <CollectionForm
-      v-if="item"
-      :collection
-      :initial-state="item"
-      @success="onSuccess"
-    />
-  </UCard>
+  <CollectionForm
+    v-if="item"
+    class="p-8"
+    :collection
+    :initial-state="item"
+    @success="onSuccess"
+  />
 </template>

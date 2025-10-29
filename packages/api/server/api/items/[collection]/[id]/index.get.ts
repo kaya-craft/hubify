@@ -14,9 +14,9 @@ export default defineEventHandler(async (event) => {
     action: 'read'
   })
 
-  const { findOne } = useDatabase()
-
   try {
+    const { findOne } = useDatabase()
+
     const item = await findOne(collection, pk, params)
 
     if (!item) {
