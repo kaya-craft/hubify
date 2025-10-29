@@ -56,13 +56,38 @@ function normalizeFieldDefinition<N, F extends FieldDefinition>(schema: Schema, 
     primary: fieldDef.primary ?? false,
     autoIncrement: fieldDef.autoIncrement ?? false,
     nullable: fieldDef.nullable ?? false,
-    unique: fieldDef.unique ?? false,
+    unique: isUnique(fieldDef),
     default: fieldDef.default,
-    length: fieldDef.length ?? (fieldDef.type === 'varchar' ? 255 : undefined),
+    length: getFieldLength(fieldDef),
     precision: fieldDef.precision,
     scale: fieldDef.scale,
     options: fieldDef.options
   }
+}
+
+/**
+ * Get the default length for certain field types.
+ */
+function getFieldLength(fieldDef: FieldDefinition) {
+  switch (fieldDef.type) {
+    case 'varchar':
+      return 255
+    case 'uuid':
+      return 36
+    default:
+      return fieldDef.length
+  }
+}
+
+/**
+ * Get the uniquess of a column.
+ */
+function isUnique(fieldDef: FieldDefinition) {
+  if (fieldDef.type === 'uuid') {
+    return true
+  }
+
+  return fieldDef.unique || false
 }
 
 type NormalizedSchema<T extends Schema> = Prettify<{
