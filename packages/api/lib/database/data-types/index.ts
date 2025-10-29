@@ -78,8 +78,8 @@ export type DataTypeGroupProps = {
 export type DataTypeDefinitions = Record<string, DataTypeProps>
 
 export type DataTypeProps = {
-  create: (knex: Knex.CreateTableBuilder, name: string, def: FieldDefinition, isRelational?: boolean) => Knex.ColumnBuilder
-  validate: (def: FieldDefinition) => z.ZodTypeAny
+  create: (knex: Knex.CreateTableBuilder, name: string, def: FieldDefinition, instance: Knex, isRelational: boolean) => Knex.ColumnBuilder
+  validate: (def: FieldDefinition, type?: 'input' | 'output') => z.ZodTypeAny
   operators?: Operator[]
 }
 

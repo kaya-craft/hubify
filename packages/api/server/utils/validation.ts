@@ -1,6 +1,5 @@
 import tables from '#hubify/schema'
 import { asEnumArray, asObject, itemValidation, whereValidation } from '@hubify/api/validation'
-import type { ZodError } from 'zod'
 import z from 'zod'
 import { getDataTypeValidator } from '@hubify/api/database/data-types'
 
@@ -61,44 +60,4 @@ export async function ensureValidInputItem<T extends TableNames>(
   })
 
   return await readValidatedBody(event, validateItem.parse)
-}
-
-/**
- * Validates an output item for a collection and returns the validated item.
- */
-export async function ensureValidOutputItem<T extends TableNames, I extends TableItem<T>>(
-  collection: T,
-  item: Partial<I> | Promise<Partial<I>>
-) {
-  const validateItem = itemValidation(collection, {
-    includePrimaryKey: true,
-    optional: true
-  })
-
-  try {
-    return validateItem.parse(await item) as I
-  }
-  catch (e) {
-    const error = e as ZodError
-    throw createError({
-      status: 500,
-      message: 'Validation error',
-      data: JSON.parse(error.message)
-    })
-  }
-}
-
-/**
- * Validates many output items for a collection and returns the validated items.
- */
-export async function ensureValidOutputItems<T extends TableNames, I extends TableItem<T>>(
-  collection: T,
-  items: Partial<I>[] | Promise<Partial<I>[]>
-) {
-  const validateItem = itemValidation(collection, {
-    includePrimaryKey: true,
-    optional: true
-  })
-
-  return (await items).map(item => validateItem.parse(item)) as I[]
 }

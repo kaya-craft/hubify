@@ -136,6 +136,11 @@ const filterCount = computed(() => filter.value ? countConditions(filter.value) 
         ref="modal"
         v-model="filter"
         v-model:fullscreen="fullscreen"
+        can-expand
+        show-dropdown
+        class="p-4"
+        :title="t('app.admin.filters.title') "
+        :description="t('app.admin.filters.description') "
         :collection
       />
     </template>

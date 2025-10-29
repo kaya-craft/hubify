@@ -17,6 +17,10 @@ export type ConditionTreeAsArray<T extends TableNames> = {
 
 type Props = {
   collection: T
+  canExpand?: boolean
+  showDropdown?: boolean
+  title?: string
+  description?: string
 }
 
 const filter = defineModel<ConditionTree<T>, string, ConditionTreeAsArray<T>[], ConditionTreeAsArray<T>[]>({
@@ -26,7 +30,7 @@ const filter = defineModel<ConditionTree<T>, string, ConditionTreeAsArray<T>[], 
 
 const fullscreen = defineModel<boolean>('fullscreen')
 
-const { collection } = defineProps<Props>()
+const { collection, showDropdown, canExpand, title, description } = defineProps<Props>()
 
 const { primaryKey } = useTable(() => collection)
 
@@ -121,20 +125,29 @@ const dropdownItems = computed(() => [
 
 <template>
   <div
-    class="flex flex-col gap-4 p-4 min-w-md"
+    class="flex flex-col gap-4 min-w-md"
   >
     <div class="flex items-center justify-between">
-      <div class="flex flex-col">
-        <h2 class="font-bold">
-          {{ t('app.admin.filters.title') }}
+      <div
+        class="flex flex-col"
+      >
+        <h2
+          v-if="title"
+          class="font-bold"
+        >
+          {{ title }}
         </h2>
-        <p class="text-sm text-gray-500">
-          {{ t('app.admin.filters.description') }}
+        <p
+          v-if="description"
+          class="text-sm text-gray-500"
+        >
+          {{ description }}
         </p>
       </div>
 
       <div class="flex items-center gap-2">
         <UButton
+          v-if="canExpand"
           :icon="fullscreen ? 'heroicons:arrows-pointing-in' : 'heroicons:arrows-pointing-out'"
           variant="subtle"
           color="neutral"
@@ -142,7 +155,10 @@ const dropdownItems = computed(() => [
           @click="fullscreen = !fullscreen"
         />
 
-        <UDropdownMenu :items="dropdownItems">
+        <UDropdownMenu
+          v-if="showDropdown"
+          :items="dropdownItems"
+        >
           <UButton
             icon="heroicons:ellipsis-vertical"
             data-testid="filter-options"
@@ -150,6 +166,18 @@ const dropdownItems = computed(() => [
             color="neutral"
           />
         </UDropdownMenu>
+
+        <UButton
+          v-for="(item, index) of dropdownItems"
+          v-else
+          :key="index"
+          :label="item.label"
+          :icon="item.icon"
+          variant="subtle"
+          size="sm"
+          color="neutral"
+          @click="item.onSelect()"
+        />
       </div>
     </div>
 

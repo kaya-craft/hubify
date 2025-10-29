@@ -7,7 +7,7 @@ export default defineCollection(withUuid({
     type: 'varchar'
   },
   action: {
-    type: 'enum',
+    type: 'enum-array',
     options: PERMISSION_ACTIONS,
     nullable: true
   },

@@ -8,7 +8,7 @@ interface Props {
 
 const { state, collectionKey } = defineProps<Props>()
 
-const value = defineModel<string>()
+const modelValue = defineModel<string>()
 
 defineFieldDataTypes('json', 'text', 'jsonb')
 defineOptions({ inheritAttrs: false })
@@ -21,19 +21,7 @@ const { getCollectionNameByPk } = useCollections()
 /**
  * Computed property to parse and stringify JSON value
  */
-const jsonValue = computed({
-  get: () => {
-    try {
-      return JSON.parse(toValue(value) || '{}')
-    }
-    catch {
-      return null
-    }
-  },
-  set: (newValue) => {
-    value.value = JSON.stringify(newValue, null, 2)
-  }
-})
+const jsonValue = normalizeJSONValue(modelValue)
 </script>
 
 <template>

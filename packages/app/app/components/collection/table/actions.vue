@@ -57,7 +57,7 @@ const dropdownItems = computed(() => {
     {
       label: t('app.form.actions.delete'),
       to: localeRoute({
-        name: 'admin-items-collection-id-remove',
+        name: 'admin-items-collection-index-id-remove',
         params: { collection: collection, id: getPrimaryKeyValue(item) }
       }),
       icon: 'heroicons:trash'

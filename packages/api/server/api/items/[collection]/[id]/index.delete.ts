@@ -16,20 +16,14 @@ export default defineEventHandler(async (event) => {
   const { removeOne } = useDatabase()
 
   try {
-    const itemId = await removeOne(collection, pk, params.where)
+    await removeOne(collection, pk, params.where)
 
-    if (!itemId) {
-      throw createError({
-        status: 404,
-        message: 'Item not found'
-      })
-    }
     emitMessage(event, {
       type: 'items:deleted',
       data: { collection, id: pk }
     })
 
-    return itemId
+    return pk
   }
   catch (error) {
     throw createError(String(error) || 'An error occurred while deleting the item')

@@ -50,7 +50,7 @@ export async function userHasPermission<T extends TableNames>(
     where: {
       'policies.roles.id': role ? { $eq: role.id } : { $null: true },
       'collection.name': { $eq: options.collection },
-      'action': { $eq: options.action }
+      'action': { $contains: options.action }
     }
   })
 

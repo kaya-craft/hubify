@@ -5,14 +5,28 @@ interface Props {
   value: string
 }
 
-defineProps<Props>()
+const { value } = defineProps<Props>()
 
 defineFieldDataTypes('json', 'text', 'jsonb')
 defineOptions({ inheritAttrs: false })
+
+const json = normalizeJSONValue(() => value)
+
+const { t } = useI18n()
 </script>
 
 <template>
-  <pre class="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto">
-    {{ value }}
-  </pre>
+  <UModal
+    :title="column"
+    :ui="{ body: '!p-0' }"
+  >
+    <UButton
+      size="sm"
+      :label="t('app.view-json')"
+    />
+
+    <template #body>
+      <pre class="whitespace-pre-wrap bg-black p-6 text-white">{{ JSON.stringify(json, null, 2) }}</pre>
+    </template>
+  </UModal>
 </template>

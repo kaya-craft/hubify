@@ -10,6 +10,7 @@ import { isArray, isNumber } from '@hubify/api/utils/types'
  */
 export function createDatabaseInstance<S extends Schema>(config: Knex.Config, schema: S) {
   const db = knex(config)
+
   const inspector = SchemaInspector(db)
 
   /**

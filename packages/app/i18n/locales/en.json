@@ -107,5 +107,6 @@
   "app.toast.duplicate-item.title": "Duplicate item",
   "app.toast.duplicate-item.success": "The item was successfully duplicated",
   "app.toast.duplicate-item.error": "The item could not be duplicated",
-  "app.select.placeholder": "Select an option"
+  "app.select.placeholder": "Select an option",
+  "app.view-json": "View JSON"
 }

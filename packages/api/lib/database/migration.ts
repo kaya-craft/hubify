@@ -107,7 +107,7 @@ function createColumn(knex: Knex, schema: Schema, table: Knex.CreateTableBuilder
     const foreignKeyDef = schema[definition.table]?.[foreignKey]
     if (!foreignKeyDef || 'table' in foreignKeyDef) throw new Error(`Foreign key definition not found or invalid for relation: ${name}.${name}`)
 
-    const column = getDataTypeCreator(foreignKeyDef.type)(table, name, foreignKeyDef, true)
+    const column = getDataTypeCreator(foreignKeyDef.type)(table, name, foreignKeyDef, knex, true)
     if (!definition.nullable) column.notNullable()
     if (definition.unique) column.unique()
     setColumnDefault(knex, column, definition)
@@ -115,7 +115,7 @@ function createColumn(knex: Knex, schema: Schema, table: Knex.CreateTableBuilder
     table.foreign(name).references(foreignKey).inTable(definition.table).onDelete(definition.onDelete || 'CASCADE').onUpdate(definition.onUpdate || 'CASCADE')
   }
   else {
-    const column = getDataTypeCreator(definition.type)(table, name, definition)
+    const column = getDataTypeCreator(definition.type)(table, name, definition, knex, false)
     if (!definition.nullable) column.notNullable()
     if (definition.unique) column.unique()
     if (definition.primary) {

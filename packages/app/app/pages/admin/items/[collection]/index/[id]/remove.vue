@@ -34,7 +34,6 @@ async function deleteItem() {
       color: 'success',
       description: 'The item has been successfully deleted.'
     })
-
     close()
   }
   catch (error) {

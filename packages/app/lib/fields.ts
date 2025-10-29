@@ -66,9 +66,10 @@ function getDefaultInputType(collection: string, column: string, columnDef: Fiel
 
   if (columnDef.options && columnDef.options.length > 0) {
     return {
-      component: 'select',
+      component: columnDef.type === 'enum-array' ? 'checkbox' : 'select',
       props: {
         ...baseProps,
+        multiple: columnDef.type.includes('array'),
         options: columnDef.options
       }
     }
@@ -127,6 +128,13 @@ function getDefaultDisplayType(collection: string, column: string, columnDef: Fi
         ...baseProps,
         relatedTable: columnDef.table
       }
+    }
+  }
+
+  if (columnDef.options && columnDef.options.length > 0) {
+    return {
+      component: 'labels',
+      props: baseProps
     }
   }
 
