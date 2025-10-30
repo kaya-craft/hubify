@@ -125,7 +125,7 @@ const filterCount = computed(() => filter.value ? countConditions(filter.value) 
     :open="open"
   >
     <UButton
-      :label="t('app.admin.filters.label') + ` (${filterCount})`"
+      :label="`${t('app.admin.filters.label')} (${filterCount})`"
       v-bind="{ variant, color, size }"
       leading-icon="heroicons:funnel"
       @click.prevent="open = !open"

@@ -126,4 +126,17 @@ export type RelationForeignKey<S extends Schema, T extends TableNames<S>, R exte
 
 export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
 
+export type TableFieldType<S extends Schema, T extends TableNames<S>, F extends TableFieldNames<S, T>> = TableField<S, T, F> extends infer I
+  ? I extends ColumnDefinition ? TableColumnType<S, T, F>
+    : I extends RelationDefinition
+      ? TableRelation<S, T, F> extends infer R
+        ? R extends { type: OneRelationTypes }
+          ? TableColumnType<S, T, RelationForeignKey<S, T, F>> | Prettify<TableItem<S, TableRelation<S, T, F>['table']>> | null
+          : R extends { type: ManyRelationTypes }
+            ? TableColumnType<S, T, RelationForeignKey<S, T, F>>[] | Prettify<TableItem<S, TableRelation<S, T, F>['table']>>[]
+            : never
+        : never
+      : never
+  : never
+
 export type Prettify<T> = { [K in keyof T]: T[K] } & {}

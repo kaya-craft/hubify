@@ -23,12 +23,12 @@ const methods = ['GET', 'POST', 'PUT', 'DELETE'] as const
  * State for the permission tester.
  */
 const state = reactive({
-  collection: null as string | null,
-  primaryKey: null as string | null,
+  collection: undefined as string | undefined,
+  primaryKey: undefined as string | undefined,
   method: 'GET' as (typeof methods)[number],
-  body: null as string | null,
-  result: null as unknown | null,
-  error: null as string | null
+  body: undefined as string | undefined,
+  result: undefined as unknown | undefined,
+  error: undefined as string | undefined
 })
 
 /**
@@ -60,8 +60,10 @@ async function testPermissions() {
   if (!url) return
 
   try {
-    state.error = null
-    state.result = null
+    Object.assign(state, {
+      result: undefined,
+      error: undefined
+    })
 
     state.result = await $fetch(url, {
       method: state.method,
@@ -74,6 +76,9 @@ async function testPermissions() {
   }
 }
 
+/**
+ * Translations
+ */
 const { t } = useI18n()
 </script>
 

@@ -27,11 +27,6 @@ const { limit, where } = useQueryRouter(collection, baseQueryRouter)
 const { getPrimaryKeyValue } = useTable(collection)
 
 /**
- * Handle delete items
- */
-const { remove } = useCollection(collection)
-
-/**
  * Locale route helper.
  */
 const localeRoute = useLocaleRoute()
@@ -76,7 +71,6 @@ const tableColumnsItems = computed(() => {
     }) satisfies DropdownMenuItem)
 })
 
-const deleteModalOpen = ref(false)
 /**
  * Selected items
  */
@@ -97,14 +91,6 @@ const selectedItemsPks = computed(() => {
 const disableDeleteButton = computed(() => {
   return selectedItems.value.length === 0
 })
-
-/**
- * Handle delete items
- */
-async function handleDeleteItems() {
-  await remove(selectedItemsPks)
-  deleteModalOpen.value = false
-}
 </script>
 
 <template>
@@ -150,13 +136,13 @@ async function handleDeleteItems() {
     <div class="flex gap-4 overflow-x-scroll">
       <UButton
         color="error"
+        :disabled="disableDeleteButton"
         v-bind="{ size, variant }"
         icon="heroicons:trash"
         :label="t('app.form.actions.delete')"
-        :to="localeRoute('/admin/items/'+collection+'/remove?items='+selectedItemsPks)"
+        :to="localeRoute(`/admin/items/${collection}/remove?items=${selectedItemsPks}`)"
       />
 
-      <!-- Create -->
       <UButton
         :to="localeRoute(`/admin/items/${collection}/create`)"
         color="secondary"

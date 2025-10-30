@@ -13,7 +13,8 @@ export default createConfigForNuxt({
 })
   .append({
     rules: {
-      'prefer-template': 'error'
+      'prefer-template': 'error',
+      'vue/prefer-template': 'error'
     }
   })
   .overrideRules({

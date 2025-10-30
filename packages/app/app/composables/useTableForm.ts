@@ -3,11 +3,11 @@ import type z from 'zod'
 import { itemValidation } from '@hubify/api/validation'
 
 export type TableFormState<T extends TableNames> = {
-  [C in TableColumnNames<T>]: TableColumnType<T, C> | undefined
+  [C in TableFieldNames<T>]: TableFieldType<T, C> | undefined
 } extends infer U extends object ? U : never
 
 export type TableFormSchema<T extends TableNames> = z.ZodObject<{
-  [C in TableColumnNames<T>]: z.ZodType<TableColumnType<T, C> | undefined>
+  [C in TableFieldNames<T>]: z.ZodType<TableFieldType<T, C> | undefined>
 }>
 
 export type TableFormSubmitEvent<T extends TableNames> = FormSubmitEvent<z.Infer<TableFormSchema<T>>>
@@ -70,7 +70,7 @@ export function useTableForm<T extends TableNames>(collection: T, initialState?:
    */
   async function create(data: TableFormSubmitEvent<T>['data']) {
     try {
-      await $fetch(`/api/items/${collection}`, {
+      await $fetch(`/api/items/${collection}` as '/api/items/:collection', {
         method: 'post',
         body: data
       })
