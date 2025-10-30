@@ -1,4 +1,4 @@
-import type { HubifyTookPayload, ScopedHubifyHooks } from '@@/types/hooks'
+import type { HubifyTookPayload, ScopedHubifyHooks } from '@hubify/api/types/hooks'
 
 /**
  * Use websocket.

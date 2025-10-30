@@ -1,6 +1,6 @@
 import { defineNuxtConfig } from 'nuxt/config'
 import { resolve } from 'path'
-import i18nConfig from './i18n/config'
+import i18nConfig from './.content/i18n/config'
 
 export default defineNuxtConfig({
   extends: ['@hubify/api'],
@@ -11,10 +11,6 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxtjs/i18n'
   ],
-
-  ssr: false,
-
-  pages: true,
 
   css: [resolve(__dirname, 'app/assets/css/main.css')],
 

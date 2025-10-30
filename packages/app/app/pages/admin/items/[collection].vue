@@ -20,7 +20,7 @@ const { getCollectionMeta } = useCollections()
 
 usePageTitle({
   title: getCollectionMeta(collection)?.name || 'Hubify collections',
-  icon: getCollectionMeta(collection)?.icon
+  icon: getCollectionMeta(collection)?.icon || ''
 })
 </script>
 

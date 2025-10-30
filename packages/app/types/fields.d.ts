@@ -29,7 +29,10 @@ export type FieldOption<T extends TableNames, C extends TableColumnNames<T>> = f
 
 export type FieldOptions<T extends TableNames> = {
   [K in TableColumnNames<T>]?: TableColumn<T, K>['type'] extends infer U extends keyof FieldOptionByDataTypes<T, K>
-    ? FieldOptionByDataTypes<T, K>[U] extends infer I ? I extends boolean ? I : I & Omit<Exclude<FieldOption<T, K>, boolean>, keyof I> : never
+    ? FieldOptionByDataTypes<T, K>[U] extends infer I
+      ? I extends boolean ? I
+        : I & Omit<Exclude<FieldOption<T, K>, boolean>, keyof I>
+      : never
     : FieldOption<T, K>
 }
 

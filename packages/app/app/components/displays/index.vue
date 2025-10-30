@@ -2,7 +2,7 @@
 const { collection, column } = defineProps<{
   collection: T
   column: C
-  value: string | number
+  value: unknown
 }>()
 
 const { getDisplayComponent, getColumnLabel } = useTable(collection)
@@ -16,6 +16,7 @@ const { getDisplayComponent, getColumnLabel } = useTable(collection)
     <p class="font-bold">
       {{ getColumnLabel(column) }}
     </p>
+
     <component
       :is="getDisplayComponent(column)"
       :key="column"

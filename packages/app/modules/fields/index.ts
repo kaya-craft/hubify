@@ -1,6 +1,6 @@
 import { getDirectories, getFilesFromDir } from '@hubify/api/modules/schema/index'
 import { join, resolve } from 'node:path'
-import { useNuxt, addTypeTemplate, addTemplate, defineNuxtModule, resolveModule, useLogger, updateTemplates } from 'nuxt/kit'
+import { useNuxt, addTypeTemplate, addTemplate, defineNuxtModule, useLogger, updateTemplates, resolveModule } from 'nuxt/kit'
 import { scanFilesFromDir } from 'unimport'
 
 export interface FieldsModuleOptions {
@@ -188,7 +188,9 @@ async function generateDefineField(fieldsDirs: string[]) {
         extends: '../../tsconfig.json',
         compilerOptions: {
           composite: true,
-          noEmit: false
+          noEmit: true,
+          skipLibCheck: true
+
         },
         include: [
           resolve('./lib/fields/index.ts'),

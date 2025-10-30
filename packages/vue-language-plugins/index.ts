@@ -19,7 +19,7 @@ function transformDefineOptions({
   existing?: Expression
 }) {
   const arg = call.arguments as NodeArray<Expression>
-  const text = `dataTypes: [${arg.map(d => d.getText(sfc.scriptSetup?.ast)).join(', ')}] as const`
+  const text = `dataTypes: [${arg.map(exp => exp.getText?.(sfc.scriptSetup?.ast)).join(', ')}] as const`
 
   if (existing) {
     replaceSourceRange(
@@ -41,7 +41,7 @@ function transformDefineOptions({
 
     replace(
       codes,
-      /(?<=^(?:export\sdefault|const\s__VLS_component\s=)\s\(await\simport\([\S\s]+\)\).defineComponent\(\{)/m,
+      /(?<=^(?:export\sdefault|const __VLS_export\s=)\s\(await\simport\([\S\s]+\)\).defineComponent\(\{)/m,
       '\nsetup: () => (__VLS_exposed),'
     )
 

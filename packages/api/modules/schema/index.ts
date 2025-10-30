@@ -54,6 +54,10 @@ export default defineNuxtModule<HubifyModuleOptions>({
       }
     })
 
+    nuxt.hook('prepare:types', (options) => {
+      options.references.push({ path: resolve(__dirname, '../../types/auth.d.ts') })
+    })
+
     nuxt.options.typescript.sharedTsConfig ??= {}
     nuxt.options.typescript.sharedTsConfig.compilerOptions ??= {}
     nuxt.options.typescript.sharedTsConfig.compilerOptions.paths ??= {}

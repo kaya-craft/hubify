@@ -73,7 +73,7 @@ export function useQueryRouter<T extends TableNames>(table: T, baseQueryRouter?:
   /**
    * Limit query model.
    */
-  const limit = useRouteQuery<string, QueryParams<T>['limit']>('limit', undefined, {
+  const limit = useRouteQuery<string, number>('limit', undefined, {
     mode: 'replace',
     transform(val) {
       const limit = Number(val)

@@ -1,4 +1,4 @@
-import type { ScopedHubifyHooks } from '@hubify/api/hooks'
+import type { ScopedHubifyHooks } from '@hubify/api/types/hooks'
 
 export default defineNuxtPlugin(() => {
   if (typeof globalThis.WebSocket === 'undefined') return

@@ -139,6 +139,7 @@ export function useCollection<T extends TableNames>(collection: T) {
       loading.value = true
 
       const relation = getRelation(relationName)
+
       if (!relation.foreignKey) throw new Error(`Relation "${String(relationName)}" does not have a foreign key defined.`)
 
       const [primaryKey, ids] = _extractPrimaryKeyValues(relation.table, idOrItems)

@@ -51,7 +51,7 @@ const { data: items } = useFetch(`/api/items/${toValue(name)}`, {
   },
   transform: (items: TableItem<TableNames>[]) => items.map(item => ({
     label: getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn) as keyof typeof item]),
-    value: item[toValue(primaryKey) as keyof typeof item]
+    value: item[toValue(primaryKey) as keyof typeof item] as string | number
   }))
 })
 </script>

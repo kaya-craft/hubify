@@ -59,6 +59,9 @@ importers:
 
   packages/api:
     dependencies:
+      '@hubify/api':
+        specifier: 'workspace:'
+        version: 'link:'
       '@nuxt/kit':
         specifier: ^4.1.0
         version: 4.2.0(magicast@0.3.5)
