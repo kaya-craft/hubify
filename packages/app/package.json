@@ -57,7 +57,6 @@
     "ufo": "^1.6.1",
     "unimport": "^5.2.0",
     "unplugin-vue-router": "^0.16.0",
-    "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:",
     "@nuxt/test-utils": "catalog:",
