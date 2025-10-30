@@ -111,6 +111,9 @@ importers:
       jiti:
         specifier: ^2.5.1
         version: 2.6.1
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
       unimport:
         specifier: ^5.2.0
         version: 5.5.0
@@ -217,6 +220,9 @@ importers:
       playwright:
         specifier: 'catalog:'
         version: 1.56.1
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
       ufo:
         specifier: ^1.6.1
         version: 1.6.1

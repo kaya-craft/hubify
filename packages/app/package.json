@@ -49,6 +49,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "typescript": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-unit-testing": "^1.1.1",
     "@iconify/vue": "^5.0.0",
     "@types/yaireo__tagify": "^4.27.0",
