@@ -21,7 +21,7 @@ export function withTimestamps<const T extends TableDefinition>(fields: T) {
       type: 'datetime',
       default: '{CURRENT_TIMESTAMP}'
     }
-  } satisfies TableDefinition
+  } as const satisfies TableDefinition
 }
 
 /**
@@ -35,7 +35,7 @@ export function withId<const T extends TableDefinition>(fields: T) {
       autoIncrement: true
     },
     ...fields
-  } satisfies TableDefinition
+  } as const satisfies TableDefinition
 }
 
 /**
@@ -48,7 +48,7 @@ export function withUuid<const T extends TableDefinition>(fields: T) {
       primary: true
     },
     ...fields
-  } satisfies TableDefinition
+  } as const satisfies TableDefinition
 }
 
 /**

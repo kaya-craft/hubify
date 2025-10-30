@@ -1,5 +1,5 @@
 import type { knex } from 'knex'
-import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition, TableDefinition } from './types'
+import type { Schema, TableNames, QueryParams, FieldName, RelationDefinition, TableDefinition, FieldDefinition, ColumnDefinition } from './types'
 import { OPERATORS } from './operators'
 
 /**
@@ -69,14 +69,14 @@ export function getJoinsFromQuery<S extends Schema, T extends TableNames<S>>(sch
 
   for (const field of fields) {
     field.split('.').reduce((acc, part) => {
-      const field = acc?.[part as keyof typeof acc]
+      const field = acc?.[part as keyof typeof acc] as FieldDefinition | undefined
 
       if (!isRelation(field)) return acc
 
       joins.set(part, field)
 
-      return schema[field.table]
-    }, schema[table] as S[T] | TableDefinition | undefined)
+      return schema[field.table as TableNames<S>]
+    }, schema[table] as S[TableNames<S>] | TableDefinition | undefined)
   }
 
   return joins
@@ -94,7 +94,9 @@ export function normalizeFields<S extends Schema, T extends TableNames<S>>(schem
  */
 export function normalizeField<S extends Schema, T extends TableNames<S>>(schema: S, table: T, field: FieldName<S, T>): string {
   return field.split('.').reduce((_, part, index, array) => {
-    const field = schema[table]?.[part]
+    const tableDef = schema[table]
+    const field = tableDef?.[part as keyof typeof tableDef]
+
     if (isRelation(field) && index < array.length - 1) {
       table = field.table as T
     }
@@ -159,21 +161,23 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
   if (!joins.size) return
 
   for (const [fromKey, relation] of joins) {
-    if (relation.type === 'many-to-many') {
+    if (isManyToManyRelation<S>(relation)) {
       const [throughForeignKey, throughRelation] = Object.entries(schema[relation.through] ?? {}).find(([_, col]) => {
         return isRelation(col) && col.table === relation.table
       }) || []
-      if (!isRelation(throughRelation)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
-      const throughLocalKey = getRelationForeignKey(schema, throughRelation.table, relation)
 
-      const throughRelation2 = schema[relation.through]?.[relation.throughKey]
+      if (!isRelation(throughRelation)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
+
+      const throughLocalKey = getRelationForeignKey(schema, throughRelation.table, relation)
+      const throughRelation2 = schema[relation.through]
+
       if (!isRelation(throughRelation2)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
       const relationLocalKey = getRelationForeignKey(schema, throughRelation2.table, relation)
 
       builder.leftJoin(relation.through, `${throughRelation2.table}.${relationLocalKey}`, '=', `${relation.through}.${relation.throughKey}`)
       builder.leftJoin(relation.table, `${relation.through}.${throughForeignKey}`, '=', `${throughRelation.table}.${throughLocalKey}`)
     }
-    else {
+    else if (isOneToManyRelation<S>(relation)) {
       const foreignKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, relation.table)
       builder.leftJoin(relation.table, `${table}.${fromKey}`, '=', `${relation.table}.${foreignKey}`)
     }
@@ -186,8 +190,8 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
 export function getPrimaryKeyColumn<S extends Schema, T extends TableNames<S>>(schema: S, table: T) {
   const fields = schema[table]
   if (!fields) throw new Error(`Table not found in schema: ${table}`)
-
-  const primaryKeyColumn = Object.entries(fields).find(([_, col]) => 'primary' in col && col.primary)
+  const entries = Object.entries(fields) as [string, FieldDefinition][]
+  const primaryKeyColumn = entries.find(([_, col]) => 'primary' in col && col.primary)
 
   if (!primaryKeyColumn) throw new Error(`Primary key field not found for table: ${table}`)
 
@@ -219,20 +223,27 @@ export function wrapSingleResult<B extends knex.Knex.QueryBuilder>(builder: B) {
 /**
  * Check if a field definition is a relation.
  */
-export function isRelation(field: unknown): field is RelationDefinition {
+export function isRelation<S extends Schema = Schema>(field: unknown): field is RelationDefinition & { table: TableNames<S> } {
   return typeof field === 'object' && field !== null && 'table' in field && 'type' in field && (field.type === 'one-to-one' || field.type === 'one-to-many' || field.type === 'many-to-one' || field.type === 'many-to-many')
+}
+
+/**
+ * Check if a field definition is a column.
+ */
+export function isColumn<S extends Schema = Schema>(field: unknown): field is ColumnDefinition {
+  return typeof field === 'object' && field !== null && 'type' in field && !isRelation<S>(field)
 }
 
 /**
  * Check if a field definition is a many-to-many relation.
  */
-export function isManyToManyRelation(field: unknown): field is RelationDefinition & { type: 'many-to-many' } {
+export function isManyToManyRelation<S extends Schema = Schema>(field: unknown): field is RelationDefinition & { type: 'many-to-many', table: TableNames<S>, through: TableNames<S> } {
   return isRelation(field) && field.type === 'many-to-many'
 }
 
 /**
  * Check if a field definition is a one-to-many relation.
  */
-export function isOneToManyRelation(field: unknown): field is RelationDefinition & { type: 'one-to-many' } {
+export function isOneToManyRelation<S extends Schema = Schema>(field: unknown): field is RelationDefinition & { type: 'one-to-many', table: TableNames<S> } {
   return isRelation(field) && field.type === 'one-to-many'
 }

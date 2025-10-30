@@ -3,7 +3,7 @@ import { instance } from './setup'
 import { getCurrentSchema, runMigrations } from '@hubify/api/database/migration'
 import schema from '#hubify/schema'
 import { normalizeSchema } from '@hubify/api/collections'
-import type { Schema } from '@hubify/api/database/types'
+import type { Schema, TableDefinition } from '@hubify/api/database/types'
 
 describe('database', () => {
   it('should write correct find query', async () => {
@@ -137,11 +137,13 @@ describe('database', () => {
 // e.g. '{CURRENT_TIMESTAMP}' becomes 'CURRENT_TIMESTAMP'
 // Also remove many-to-many relations as they are not represented in the database schema
 function cleanSchema<T extends Schema>(schema: T) {
-  return Object.fromEntries(Object.entries(schema).map(([tableName, tableDef]) => [
+  const entries = Object.entries(schema) as [string, TableDefinition][]
+
+  return Object.fromEntries(entries.map(([tableName, tableDef]) => [
     tableName,
     Object.fromEntries(Object.entries(tableDef).filter(([_, fieldDef]) => fieldDef.type !== 'many-to-many').map(([fieldName, fieldDef]) => [
       fieldName,
       Object.fromEntries(Object.entries(fieldDef).filter(([key, _]) => key !== 'default'))
     ]))
-  ])) as T
+  ])) as unknown as T
 }

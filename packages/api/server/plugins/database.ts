@@ -31,7 +31,7 @@ async function updateHubifyCollections(nitroApp: NitroApp) {
 
   const schemaTablesNames = Object.keys(schema)
 
-  const diff = schemaTablesNames.filter(name => !collectionsNames.includes(name))
+  const diff = schemaTablesNames.filter(name => !collectionsNames.includes(name)) as TableNames[]
 
   if (diff.length === 0) return
 
