@@ -1,6 +1,6 @@
 import { extname, resolve, isAbsolute, join } from 'node:path'
 import { existsSync } from 'node:fs'
-import { addTemplate, defineNuxtModule, updateRuntimeConfig, updateTemplates, useNuxt } from 'nuxt/kit'
+import { addServerTemplate, addTemplate, defineNuxtModule, updateRuntimeConfig, updateTemplates, useNuxt } from 'nuxt/kit'
 import type { Knex } from 'knex'
 import { scanDirExports } from 'unimport'
 
@@ -37,10 +37,10 @@ export default defineNuxtModule<HubifyModuleOptions>({
       getContents: () => generateSchemaContent(dirs)
     })
 
-    nuxt.options.nitro.alias ??= {}
-    nuxt.options.alias ??= {}
-    nuxt.options.nitro.alias['#hubify/schema'] ??= schema
-    nuxt.options.alias['#hubify/schema'] ??= schema
+    addServerTemplate({
+      filename: 'hubify/schema.ts',
+      getContents: () => generateSchemaContent(dirs)
+    })
 
     nuxt.hook('builder:watch', async (_, path) => {
       const isSchemaFile = dirs.some(dir => path.startsWith(dir))
@@ -53,6 +53,11 @@ export default defineNuxtModule<HubifyModuleOptions>({
         db: options
       }
     })
+
+    nuxt.options.alias['#hubify/*'] = join(nuxt.options.buildDir, 'hubify', '*.ts')
+    nuxt.options.nitro ??= {}
+    nuxt.options.nitro.alias ??= {}
+    nuxt.options.nitro.alias['#hubify/schema'] = join(nuxt.options.buildDir, 'hubify', 'schema.ts')
   }
 })
 
@@ -68,9 +73,9 @@ function getAllCollectionFiles(dirs: string[]) {
  * Update the database schema by running migrations and return the current schema.
  */
 async function generateSchemaContent(dirs: string[]) {
-  const nuxt = useNuxt()
-
   const files = await getAllCollectionFiles(dirs)
+
+  const nuxt = useNuxt()
 
   await nuxt.callHook('hubify:schema', files)
 
@@ -105,9 +110,8 @@ async function generateSchemaContent(dirs: string[]) {
     ...collections.map(name => `export const ${name} = schema.${name}`),
     '',
     'export interface HubifySchema {',
-    collections.map(collection => `\t${collection}: typeof schema.${collection}`).join('\n'),
+    collections.map(collection => `\t${collection}: typeof schema['${collection}']`).join('\n'),
     '}',
-    '',
     'export default schema'
   ].join('\n')
 }

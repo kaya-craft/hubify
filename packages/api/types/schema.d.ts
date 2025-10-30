@@ -1,9 +1,4 @@
 import type { TableNames as _TableNames, TableColumns as _TableColumns, TableColumnNames as _TableColumnNames, TableColumn as _TableColumn, TableRelations as _TableRelations, TableRelationNames as _TableRelationNames, TableRelation as _TableRelation, TableItem as _TableItem, QueryParams as _QueryParams, TableColumnType as _TableColumnType, TablePrimaryKeyValue as _TablePrimaryKeyValue, PrimaryKeyColumn, ConditionTree as _ConditionTree, ColumnDefinition, Prettify, Schema as _Schema, TableFieldNames as _TableFieldNames, TableFields as _TableFields } from '@hubify/api/database/types.d'
-import type { defineCollection as _defineCollection } from '#imports'
-
-declare global {
-  const defineCollection: typeof _defineCollection
-}
 
 export type Schema = import('#hubify/schema').HubifySchema extends infer S extends _Schema ? S : never
 export type Table<T extends TableNames> = Schema[T]

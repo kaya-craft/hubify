@@ -162,14 +162,16 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
 
   for (const [fromKey, relation] of joins) {
     if (isManyToManyRelation<S>(relation)) {
-      const [throughForeignKey, throughRelation] = Object.entries(schema[relation.through] ?? {}).find(([_, col]) => {
+      const relationThroughTable = relation.through
+
+      const [throughForeignKey, throughRelation] = Object.entries(schema[relationThroughTable] ?? {}).find(([_, col]) => {
         return isRelation(col) && col.table === relation.table
       }) || []
 
-      if (!isRelation(throughRelation)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
+      if (!isRelation(throughRelation)) throw new Error(`Through relation not found: ${relationThroughTable} -> ${relation.table}`)
 
       const throughLocalKey = getRelationForeignKey(schema, throughRelation.table, relation)
-      const throughRelation2 = schema[relation.through]
+      const throughRelation2 = schema[relationThroughTable][relation.throughKey as keyof typeof schema[typeof relationThroughTable]]
 
       if (!isRelation(throughRelation2)) throw new Error(`Through relation not found: ${relation.through} -> ${relation.table}`)
       const relationLocalKey = getRelationForeignKey(schema, throughRelation2.table, relation)
