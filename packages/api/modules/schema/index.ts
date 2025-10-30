@@ -54,10 +54,15 @@ export default defineNuxtModule<HubifyModuleOptions>({
       }
     })
 
-    nuxt.options.alias['#hubify/*'] = join(nuxt.options.buildDir, 'hubify', '*.ts')
+    nuxt.options.typescript.sharedTsConfig ??= {}
+    nuxt.options.typescript.sharedTsConfig.compilerOptions ??= {}
+    nuxt.options.typescript.sharedTsConfig.compilerOptions.paths ??= {}
+    nuxt.options.typescript.sharedTsConfig.compilerOptions.paths['#hubify/*'] = ['./hubify/*']
+
     nuxt.options.nitro ??= {}
     nuxt.options.nitro.alias ??= {}
-    nuxt.options.nitro.alias['#hubify/schema'] = join(nuxt.options.buildDir, 'hubify', 'schema.ts')
+    nuxt.options.nitro.alias['#hubify/schema'] = schema
+    nuxt.options.alias['#hubify/schema'] = schema
   }
 })
 
