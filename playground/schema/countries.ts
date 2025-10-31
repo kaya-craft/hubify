@@ -10,7 +10,7 @@ export default defineCollection(withDefaults({
     nullable: true
   },
   region: {
-    type: 'one-to-many',
+    type: 'many-to-one',
     table: 'regions'
   }
 }))
