@@ -49,7 +49,6 @@ export type FieldDefinition = ColumnDefinition | RelationDefinition
 
 export type TableNames<S extends Schema> = keyof S & string
 
-export type TableFields<S extends Schema, T extends TableNames<S>> = S[T] extends infer F ? F : never
 export type TableFieldNames<S extends Schema, T extends TableNames<S>> = keyof TableFields<S, T> extends never ? string : keyof TableFields<S, T> & string
 
 export type TableColumnNames<S extends Schema, T extends TableNames<S>> = {
@@ -59,6 +58,10 @@ export type TableColumnNames<S extends Schema, T extends TableNames<S>> = {
 export type TableRelationNames<S extends Schema, T extends TableNames<S>> = {
   [K in keyof TableFields<S, T>]: TableFields<S, T>[K] extends RelationDefinition ? K : never
 }[keyof TableFields<S, T>] & string
+
+export type TableFields<S extends Schema, T extends TableNames<S>> = S[T] extends infer F ? F : never
+
+export type TableField<S extends Schema, T extends TableNames<S>, F extends TableFieldNames<S, T>> = TableFields<S, T>[F]
 
 export type TableColumns<S extends Schema, T extends TableNames<S>> = Pick<TableFields<S, T>, TableColumnNames<S, T>>
 

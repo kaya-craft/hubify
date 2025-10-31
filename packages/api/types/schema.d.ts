@@ -8,6 +8,7 @@ export type TableColumnNames<T extends TableNames> = _TableColumnNames<Schema, T
 export type TableColumn<T extends TableNames, C extends TableColumnNames<T>> = TableColumns<T>[C] extends infer U extends ColumnDefinition ? U : never
 export type TableFieldNames<T extends TableNames> = _TableFieldNames<Schema, T>
 export type TableFields<T extends TableNames> = _TableFields<Schema, T>
+export type TableField<T extends TableNames, F extends TableFieldNames<T>> = TableFields<T>[F] extends infer U ? U : never
 export type TableRelations<T extends TableNames> = _TableRelations<Schema, T>
 export type TableRelationNames<T extends TableNames> = _TableRelationNames<Schema, T>
 export type TableRelation<T extends TableNames, R extends TableRelationNames<T>> = _TableRelation<Schema, T, R> extends infer U extends RelationDefinition ? Omit<U, 'table'> & { table: TableNames } : never

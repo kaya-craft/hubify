@@ -1,46 +1,49 @@
 import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
-import type { TableNames, TableColumnNames, TableColumn, TableColumnType } from '@hubify/api/types/schema'
-import type { DataTypes, DataTypeValidator } from '@hubify/api/database/data-types'
+import type { TableNames, TableFieldNames, TableColumnNames, TableColumnType, TableField } from '@hubify/api/types/schema'
+import type { DataTypeValidator } from '@hubify/api/database/data-types'
 import type { ZodType } from 'zod'
+import type { FieldDefinition } from '@hubify/api/database/types'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type Input<D extends DataTypes = DataTypes> = {
-  component?: string
-  props?: Record<string, any>
-  class?: string
-  label?: string
-  rules?: (rules: DataTypeValidator<D> extends never ? any : DataTypeValidator<D>) => ZodType<any>
-}
+export type Input<D extends FieldDefinition['type'] = FieldDefinition['type']> = {
+  [P in keyof InputComponents]: D extends ComponentDataTypes<InputComponents[P]> ? {
+    component?: P
+    props?: Partial<Simplify<ComponentProps<InputComponents[P]>>>
+    class?: string
+    label?: string
+    rules?: (defaultRules: DataTypeValidator<D>) => ZodType<any>
+  } : never
+}[keyof InputComponents]
 
-export type Display = {
-  component?: string
-  props?: Record<string, any>
-  class?: string
-  label?: string
-}
+export type Display<D extends FieldDefinition['type'] = FieldDefinition['type']> = {
+  [P in keyof DisplayComponents]: D extends ComponentDataTypes<DisplayComponents[P]> ? {
+    component?: P
+    props?: Partial<Simplify<ComponentProps<DisplayComponents[P]>>>
+    class?: string
+    label?: string
+  } : never
+}[keyof DisplayComponents]
 
-export type FieldOption<D extends DataTypes = DataTypes> = false | {
+export type FieldOption<D extends FieldDefinition['type'] = FieldDefinition['type']> = false | {
   order?: number
   label?: string
   input?: Input<D> | false
-  display?: Display | false
+  display?: Display<D> | false
 }
 
 export type FieldOptions<T extends TableNames> = {
-  [K in TableColumnNames<T>]?: TableColumn<T, K>['type'] extends infer U extends keyof FieldOptionByDataTypes<U>
-    ? FieldOption<U>
-    : FieldOption
+  [K in TableFieldNames<T>]?: FieldOption<TableField<T, K>['type']>
 }
+
 export type TableFieldOptions<T extends TableNames> = FieldOptions<T>
 export type TableFieldOption<T extends TableNames, C extends TableColumnNames<T>> = TableColumnType<T, C> extends infer U ? FieldOption<U> : never
-
 export type TableFieldOptionValue<T extends TableNames, C extends TableColumnNames<T>> = TableColumnType<T, C>
 
 type ComponentProps<C extends Component> = C extends new (...args: any) => any
   ? Omit<InstanceType<C>['$props'], keyof VNodeProps | keyof AllowedComponentProps>
   : C extends (...args: any) => any ? NonNullable<ReturnType<C>['__ctx']>['props'] : never
 
-export type ComponentDataTypes<C extends Component> = C extends new (...args: any) => any
+type ComponentDataTypes<C extends Component> = C extends new (...args: any) => any
   ? InstanceType<C>['dataTypes'] extends readonly (infer T)[]
     ? T
     : never
@@ -65,35 +68,5 @@ type InputComponentDataTypes = {
 type DisplayComponentDataTypes = {
   [K in keyof DisplayComponents]: ComponentDataTypes<DisplayComponents[K]>
 }[keyof DisplayComponents]
-
-type DisplayByDataTypes = {
-  [K in DisplayComponentDataTypes]: {
-    [P in keyof DisplayComponents]: K extends ComponentDataTypes<DisplayComponents[P]> ? false | {
-      component?: P
-      props?: Simplify<ComponentProps<DisplayComponents[P]>>
-      class?: string
-      label?: string
-    } : never
-  }[keyof DisplayComponents]
-}
-
-type InputByDataTypes<D extends DataTypes = DataTypes> = {
-  [K in InputComponentDataTypes]: {
-    [P in keyof InputComponents]: K extends ComponentDataTypes<InputComponents[P]> ? false | {
-      component: P
-      props?: Simplify<ComponentProps<InputComponents[P]>>
-      class?: string
-      label?: string
-      rules?: (defaultRules: DataTypeValidator<D>) => ZodType<any>
-    } : never
-  }[keyof InputComponents]
-}
-
-type FieldOptionByDataTypes<D extends DataTypes = DataTypes> = {
-  [K in InputComponentDataTypes | DisplayComponentDataTypes]: false | {
-    input?: K extends InputComponentDataTypes ? InputByDataTypes<D>[K] : Input | false
-    display?: K extends DisplayComponentDataTypes ? DisplayByDataTypes[K] : Display | false
-  }
-}
 
 type Simplify<T> = { [K in keyof T]: T[K] } & {}

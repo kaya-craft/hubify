@@ -13,6 +13,10 @@ export default defineNuxtConfig({
 
   css: [resolve(__dirname, 'app/assets/css/main.css')],
 
+  build: {
+    transpile: ['@atlaskit/pragmatic-drag-and-drop']
+  },
+
   routeRules: {
     '/api/iconify/**': {
       proxy: 'https://api.iconify.design/**',

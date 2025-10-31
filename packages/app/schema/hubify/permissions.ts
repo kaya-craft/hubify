@@ -8,7 +8,6 @@ export const fields = defineCollectionFields('hubify_permissions', {
   collection: {
     order: 2,
     input: {
-      component: '',
       class: 'col-span-4'
     }
   },
@@ -22,7 +21,7 @@ export const fields = defineCollectionFields('hubify_permissions', {
   where: {
     order: 4,
     input: {
-      component: '',
+      component: 'system-filter',
       props: {
         collectionKey: 'collection'
       }

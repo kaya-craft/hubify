@@ -58,20 +58,22 @@ export default defineNuxtModule<HubifyModuleOptions>({
       options.references.push({ path: resolve(__dirname, '../../types/auth.d.ts') })
     })
 
-    nuxt.options.typescript.sharedTsConfig ??= {}
-    nuxt.options.typescript.sharedTsConfig.compilerOptions ??= {}
-    nuxt.options.typescript.sharedTsConfig.compilerOptions.paths ??= {}
-    nuxt.options.typescript.sharedTsConfig.compilerOptions.paths['#hubify/*'] = ['./hubify/*']
-
     nuxt.options.nitro ??= {}
     nuxt.options.nitro.alias ??= {}
     nuxt.options.nitro.alias['#hubify/schema'] ??= schema
     nuxt.options.alias['#hubify/schema'] ??= schema
 
     nuxt.options.typescript.hoist.push('@hubify/api', 'zod')
+
+    const includes = [...options.schema.map(dir => join('..', dir, '**', '*')), '../types/*.d.ts']
+
+    nuxt.options.typescript.tsConfig ??= {}
+    nuxt.options.typescript.tsConfig.include ??= []
+    nuxt.options.typescript.tsConfig.include.push(...includes)
+
     nuxt.options.typescript.sharedTsConfig ??= {}
     nuxt.options.typescript.sharedTsConfig.include ??= []
-    nuxt.options.typescript.sharedTsConfig.include.push(...options.schema.map(dir => join('..', dir, '**', '*')), '../types/*.d.ts')
+    nuxt.options.typescript.sharedTsConfig.include.push(...includes)
 
     if (!nuxt.options.runtimeConfig.session?.password) {
       updateRuntimeConfig({
