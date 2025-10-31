@@ -13,19 +13,16 @@ export default defineNuxtConfig({
 
   css: [resolve(__dirname, 'app/assets/css/main.css')],
 
-  // routeRules: {
-  //   /**
-  //    * Proxy requests to the Iconify API. Cache responses based on query parameters for 24 hours.
-  //    */
-  //   '/api/iconify/**': {
-  //     proxy: 'https://api.iconify.design/**',
-  //     cache: {
-  //       maxAge: 60 * 60 * 24, // 24 hours
-  //       varies: ['query'],
-  //       swr: true
-  //     }
-  //   }
-  // },
+  routeRules: {
+    '/api/iconify/**': {
+      proxy: 'https://api.iconify.design/**',
+      cache: {
+        maxAge: 60 * 60 * 24,
+        varies: ['query'],
+        swr: true
+      }
+    }
+  },
 
   vite: {
     optimizeDeps: {
