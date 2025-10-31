@@ -1,6 +1,5 @@
 import { defineVitestProject } from '@nuxt/test-utils/config'
 import { defineConfig } from 'vitest/config'
-import { resolveModule } from 'nuxt/kit'
 import { resolve } from 'path'
 
 export default defineConfig({
@@ -43,13 +42,7 @@ export default defineConfig({
             }
           },
           include: ['./app/tests/browser/**/*.test.ts'],
-          setupFiles: ['./app/tests/browser/setup.ts'],
-          alias: {
-            'bind-event-listener': resolveModule('bind-event-listener')
-          }
-        },
-        optimizeDeps: {
-          include: ['bind-event-listener']
+          setupFiles: ['./app/tests/browser/setup.ts']
         }
       })
     ]

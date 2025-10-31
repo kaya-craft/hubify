@@ -1,5 +1,5 @@
-import type { TableColumnNames, TableNames } from '@hubify/api/types/schema'
-import type { FieldOption, FieldOptions, Input, TableFieldOptions } from '@hubify/app/types/fields'
+import type { TableNames } from '@hubify/api/types/schema'
+import type { Display, FieldOption, FieldOptions, Input, TableFieldOptions } from '@hubify/app/types/fields'
 import tables from '#hubify/schema'
 import type { FieldDefinition } from '@hubify/api/database/types'
 import { defu } from 'defu'
@@ -36,17 +36,19 @@ export function normalizeFieldOptions(table: TableNames, fields?: FieldOptions<T
 /**
  * Normalize field options.
  */
-function normalizeFieldOption(collection: string, column: string, columnDef: FieldDefinition, fieldOption?: FieldOption<TableNames, TableColumnNames<TableNames>>) {
-  return defu(fieldOption || {}, {
+function normalizeFieldOption(collection: string, column: string, columnDef: FieldDefinition, fieldOption?: FieldOption) {
+  if (fieldOption === false) return false
+
+  return defu(fieldOption, {
     input: getDefaultInputType(collection, column, columnDef),
     display: getDefaultDisplayType(collection, column, columnDef)
-  } satisfies FieldOption<TableNames, TableColumnNames<TableNames>>)
+  } as FieldOption)
 }
 
 /**
  * Get default input type based on column definition.
  */
-function getDefaultInputType(collection: string, column: string, columnDef: FieldDefinition): Input<TableNames, TableColumnNames<TableNames>> | false {
+function getDefaultInputType(collection: string, column: string, columnDef: FieldDefinition) {
   if (isManyToManyRelation(columnDef) || isOneToManyRelation(columnDef) || isPrimaryColumn(columnDef) || isTimestampField(columnDef)) return false
 
   const baseProps = {
@@ -70,7 +72,7 @@ function getDefaultInputType(collection: string, column: string, columnDef: Fiel
       props: {
         ...baseProps,
         multiple: columnDef.type.includes('array'),
-        options: columnDef.options
+        options: [...columnDef.options || []]
       }
     }
   }
@@ -126,7 +128,7 @@ function getDefaultDisplayType(collection: string, column: string, columnDef: Fi
       component: 'system-one-to-many',
       props: {
         ...baseProps,
-        relatedTable: columnDef.table
+        relatedTable: columnDef.table as TableNames
       }
     }
   }
@@ -161,7 +163,7 @@ function getDefaultDisplayType(collection: string, column: string, columnDef: Fi
       }
     case 'binary':
       return {
-        component: 'file-viewer',
+        component: 'file-upload',
         props: baseProps
       }
     case 'string':

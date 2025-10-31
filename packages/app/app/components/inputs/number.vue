@@ -5,9 +5,9 @@ interface Props extends /* @vue-ignore */ InputProps {}
 
 const value = defineModel<number>()
 
-defineFieldDataTypes('boolean')
-
 defineProps<Props>()
+
+defineFieldDataTypes('integer', 'bigInteger', 'float', 'double', 'decimal', 'mediumint')
 </script>
 
 <template>

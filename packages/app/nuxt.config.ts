@@ -1,4 +1,5 @@
 import { defineNuxtConfig } from 'nuxt/config'
+import { resolveModule } from 'nuxt/kit'
 import { resolve } from 'path'
 
 export default defineNuxtConfig({
@@ -12,6 +13,9 @@ export default defineNuxtConfig({
   ],
 
   css: [resolve(__dirname, 'app/assets/css/main.css')],
+  alias: {
+    'bind-event-listener': resolveModule('bind-event-listener')
+  },
 
   build: {
     transpile: ['@atlaskit/pragmatic-drag-and-drop']
@@ -30,6 +34,7 @@ export default defineNuxtConfig({
 
   vite: {
     optimizeDeps: {
+      include: ['bind-event-listener'],
       exclude: ['@nuxt/ui/utils/tv']
     }
   },
