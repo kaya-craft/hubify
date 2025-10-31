@@ -34,7 +34,7 @@ export type ColumnDefinition = BaseColumnDefinition & {
   autoIncrement?: boolean
 }
 
-export type OneRelationTypes = 'one-to-many' | 'many-to-one' | 'one-to-one'
+export type OneRelationTypes = 'many-to-one' | 'one-to-one' | 'one-to-many'
 export type ManyRelationTypes = 'many-to-many'
 
 export type RelationDefinition = BaseRelationDefinition & ({
@@ -72,13 +72,9 @@ export type TableItem<S extends Schema, T extends TableNames<S>, Deep = true> = 
   [K in TableFieldNames<S, T>]: K extends TableRelationNames<S, T>
     ? TableRelation<S, T, K> extends infer Relation
       ? Relation['table'] extends infer RT extends TableNames<S>
-        ? Relation extends { type: OneRelationTypes }
-          ? Deep extends true
-            ? TableItem<S, RT, true> | TableColumnType<S, RT, PrimaryKeyColumn<S, RT>>
-            : TableColumnType<S, RT, PrimaryKeyColumn<S, RT>>
-          : Deep extends true
-            ? TableItem<S, RT, true>[]
-            : TableItem<S, RT, false>[]
+        ? Relation extends { type: `${string}-to-many` }
+          ? TableItem<S, RT, Deep>[] | TableColumnType<S, RT, PrimaryKeyColumn<S, RT>>[]
+          : TableItem<S, RT, Deep> | TableColumnType<S, RT, PrimaryKeyColumn<S, RT>>
         : never
       : never
     : K extends TableColumnNames<S, T>

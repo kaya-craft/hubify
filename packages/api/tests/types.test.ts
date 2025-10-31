@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 describe('Types', () => {
   it('should have the right types for the table names', () => {
-    expectTypeOf<TableNames>().toEqualTypeOf<'hubify_users' | 'hubify_roles' | 'hubify_settings' | 'hubify_collections' | 'hubify_credentials' | 'hubify_environment'>()
+    expectTypeOf<TableNames>().toEqualTypeOf<'hubify_users' | 'hubify_roles' | 'hubify_settings' | 'hubify_collections' | 'hubify_credentials' | 'hubify_environment' | 'hubify_permissions' | 'hubify_policies' | 'hubify_policies_permissions' | 'hubify_policies_roles'>()
   })
 
   it('should have the right types for the column names', () => {
@@ -16,7 +16,7 @@ describe('Types', () => {
 
   it('should have the right types for the relation names', () => {
     expectTypeOf<TableRelationNames<'hubify_users'>>().toEqualTypeOf<'role'>()
-    expectTypeOf<TableRelationNames<'hubify_roles'>>().toEqualTypeOf<never>()
+    expectTypeOf<TableRelationNames<'hubify_roles'>>().toEqualTypeOf<'policies' | 'users'>()
     expectTypeOf<TableRelationNames<'hubify_settings'>>().toEqualTypeOf<never>()
     expectTypeOf<TableRelationNames<'hubify_collections'>>().toEqualTypeOf<never>()
     expectTypeOf<TableRelationNames<'hubify_credentials'>>().toEqualTypeOf<'user'>()
@@ -25,7 +25,7 @@ describe('Types', () => {
 
   it('should have the right types for the field names', () => {
     expectTypeOf<TableFieldNames<'hubify_users'>>().toEqualTypeOf<'email' | 'password' | 'firstname' | 'lastname' | 'createdAt' | 'updatedAt' | 'id' | 'role'>()
-    expectTypeOf<TableFieldNames<'hubify_roles'>>().toEqualTypeOf<'name' | 'description' | 'icon' | 'admin' | 'createdAt' | 'updatedAt' | 'id'>()
+    expectTypeOf<TableFieldNames<'hubify_roles'>>().toEqualTypeOf<'name' | 'description' | 'icon' | 'admin' | 'createdAt' | 'updatedAt' | 'id' | 'users' | 'policies'>()
     expectTypeOf<TableFieldNames<'hubify_settings'>>().toEqualTypeOf<'name' | 'description' | 'primaryColor' | 'logo' | 'createdAt' | 'updatedAt' | 'id'>()
     expectTypeOf<TableFieldNames<'hubify_collections'>>().toEqualTypeOf<'name' | 'description' | 'color' | 'displayTemplate' | 'icon' | 'singleton' | 'hidden' | 'createdAt' | 'updatedAt' | 'id'>()
     expectTypeOf<TableFieldNames<'hubify_credentials'>>().toEqualTypeOf<'publicKey' | 'counter' | 'backedUp' | 'transports' | 'createdAt' | 'updatedAt' | 'id' | 'user'>()
@@ -51,6 +51,8 @@ describe('Types', () => {
       admin: boolean
       createdAt: string | Date
       updatedAt: string | Date
+      users: number[] | TableItem<'hubify_users'>[]
+      policies: string[] | TableItem<'hubify_policies'>[]
       id: number
     }>()
 
@@ -94,6 +96,35 @@ describe('Types', () => {
       createdAt: string | Date
       updatedAt: string | Date
       id: number
+    }>()
+
+    expectTypeOf<TableItem<'hubify_policies_roles'>>().toEqualTypeOf<{
+      id: number
+      policy: string | TableItem<'hubify_policies'>
+      role: number | TableItem<'hubify_roles'>
+    }>()
+
+    expectTypeOf<TableItem<'hubify_policies_permissions'>>().toEqualTypeOf<{
+      id: number
+      policy: string | TableItem<'hubify_policies'>
+      permission: string | TableItem<'hubify_permissions'>
+    }>()
+
+    expectTypeOf<TableItem<'hubify_policies'>>().toEqualTypeOf<{
+      name: string
+      description: string | null
+      id: string
+      roles: number[] | TableItem<'hubify_roles'>[]
+      permissions: string[] | TableItem<'hubify_permissions'>[]
+    }>()
+
+    expectTypeOf<TableItem<'hubify_permissions'>>().toEqualTypeOf<{
+      id: string
+      name: string
+      action: string | null
+      collection: number | TableItem<'hubify_collections'>
+      where: unknown
+      policies: string[] | TableItem<'hubify_policies'>[]
     }>()
   })
 })
