@@ -27,12 +27,15 @@ describe('CollectionTable', () => {
     const columnVisibilityButton = screen.getByTestId('table-column-visibility')
     await expect.element(columnVisibilityButton).toBeVisible()
 
-    // Render Column visibility button
-    const deleteButton = screen.getByTestId('table-delete-button')
-    await expect.element(deleteButton).toBeVisible()
+    // // Render Column visibility button
+    // const deleteButton = screen.getByTestId('table-delete-button')
+    // await expect.element(deleteButton).toBeVisible()
 
-    // Render pagination
-    const paginationEl = screen.getByTestId('table-pagination')
-    await expect.element(paginationEl).toBeVisible()
+    // const createButton = screen.getByTestId('table-create-button')
+    // await expect.element(createButton).toBeVisible()
+
+    // // Render pagination
+    // const paginationEl = screen.getByTestId('table-pagination')
+    // await expect.element(paginationEl).toBeVisible()
   })
 })

@@ -36,7 +36,7 @@ export default {
           return knex.specificType(name, `enum(${(def.options || []).map(opt => `'${opt}'`).join(',')})`)
         }
 
-        return knex.json(name).defaultTo('[]').queryContext({ isJSON: true })
+        return knex.text(name).defaultTo('[]')
       },
       validate: def => z.preprocess((value) => {
         if (typeof value === 'string') {

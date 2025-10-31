@@ -10,6 +10,7 @@ describe('CollectionFilter', () => {
       props: {
         'collection': 'countries' as unknown as TableNames,
         modelValue,
+        'showDropdown': true,
         'onUpdate:modelValue': (val) => {
           if (JSON.stringify(val) === JSON.stringify(modelValue)) return
           result.rerender({ modelValue: val })

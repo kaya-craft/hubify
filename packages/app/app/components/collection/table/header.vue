@@ -140,11 +140,13 @@ const disableDeleteButton = computed(() => {
         v-bind="{ size, variant }"
         icon="heroicons:trash"
         :label="t('app.form.actions.delete')"
+        data-testid="table-delete-button"
         :to="localeRoute(`/admin/items/${collection}/remove?items=${selectedItemsPks}`)"
       />
 
       <UButton
         :to="localeRoute(`/admin/items/${collection}/create`)"
+        data-testid="table-create-button"
         color="secondary"
         v-bind="{ size, variant }"
         leading-icon="heroicons:plus"

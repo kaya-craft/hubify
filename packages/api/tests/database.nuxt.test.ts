@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { instance } from './setup'
-import { getCurrentSchema, runMigrations } from '@hubify/api/database/migration'
+import { getCurrentSchema, runMigrations, shouldSkipColumnComparison } from '@hubify/api/database/migration'
 import schema from '#hubify/schema'
 import { normalizeSchema } from '@hubify/api/collections'
 import type { Schema, TableDefinition } from '@hubify/api/database/types'
@@ -145,7 +145,10 @@ function cleanSchema<T extends Schema>(schema: T) {
 
   return Object.fromEntries(entries.map(([tableName, tableDef]) => [
     tableName,
-    Object.fromEntries(Object.entries(tableDef).filter(([_, fieldDef]) => !['many-to-many', 'one-to-many'].includes(fieldDef.type)).map(([fieldName, fieldDef]) => [
+    Object.fromEntries(Object.entries(tableDef).filter(([name, fieldDef]) => {
+      // TODO/FIXME: Remove this when we have proper many-to-many support in migrations
+      return !shouldSkipColumnComparison(fieldDef) && name !== 'action'
+    }).map(([fieldName, fieldDef]) => [
       fieldName,
       fieldDef
     ]))

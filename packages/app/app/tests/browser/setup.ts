@@ -1,12 +1,17 @@
 import { locators } from '@vitest/browser/context'
 import { config } from 'vitest-browser-vue'
 import { i18n } from '../__mocks__/i18n'
+import '../__mocks__/schema'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 import countries from '../__mocks__/countries'
-import '../__mocks__/schema'
 
 config.global.plugins.push(i18n)
-config.global.components.RouterLink = { render: () => null }
+
+config.global.components.RouterLink = {
+  setup(_, { attrs, slots }) {
+    return () => h('a', attrs, slots.default?.(attrs))
+  }
+}
 
 registerEndpoint('/api/items/countries', {
   method: 'GET',

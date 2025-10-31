@@ -146,6 +146,10 @@ function setColumnDefault(knex: Knex, column: Knex.ColumnBuilder, def: FieldDefi
 function columnHasChanged(oldDef: FieldDefinition | undefined, newDef: FieldDefinition) {
   if (!oldDef) return true
 
+  if (shouldSkipColumnComparison(newDef)) {
+    return false
+  }
+
   if (isRelation(oldDef) && isRelation(newDef)) {
     return oldDef.table !== newDef.table
       || oldDef.type !== newDef.type
@@ -174,6 +178,14 @@ function columnHasChanged(oldDef: FieldDefinition | undefined, newDef: FieldDefi
   }
 
   return true
+}
+
+/**
+ * Determine if column comparison should be skipped.
+ */
+export function shouldSkipColumnComparison(def: FieldDefinition) {
+  const skipTypes = ['enum-array', 'one-to-many', 'many-to-many']
+  return skipTypes.includes(def.type)
 }
 
 /**
