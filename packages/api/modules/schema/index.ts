@@ -65,13 +65,19 @@ export default defineNuxtModule<HubifyModuleOptions>({
 
     nuxt.options.nitro ??= {}
     nuxt.options.nitro.alias ??= {}
-    nuxt.options.nitro.alias['#hubify/schema'] = schema
-    nuxt.options.alias['#hubify/schema'] = schema
+    nuxt.options.nitro.alias['#hubify/schema'] ??= schema
+    nuxt.options.alias['#hubify/schema'] ??= schema
 
     nuxt.options.typescript.hoist.push('@hubify/api', 'zod')
     nuxt.options.typescript.tsConfig ??= {}
     nuxt.options.typescript.tsConfig.include ??= []
-    nuxt.options.typescript.tsConfig.include.push(...options.schema.map(dir => join('..', dir, '**', '*')))
+    nuxt.options.typescript.tsConfig.include.push(...options.schema.map(dir => join('..', dir, '**', '*')), '../types/*.d.ts')
+
+    if (!nuxt.options.runtimeConfig.session?.password) {
+      updateRuntimeConfig({
+        session: { password: crypto.randomUUID() }
+      })
+    }
 
     excludeTsFolderForLayers(resolve(__dirname, '../..'), 'tests')
   }

@@ -1,6 +1,6 @@
 import type { AllowedComponentProps, Component, VNodeProps } from 'vue'
 import type { TableNames, TableColumnNames, TableColumn, TableColumnType } from '@hubify/api/types/schema'
-import type { DataType, DataTypes, DataTypeValidator } from '@hubify/api/database/data-types'
+import type { DataTypes, DataTypeValidator } from '@hubify/api/database/data-types'
 import type { ZodType } from 'zod'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -78,7 +78,7 @@ type DisplayByDataTypes = {
   }[keyof DisplayComponents]
 }
 
-type InputByDataTypes<D extends DataType = DataTypes> = {
+type InputByDataTypes<D extends DataTypes = DataTypes> = {
   [K in InputComponentDataTypes]: {
     [P in keyof InputComponents]: K extends ComponentDataTypes<InputComponents[P]> ? false | {
       component: P

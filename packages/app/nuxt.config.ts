@@ -1,6 +1,5 @@
 import { defineNuxtConfig } from 'nuxt/config'
 import { resolve } from 'path'
-import i18nConfig from './i18n/config'
 
 export default defineNuxtConfig({
   extends: ['@hubify/api'],
@@ -14,19 +13,19 @@ export default defineNuxtConfig({
 
   css: [resolve(__dirname, 'app/assets/css/main.css')],
 
-  routeRules: {
-    /**
-     * Proxy requests to the Iconify API. Cache responses based on query parameters for 24 hours.
-     */
-    '/api/iconify/**': {
-      proxy: 'https://api.iconify.design/**',
-      cache: {
-        maxAge: 60 * 60 * 24, // 24 hours
-        varies: ['query'],
-        swr: true
-      }
-    }
-  },
+  // routeRules: {
+  //   /**
+  //    * Proxy requests to the Iconify API. Cache responses based on query parameters for 24 hours.
+  //    */
+  //   '/api/iconify/**': {
+  //     proxy: 'https://api.iconify.design/**',
+  //     cache: {
+  //       maxAge: 60 * 60 * 24, // 24 hours
+  //       varies: ['query'],
+  //       swr: true
+  //     }
+  //   }
+  // },
 
   vite: {
     optimizeDeps: {
@@ -38,7 +37,14 @@ export default defineNuxtConfig({
     'vite:extendConfig': extendViteConfig
   },
 
-  i18n: i18nConfig
+  i18n: {
+    locales: [
+      { code: 'en', name: 'English', file: 'en.json' },
+      { code: 'fr', name: 'Français', file: 'fr.json' }
+    ],
+    defaultLocale: 'en'
+  }
+
 })
 
 function extendViteConfig(config: import('vite').UserConfig) {
