@@ -5,7 +5,7 @@ import tables from '#hubify/schema'
 
 import type { AsyncComponentLoader } from 'vue'
 import { getPrimaryKeyColumn, isOneToManyRelation, isRelation } from '@hubify/api/database/helpers'
-import type { TableFieldOption } from '@@/types/fields'
+import type { TableFieldOption } from '@hubify/app/types/fields'
 
 const defaultInputs = {
   'text': defineAsyncComponent(registeredInputs.text),

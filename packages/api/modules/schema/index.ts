@@ -67,6 +67,16 @@ export default defineNuxtModule<HubifyModuleOptions>({
     nuxt.options.nitro.alias ??= {}
     nuxt.options.nitro.alias['#hubify/schema'] = schema
     nuxt.options.alias['#hubify/schema'] = schema
+
+    nuxt.options.typescript.hoist.push('@hubify/api')
+
+    nuxt.hook('prepare:types', (options) => {
+      if (nuxt.options.rootDir !== resolve(__dirname, '../..')) {
+        options.tsConfig ??= {}
+        options.tsConfig.exclude ??= []
+        options.tsConfig.exclude.push(resolve(__dirname, '../../tests'))
+      }
+    })
   }
 })
 

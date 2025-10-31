@@ -80,6 +80,8 @@ export default defineNuxtModule<FieldsModuleOptions>({
     nuxt.options.typescript.tsConfig.vueCompilerOptions.plugins.push(
       resolveModule('@hubify/vue-language-plugins')
     )
+
+    nuxt.options.typescript.hoist.push('@hubify/app')
   }
 })
 
