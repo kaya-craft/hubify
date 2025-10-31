@@ -1,4 +1,4 @@
-import { getDirectories, getFilesFromDir } from '@hubify/api/modules/schema/index'
+import { excludeTsFolderForLayers, getDirectories, getFilesFromDir } from '@hubify/api/modules/schema/index'
 import { join, resolve } from 'node:path'
 import { useNuxt, addTypeTemplate, addTemplate, defineNuxtModule, useLogger, updateTemplates, resolveModule } from 'nuxt/kit'
 import { scanFilesFromDir } from 'unimport'
@@ -82,6 +82,8 @@ export default defineNuxtModule<FieldsModuleOptions>({
     )
 
     nuxt.options.typescript.hoist.push('@hubify/app')
+
+    excludeTsFolderForLayers(resolve(__dirname, '../..'), 'app/tests')
   }
 })
 
@@ -165,6 +167,8 @@ async function generateDefineField(fieldsDirs: string[]) {
     return array.findIndex(f => f.name === file.name) === index
   })
 
+  const nuxt = useNuxt()
+
   for (const file of files) {
     const content = [
       'import type { FieldOptions } from \'' + resolve('types/fields.d.ts') + '\'',
@@ -188,7 +192,7 @@ async function generateDefineField(fieldsDirs: string[]) {
       filename: `hubify/types/${file.name}/tsconfig.json`,
       write: true,
       getContents: () => JSON.stringify({
-        extends: '../../../tsconfig.app.json',
+        extends: resolve(nuxt.options.buildDir, 'tsconfig.app.json'),
         compilerOptions: {
           composite: true,
           noEmit: false

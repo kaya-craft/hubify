@@ -69,14 +69,11 @@ export default defineNuxtModule<HubifyModuleOptions>({
     nuxt.options.alias['#hubify/schema'] = schema
 
     nuxt.options.typescript.hoist.push('@hubify/api')
+    nuxt.options.typescript.tsConfig ??= {}
+    nuxt.options.typescript.tsConfig.include ??= []
+    nuxt.options.typescript.tsConfig.include.push(...options.schema.map(dir => join('..', dir, '**', '*')))
 
-    nuxt.hook('prepare:types', (options) => {
-      if (nuxt.options.rootDir !== resolve(__dirname, '../..')) {
-        options.tsConfig ??= {}
-        options.tsConfig.exclude ??= []
-        options.tsConfig.exclude.push(resolve(__dirname, '../../tests'))
-      }
-    })
+    excludeTsFolderForLayers(resolve(__dirname, '../..'), 'tests')
   }
 })
 
@@ -156,4 +153,19 @@ export async function getFilesFromDir(dir: string, exportName: string | null = '
     name: i.from.replace(dir + '/', '').replace(extname(i.from), '').split('/').join(delimiter),
     ext: extname(i.from)
   }))
+}
+
+/**
+ * Exclude the tests folder from TypeScript compilation for all layers.
+ */
+export function excludeTsFolderForLayers(rootDir: string, dir: string) {
+  const nuxt = useNuxt()
+
+  nuxt.hook('prepare:types', (options) => {
+    if (nuxt.options.rootDir !== rootDir) {
+      options.tsConfig ??= {}
+      options.tsConfig.exclude ??= []
+      options.tsConfig.exclude.push(resolve(rootDir, dir))
+    }
+  })
 }
