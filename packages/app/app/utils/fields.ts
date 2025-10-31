@@ -5,7 +5,7 @@ import type { FieldDefinition } from '@hubify/api/database/types'
 /**
  * Define collection fields.
  */
-export function defineCollectionFields<const F extends FieldOptions<TableNames>>(fields: F) {
+export function defineCollectionFields<T extends TableNames, const F extends FieldOptions<T>>(_table: T, fields: F) {
   return fields
 }
 

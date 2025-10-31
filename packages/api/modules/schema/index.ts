@@ -68,7 +68,7 @@ export default defineNuxtModule<HubifyModuleOptions>({
     nuxt.options.nitro.alias['#hubify/schema'] = schema
     nuxt.options.alias['#hubify/schema'] = schema
 
-    nuxt.options.typescript.hoist.push('@hubify/api')
+    nuxt.options.typescript.hoist.push('@hubify/api', 'zod')
     nuxt.options.typescript.tsConfig ??= {}
     nuxt.options.typescript.tsConfig.include ??= []
     nuxt.options.typescript.tsConfig.include.push(...options.schema.map(dir => join('..', dir, '**', '*')))

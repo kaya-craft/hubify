@@ -49,6 +49,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@hubify/app": "workspace:",
     "typescript": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-unit-testing": "^1.1.1",
     "@iconify/vue": "^5.0.0",

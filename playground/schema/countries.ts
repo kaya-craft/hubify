@@ -15,13 +15,7 @@ export default defineCollection(withDefaults({
   }
 }))
 
-export const fields = defineCollectionFields({
-  id: {
-    input: false,
-    display: {
-      component: 'text'
-    }
-  },
+export const fields = defineCollectionFields('countries', {
   icon: {
     input: {
       component: 'icon-picker',
