@@ -53,6 +53,7 @@ async function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
   <CollectionForm
     v-if="item"
     :collection
+    class="p-8"
     :initial-state="item"
     @success="onSuccess"
   />

@@ -20,6 +20,7 @@ function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
 <template>
   <CollectionForm
     v-model="value"
+    class="p-8"
     :collection
     @success="onSuccess"
   />

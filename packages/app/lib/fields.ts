@@ -58,7 +58,7 @@ function getDefaultInputType(collection: string, column: string, columnDef: Fiel
 
   if (isManyToOneRelation(columnDef) || isOneToOneRelation(columnDef)) {
     return {
-      component: 'system-one-to-many',
+      component: 'system-many-to-one',
       props: {
         ...baseProps,
         relatedTable: columnDef.table
