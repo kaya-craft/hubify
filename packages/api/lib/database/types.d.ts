@@ -2,11 +2,11 @@ import type { DataType, DataTypes } from './data-types'
 import type { OPERATORS } from './operators'
 
 export interface Schema {
-  [table: string]: TableDefinition
+  [table: unknown]: TableDefinition
 }
 
 export interface TableDefinition {
-  [field: string]: FieldDefinition
+  [field: unknown]: FieldDefinition
 }
 
 export interface BaseColumnDefinition {
@@ -50,7 +50,7 @@ export type FieldDefinition = ColumnDefinition | RelationDefinition
 export type TableNames<S extends Schema> = keyof S & string
 
 export type TableFields<S extends Schema, T extends TableNames<S>> = S[T] extends infer F ? F : never
-export type TableFieldNames<S extends Schema, T extends TableNames<S>> = keyof TableFields<S, T> & string
+export type TableFieldNames<S extends Schema, T extends TableNames<S>> = keyof TableFields<S, T> extends never ? string : keyof TableFields<S, T> & string
 
 export type TableColumnNames<S extends Schema, T extends TableNames<S>> = {
   [K in keyof TableFields<S, T>]: TableFields<S, T>[K] extends ColumnDefinition ? K : never
@@ -65,16 +65,21 @@ export type TableColumns<S extends Schema, T extends TableNames<S>> = Pick<Table
 export type TableColumn<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = TableColumns<S, T>[C]
 
 export type TableRelations<S extends Schema, T extends TableNames<S>> = Pick<TableFields<S, T>, TableRelationNames<S, T>>
-export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R] extends infer F extends RelationDefinition ? F & Omit<RelationDefinition, F> : never
+
+export type TableRelation<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelations<S, T>[R]
 
 export type TableItem<S extends Schema, T extends TableNames<S>, Deep = true> = Prettify<{
   [K in TableFieldNames<S, T>]: K extends TableRelationNames<S, T>
     ? TableRelation<S, T, K> extends infer Relation
-      ? Relation extends { type: OneRelationTypes }
-        ? TableColumnType<S, Relation['table'], RelationForeignKey<S, T, K>> | (Deep extends true ? Prettify<Item<S, Relation['table']>> | null : never)
-        : Relation extends { type: ManyRelationTypes }
-          ? Deep extends true ? Prettify<Item<S, Relation['table']>>[] : never
-          : never
+      ? Relation['table'] extends infer RT extends TableNames<S>
+        ? Relation extends { type: OneRelationTypes }
+          ? Deep extends true
+            ? TableItem<S, RT, true> | TableColumnType<S, RT, PrimaryKeyColumn<S, RT>>
+            : TableColumnType<S, RT, PrimaryKeyColumn<S, RT>>
+          : Deep extends true
+            ? TableItem<S, RT, true>[]
+            : TableItem<S, RT, false>[]
+        : never
       : never
     : K extends TableColumnNames<S, T>
       ? TableColumnType<S, T, K>
@@ -124,7 +129,7 @@ export type TablePrimaryKeyValue<S extends Schema, T extends TableNames<S>> = Ta
 
 export type RelationForeignKey<S extends Schema, T extends TableNames<S>, R extends TableRelationNames<S, T>> = TableRelation<S, T, R> extends { foreignKey: infer FK } ? FK : PrimaryKeyColumn<S, TableRelation<S, T, R>['table']>
 
-export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = DataType<TableColumn<S, T, C>['type']>
+export type TableColumnType<S extends Schema, T extends TableNames<S>, C extends TableColumnNames<S, T>> = TableColumn<S, T, C> extends { nullable: true } ? DataType<TableColumn<S, T, C>['type']> | null : DataType<TableColumn<S, T, C>['type']>
 
 export type TableFieldType<S extends Schema, T extends TableNames<S>, F extends TableFieldNames<S, T>> = TableField<S, T, F> extends infer I
   ? I extends ColumnDefinition ? TableColumnType<S, T, F>

@@ -8,7 +8,7 @@ describe('CollectionFilter', () => {
 
     const result = page.render(CollectionFilterContent, {
       props: {
-        'collection': 'countries',
+        'collection': 'countries' as unknown as TableNames,
         modelValue,
         'onUpdate:modelValue': (val) => {
           if (JSON.stringify(val) === JSON.stringify(modelValue)) return

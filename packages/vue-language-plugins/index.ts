@@ -19,7 +19,7 @@ function transformDefineOptions({
   existing?: Expression
 }) {
   const arg = call.arguments as NodeArray<Expression>
-  const text = `dataTypes: [${arg.map(d => d.getText(sfc.scriptSetup?.ast)).join(', ')}] as const`
+  const text = `dataTypes: [${arg.map(exp => exp.getText?.(sfc.scriptSetup?.ast)).join(', ')}] as const`
 
   if (existing) {
     replaceSourceRange(
@@ -39,17 +39,18 @@ function transformDefineOptions({
       `\nconst __VLS_exposed = { ${text} };\ndefineExpose(__VLS_exposed);`
     )
 
+    // For vue with slots
     replace(
       codes,
-      /(?<=^(?:export\sdefault|const\s__VLS_component\s=)\s\(await\simport\([\S\s]+\)\).defineComponent\(\{)/m,
+      /(?<=^(?:export\sdefault|const __VLS_export\s=|const __VLS_base\s=)\s\(await\simport\([\S\s]+\)\).defineComponent\(\{)/m,
       '\nsetup: () => (__VLS_exposed),'
     )
 
-    // // For Vue generic components
+    //  For Vue generic components
     replace(
       codes,
-      /(?<=^return\s{}\sas\s{[\s\S]+expose\(exposed:\simport\([\S\s]+\)\.ShallowUnwrapRef<).*?(?=>)/m,
-      'typeof __VLS_exposed'
+      /expose:\s*\(exposed:\s*\{\s*\}\)\s*=>\s*void;/,
+      'expose: (exposed: typeof __VLS_exposed) => void;'
     )
   }
 }

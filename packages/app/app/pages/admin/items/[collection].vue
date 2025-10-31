@@ -27,7 +27,7 @@ const meta = computed(() => {
 
 usePageTitle({
   title: toValue(meta)?.name,
-  icon: toValue(meta)?.icon
+  icon: toValue(meta)?.icon || ''
 })
 </script>
 

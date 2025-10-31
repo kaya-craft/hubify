@@ -1,5 +1,5 @@
 import 'nuxt/app'
-import type { HubifyHooks, HubifyTookPayload, ScopedHubifyHooks } from '@hubify/api/hooks'
+import type { HubifyHooks, HubifyTookPayload, ScopedHubifyHooks } from '@hubify/api/types/hooks'
 
 /**
  * Call a Hubify hook with the given payload.

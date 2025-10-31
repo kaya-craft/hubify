@@ -29,6 +29,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@hubify/api": "workspace:",
     "better-sqlite3": "^12.2.0",
     "@nuxt/kit": "^4.1.0",
     "@simplewebauthn/browser": "^13.1.2",
@@ -45,6 +46,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "typescript": "catalog:",
     "@nuxt/test-utils": "catalog:",
     "@types/knex": "^0.16.1",
     "jiti": "^2.5.1",

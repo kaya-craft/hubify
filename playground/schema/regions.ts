@@ -6,7 +6,7 @@ export default defineCollection(withDefaults({
   }
 }))
 
-export const fields = defineCollectionFields({
+export const fields = defineCollectionFields('regions', {
   id: {
     input: false,
     display: {

@@ -1,6 +1,6 @@
-import { getDirectories, getFilesFromDir } from '@hubify/api/modules/schema/index'
+import { excludeTsFolderForLayers, getDirectories, getFilesFromDir } from '@hubify/api/modules/schema/index'
 import { join, resolve } from 'node:path'
-import { useNuxt, addTypeTemplate, addTemplate, defineNuxtModule, resolveModule, useLogger, updateTemplates } from 'nuxt/kit'
+import { addTemplate, defineNuxtModule, useLogger, updateTemplates, resolveModule } from 'nuxt/kit'
 import { scanFilesFromDir } from 'unimport'
 
 export interface FieldsModuleOptions {
@@ -64,8 +64,6 @@ export default defineNuxtModule<FieldsModuleOptions>({
       })
     })
 
-    generateDefineField(fieldsDirs)
-
     nuxt.options.nitro.alias ??= {}
     nuxt.options.nitro.alias['#hubify/inputs'] ??= inputsPath
     nuxt.options.nitro.alias['#hubify/displays'] ??= displaysPath
@@ -80,6 +78,10 @@ export default defineNuxtModule<FieldsModuleOptions>({
     nuxt.options.typescript.tsConfig.vueCompilerOptions.plugins.push(
       resolveModule('@hubify/vue-language-plugins')
     )
+
+    nuxt.options.typescript.hoist.push('@hubify/app')
+
+    excludeTsFolderForLayers(resolve(__dirname, '../..'), 'app/tests')
   }
 })
 
@@ -155,54 +157,65 @@ async function generateComponentContent(fieldsDirs: string[]) {
 
 /**
  * Generate typescript config for fields definition.
- */
-async function generateDefineField(fieldsDirs: string[]) {
-  const all = await Promise.all(fieldsDirs.flatMap(dir => getFilesFromDir(dir, 'fields')))
+//  */
+// async function generateDefineField(fieldsDirs: string[], inputsPath: string, displaysPath: string) {
+//   const all = await Promise.all(fieldsDirs.flatMap(dir => getFilesFromDir(dir, 'fields')))
 
-  const files = all.flat().reverse().filter((file, index, array) => {
-    return array.findIndex(f => f.name === file.name) === index
-  })
+//   const files = all.flat().reverse().filter((file, index, array) => {
+//     return array.findIndex(f => f.name === file.name) === index
+//   })
 
-  for (const file of files) {
-    const content = [
-      'import type { TableColumns } from \'@hubify/api/types/schema\'',
-      'import type { FieldOptions } from \'@hubify/app/types/fields\'',
-      'import type schema from \'./../schema\'',
-      '',
-      'declare global {',
-      `\texport function defineCollectionFields<const F extends FieldOptions<'${file.name}'>>(fields: F): F`,
-      '}',
-      '\n',
-      'export {}'
-    ].join('\n')
+//   const nuxt = useNuxt()
 
-    addTypeTemplate({
-      filename: `hubify/types/${file.name}.imports.d.ts`,
-      getContents: () => content
-    })
+//   for (const file of files) {
+//     const content = [
+//       'import type { FieldOptions } from \'@hubify/app/types/fields\'',
+//       '',
+//       'declare global {',
+//       '\texport function defineCollectionFields<const F extends FieldOptions<\'' + file.name + '\'>>(fields: F): F',
+//       '}',
+//       '\n',
+//       'export {}'
+//     ].join('\n')
 
-    addTemplate({
-      filename: `hubify/types/tsconfig.${file.name}.json`,
-      write: true,
-      getContents: () => JSON.stringify({
-        extends: '../../tsconfig.json',
-        compilerOptions: {
-          composite: true,
-          noEmit: false
-        },
-        include: [
-          resolve('./lib/fields/index.ts'),
-          file.path + file.ext,
-          `${file.name}.imports.d.ts`
-        ]
-      }, null, 2)
-    })
+//     addTypeTemplate({
+//       filename: `hubify/types/${file.name}/imports.d.ts`,
+//       getContents: () => content
+//     })
 
-    const nuxt = useNuxt()
-    nuxt.options.typescript.sharedTsConfig ??= {}
-    nuxt.options.typescript.sharedTsConfig.references ??= []
-    nuxt.options.typescript.sharedTsConfig.references.push({
-      path: `./hubify/types/tsconfig.${file.name}.json`
-    })
-  }
-}
+//     addTemplate({
+//       filename: `hubify/types/${file.name}/tsconfig.json`,
+//       write: true,
+//       getContents: () => JSON.stringify({
+//         compilerOptions: {
+//           composite: true,
+//           noEmit: false,
+//           moduleResolution: 'bundler',
+//           module: 'preserve',
+//           paths: {
+//             '#hubify/schema': [inputsPath],
+//             '#hubify/displays': [displaysPath],
+//             '#hubify/inputs': [inputsPath]
+//           }
+//         },
+//         include: [
+//           file.path + file.ext,
+//           './imports.d.ts',
+//           '@hubify/api/**/*.ts',
+//           '@hubify/app/**/*.ts',
+//           inputsPath,
+//           displaysPath,
+//           resolve(nuxt.options.buildDir, 'types/imports.d.ts'),
+//           resolve(nuxt.options.buildDir, 'hubify/schema.ts'),
+//           ...fieldsDirs.map(dir => join(dir, '**/*.ts'))
+//         ]
+//       }, null, 2)
+//     })
+
+//     nuxt.options.typescript.tsConfig ??= {}
+//     nuxt.options.typescript.tsConfig.references ??= []
+//     nuxt.options.typescript.tsConfig.references.push({
+//       path: join('./hubify/types', file.name, 'tsconfig.json')
+//     })
+//   }
+// }

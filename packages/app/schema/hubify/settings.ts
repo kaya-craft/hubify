@@ -1,4 +1,8 @@
-export const fields = defineCollectionFields({
+export const fields = defineCollectionFields('hubify_settings', {
+  id: false,
+  createdAt: false,
+  updatedAt: false,
+
   name: {
     order: 1,
     input: {

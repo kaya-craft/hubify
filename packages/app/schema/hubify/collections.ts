@@ -1,4 +1,15 @@
-export const fields = defineCollectionFields({
+export const fields = defineCollectionFields('hubify_collections', {
+  createdAt: {
+    input: false,
+    display: {
+      component: 'date'
+    }
+  },
+  updatedAt: {
+    display: {
+      component: 'date'
+    }
+  },
   color: {
     input: {
       component: 'color-picker',

@@ -95,7 +95,7 @@ const projectName = computed(() => {
 const route = useRoute()
 
 const currentCollection = computed(() => {
-  return route.params.collection?.toString() as TableNames
+  return route.params.collection as TableNames | undefined
 })
 </script>
 
@@ -151,7 +151,7 @@ const currentCollection = computed(() => {
                 class="flex items-center gap-2"
               >
                 <UIcon
-                  :name="item.icon"
+                  :name="String(item.icon)"
                   class="size-5"
                 />
                 <p
@@ -193,7 +193,10 @@ const currentCollection = computed(() => {
               />
             </template>
 
-            <CollectionTitle :collection="currentCollection" />
+            <CollectionTitle
+              v-if="currentCollection"
+              :collection="currentCollection"
+            />
 
             <template #right>
               <UTooltip

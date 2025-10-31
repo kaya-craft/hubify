@@ -18,8 +18,8 @@ const { query, orderBy, page, limit } = useQueryRouter(collection, baseQueryRout
  * Pagination state
  */
 const pagination = reactive({
-  page,
-  pageSize: limit
+  pageSize: limit,
+  pageIndex: page
 })
 
 /**
@@ -153,7 +153,7 @@ onHubifyHook('items', ({ collection: name }) => {
     <CollectionTableFooter
       :collection="collection"
       :total-items="data?.total || 0"
-      :displayed-items="table?.tableApi.getRowCount()"
+      :displayed-items="table?.tableApi.getRowCount() || 0"
       size="sm"
       variant="soft"
       color="neutral"

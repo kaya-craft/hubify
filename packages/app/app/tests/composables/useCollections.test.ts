@@ -114,7 +114,7 @@ describe.skip('useCollections', () => {
 
     expect(hoisted.hookHandlers).toHaveLength(1)
 
-    const handler = hoisted.hookHandlers[0]
+    const handler = hoisted.hookHandlers[0]!
     expect(handler.name).toBe('items')
 
     handler.handler({ collection: 'hubify_collections' as TableNames })
@@ -127,7 +127,7 @@ describe.skip('useCollections', () => {
 
     await useCollectionsComposable()
 
-    const handler = hoisted.hookHandlers[0]
+    const handler = hoisted.hookHandlers[0]!
     hoisted.refresh.mockReset()
 
     handler.handler({ collection: 'countries' as TableNames })

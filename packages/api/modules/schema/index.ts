@@ -1,6 +1,6 @@
 import { extname, resolve, isAbsolute, join } from 'node:path'
 import { existsSync } from 'node:fs'
-import { addTemplate, defineNuxtModule, updateRuntimeConfig, updateTemplates, useNuxt } from 'nuxt/kit'
+import { addServerTemplate, addTemplate, defineNuxtModule, updateRuntimeConfig, updateTemplates, useNuxt } from 'nuxt/kit'
 import type { Knex } from 'knex'
 import { scanDirExports } from 'unimport'
 
@@ -37,10 +37,10 @@ export default defineNuxtModule<HubifyModuleOptions>({
       getContents: () => generateSchemaContent(dirs)
     })
 
-    nuxt.options.nitro.alias ??= {}
-    nuxt.options.alias ??= {}
-    nuxt.options.nitro.alias['#hubify/schema'] ??= schema
-    nuxt.options.alias['#hubify/schema'] ??= schema
+    addServerTemplate({
+      filename: 'hubify/schema.ts',
+      getContents: () => generateSchemaContent(dirs)
+    })
 
     nuxt.hook('builder:watch', async (_, path) => {
       const isSchemaFile = dirs.some(dir => path.startsWith(dir))
@@ -53,6 +53,33 @@ export default defineNuxtModule<HubifyModuleOptions>({
         db: options
       }
     })
+
+    nuxt.hook('prepare:types', (options) => {
+      options.references.push({ path: resolve(__dirname, '../../types/auth.d.ts') })
+    })
+
+    nuxt.options.typescript.sharedTsConfig ??= {}
+    nuxt.options.typescript.sharedTsConfig.compilerOptions ??= {}
+    nuxt.options.typescript.sharedTsConfig.compilerOptions.paths ??= {}
+    nuxt.options.typescript.sharedTsConfig.compilerOptions.paths['#hubify/*'] = ['./hubify/*']
+
+    nuxt.options.nitro ??= {}
+    nuxt.options.nitro.alias ??= {}
+    nuxt.options.nitro.alias['#hubify/schema'] ??= schema
+    nuxt.options.alias['#hubify/schema'] ??= schema
+
+    nuxt.options.typescript.hoist.push('@hubify/api', 'zod')
+    nuxt.options.typescript.tsConfig ??= {}
+    nuxt.options.typescript.tsConfig.include ??= []
+    nuxt.options.typescript.tsConfig.include.push(...options.schema.map(dir => join('..', dir, '**', '*')), '../types/*.d.ts')
+
+    if (!nuxt.options.runtimeConfig.session?.password) {
+      updateRuntimeConfig({
+        session: { password: crypto.randomUUID() }
+      })
+    }
+
+    excludeTsFolderForLayers(resolve(__dirname, '../..'), 'tests')
   }
 })
 
@@ -68,9 +95,9 @@ function getAllCollectionFiles(dirs: string[]) {
  * Update the database schema by running migrations and return the current schema.
  */
 async function generateSchemaContent(dirs: string[]) {
-  const nuxt = useNuxt()
-
   const files = await getAllCollectionFiles(dirs)
+
+  const nuxt = useNuxt()
 
   await nuxt.callHook('hubify:schema', files)
 
@@ -105,9 +132,8 @@ async function generateSchemaContent(dirs: string[]) {
     ...collections.map(name => `export const ${name} = schema.${name}`),
     '',
     'export interface HubifySchema {',
-    collections.map(collection => `\t${collection}: typeof schema.${collection}`).join('\n'),
+    collections.map(collection => `\t${collection}: typeof schema['${collection}']`).join('\n'),
     '}',
-    '',
     'export default schema'
   ].join('\n')
 }
@@ -133,4 +159,19 @@ export async function getFilesFromDir(dir: string, exportName: string | null = '
     name: i.from.replace(`${dir}/`, '').replace(extname(i.from), '').split('/').join(delimiter),
     ext: extname(i.from)
   }))
+}
+
+/**
+ * Exclude the tests folder from TypeScript compilation for all layers.
+ */
+export function excludeTsFolderForLayers(rootDir: string, dir: string) {
+  const nuxt = useNuxt()
+
+  nuxt.hook('prepare:types', (options) => {
+    if (nuxt.options.rootDir !== rootDir) {
+      options.tsConfig ??= {}
+      options.tsConfig.exclude ??= []
+      options.tsConfig.exclude.push(resolve(rootDir, dir))
+    }
+  })
 }

@@ -3,7 +3,6 @@ import { resolve } from 'path'
 
 export default defineVitestConfig({
   test: {
-    environment: 'nuxt',
-    setupFiles: [resolve('./test/setup.ts')]
+    setupFiles: [resolve('./tests/setup.ts')]
   }
 })
