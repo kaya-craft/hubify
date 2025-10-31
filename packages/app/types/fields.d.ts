@@ -31,7 +31,6 @@ export type FieldOptions<T extends TableNames> = {
     ? FieldOption<U>
     : FieldOption
 }
-
 export type TableFieldOptions<T extends TableNames> = FieldOptions<T>
 export type TableFieldOption<T extends TableNames, C extends TableColumnNames<T>> = TableColumnType<T, C> extends infer U ? FieldOption<U> : never
 

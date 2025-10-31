@@ -120,8 +120,8 @@ function columnValidation(column: FieldDefinition, operator: Operator) {
     return validator(column)
   }
 
-  const table = column.type === 'one-to-many' ? column.table : column.through
-  const relatedColumn = column.type === 'one-to-many' ? column.foreignKey : column.throughKey
+  const table = column.type === 'many-to-many' ? column.through : column.table
+  const relatedColumn = column.type === 'many-to-many' ? column.throughKey : column.foreignKey
   const relatedTable = tables[table as keyof typeof tables]
   const relatedColumnDef = relatedTable[relatedColumn as keyof typeof relatedTable] as FieldDefinition
   return columnValidation(relatedColumnDef, operator)

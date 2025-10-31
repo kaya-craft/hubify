@@ -69,9 +69,9 @@ export default defineNuxtModule<HubifyModuleOptions>({
     nuxt.options.alias['#hubify/schema'] ??= schema
 
     nuxt.options.typescript.hoist.push('@hubify/api', 'zod')
-    nuxt.options.typescript.tsConfig ??= {}
-    nuxt.options.typescript.tsConfig.include ??= []
-    nuxt.options.typescript.tsConfig.include.push(...options.schema.map(dir => join('..', dir, '**', '*')), '../types/*.d.ts')
+    nuxt.options.typescript.sharedTsConfig ??= {}
+    nuxt.options.typescript.sharedTsConfig.include ??= []
+    nuxt.options.typescript.sharedTsConfig.include.push(...options.schema.map(dir => join('..', dir, '**', '*')), '../types/*.d.ts')
 
     if (!nuxt.options.runtimeConfig.session?.password) {
       updateRuntimeConfig({
