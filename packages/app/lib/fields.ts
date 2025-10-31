@@ -1,10 +1,10 @@
 import type { TableNames } from '@hubify/api/types/schema'
-import type { Display, FieldOption, FieldOptions, Input, TableFieldOptions } from '@hubify/app/types/fields'
+import type { FieldOption, FieldOptions, TableFieldOptions } from '@hubify/app/types/fields'
 import tables from '#hubify/schema'
 import type { FieldDefinition } from '@hubify/api/database/types'
 import { defu } from 'defu'
 import { isManyToManyRelation, isManyToOneRelation, isOneToManyRelation, isOneToOneRelation, isPrimaryColumn, isTimestampField } from '@hubify/api/database/helpers'
-import { getDataTypeGroup } from '@hubify/api/database/data-types/index'
+import { getDataTypeGroup, type DataTypes } from '@hubify/api/database/data-types/index'
 
 /**
  * Define collection fields.
@@ -77,7 +77,7 @@ function getDefaultInputType(collection: string, column: string, columnDef: Fiel
     }
   }
 
-  switch (getDataTypeGroup(columnDef.type)) {
+  switch (getDataTypeGroup(columnDef.type as DataTypes)) {
     case 'number':
       return {
         component: 'number',
@@ -140,7 +140,7 @@ function getDefaultDisplayType(collection: string, column: string, columnDef: Fi
     }
   }
 
-  switch (getDataTypeGroup(columnDef.type)) {
+  switch (getDataTypeGroup(columnDef.type as DataTypes)) {
     case 'number':
       return {
         component: 'number',
