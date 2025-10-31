@@ -165,9 +165,10 @@ async function generateDefineField(fieldsDirs: string[]) {
 
   for (const file of files) {
     const content = [
-      'import type { TableColumns } from \'@hubify/api/types/schema\'',
-      'import type { FieldOptions } from \'@hubify/app/types/fields\'',
-      'import type schema from \'./../schema\'',
+      'import type { FieldOptions } from \'' + resolve('types/fields.d.ts') + '\'',
+      'import \'@hubify/api/types/schema\'',
+      'import \'@hubify/app/types/fields\'',
+      'import \'@hubify/api/database/data-types\'',
       '',
       'declare global {',
       '\texport function defineCollectionFields<const F extends FieldOptions<\'' + file.name + '\'>>(fields: F): F',
@@ -177,34 +178,24 @@ async function generateDefineField(fieldsDirs: string[]) {
     ].join('\n')
 
     addTypeTemplate({
-      filename: `hubify/types/${file.name}.imports.d.ts`,
+      filename: `hubify/types/${file.name}/imports.d.ts`,
       getContents: () => content
     })
 
     addTemplate({
-      filename: `hubify/types/tsconfig.${file.name}.json`,
+      filename: `hubify/types/${file.name}/tsconfig.json`,
       write: true,
       getContents: () => JSON.stringify({
-        extends: '../../tsconfig.json',
+        extends: '../../../tsconfig.app.json',
         compilerOptions: {
           composite: true,
-          noEmit: true,
-          skipLibCheck: true
-
+          noEmit: false
         },
         include: [
-          resolve('./lib/fields/index.ts'),
           file.path + file.ext,
-          file.name + '.imports.d.ts'
+          './imports.d.ts'
         ]
       }, null, 2)
-    })
-
-    const nuxt = useNuxt()
-    nuxt.options.typescript.sharedTsConfig ??= {}
-    nuxt.options.typescript.sharedTsConfig.references ??= []
-    nuxt.options.typescript.sharedTsConfig.references.push({
-      path: `./hubify/types/tsconfig.${file.name}.json`
     })
   }
 }
