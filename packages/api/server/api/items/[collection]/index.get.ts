@@ -4,10 +4,18 @@
 export default defineEventHandler(async (event) => {
   const collection = await ensureValidCollection(event)
   const params = await ensureValidQueryParams(collection, event)
-  const paginate = getQuery(event).paginate !== 'false' && (isNumber(params.limit) || isNumber(params.offset))
-  const { find, db } = useDatabase()
+
+  await ensureUserHasPermission(event, {
+    collection,
+    params,
+    action: 'read'
+  })
 
   try {
+    const paginate = getQuery(event).paginate !== 'false' && (isNumber(params.limit) || isNumber(params.offset))
+
+    const { find, db } = useDatabase()
+
     const [items, total] = await Promise.all([
       find(collection, params),
       paginate ? db(collection).count({ count: '*' }).then(res => res?.[0]?.count ? Number(res[0].count) : 0) : null

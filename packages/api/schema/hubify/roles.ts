@@ -18,5 +18,20 @@ export default defineCollection(withDefaults({
   admin: {
     type: 'boolean',
     default: false
+  },
+  policies: {
+    type: 'many-to-many',
+    table: 'hubify_policies',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    through: 'hubify_policies_roles',
+    throughKey: 'role'
+  },
+  users: {
+    type: 'one-to-many',
+    table: 'hubify_users',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    foreignKey: 'role'
   }
 }))

@@ -41,10 +41,7 @@ defineOptions({ inheritAttrs: false })
       :is="component"
       :key="`${collection}-${column}`"
       v-model="value"
-      :collection
       :state
-      :column
-      v-bind="input?.props"
       class="w-full"
     />
   </UFormField>

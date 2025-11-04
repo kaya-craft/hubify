@@ -35,18 +35,12 @@ const dropdownItems = computed(() => {
   return [
     {
       label: t('app.form.actions.edit'),
-      to: localeRoute({
-        name: 'admin-items-collection-id-edit',
-        params: { collection: collection, id: getPrimaryKeyValue(item) }
-      }),
+      to: localeRoute(`/admin/items/${collection}/${getPrimaryKeyValue(item)}/edit`),
       icon: 'heroicons:pencil-square'
     },
     {
       label: t('app.form.actions.view'),
-      to: localeRoute({
-        name: 'admin-items-collection-id-view',
-        params: { collection: collection, id: getPrimaryKeyValue(item) }
-      }),
+      to: localeRoute(`/items/${collection}/${getPrimaryKeyValue(item)}`),
       icon: 'heroicons:eye'
     },
     {
@@ -56,10 +50,7 @@ const dropdownItems = computed(() => {
     },
     {
       label: t('app.form.actions.delete'),
-      to: localeRoute({
-        name: 'admin-items-collection-id-remove',
-        params: { collection: collection, id: getPrimaryKeyValue(item) }
-      }),
+      to: localeRoute(`/admin/items/${collection}/remove?items=${getPrimaryKeyValue(item)}`),
       icon: 'heroicons:trash'
     }
   ] satisfies DropdownMenuItem[]

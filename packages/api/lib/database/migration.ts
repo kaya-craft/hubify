@@ -1,8 +1,10 @@
 import type { Knex } from 'knex'
 import type { TableNames, FieldDefinition, Schema, TableDefinition, ColumnDefinition } from './types'
 import { getDataTypeCreator, type DataTypes } from './data-types'
-import { getRelationForeignKey, isColumn, isManyToManyRelation, isRelation } from './helpers'
+import { getRelationForeignKey, isColumn, isManyToManyRelation, isRelation, isOneToManyRelation } from './helpers'
 import { SchemaInspector } from 'knex-schema-inspector'
+import type { Table as TableInfo } from 'knex-schema-inspector/dist/types/table'
+import type { Column } from 'knex-schema-inspector/dist/types/column'
 
 /**
  * Run all migration steps sequentially.
@@ -97,8 +99,7 @@ function createTable<S extends Schema, T extends TableNames<S>>(knex: Knex, sche
  */
 function createColumn<S extends Schema, T extends TableNames<S>>(knex: Knex, schema: S, table: Knex.CreateTableBuilder, tableName: T, name: string, definition: FieldDefinition) {
   // Many-to-many relations are handled via join tables, so we skip them here.
-  if (isManyToManyRelation(definition)) return
-
+  if (isManyToManyRelation(definition) || isOneToManyRelation(definition)) return
   // For one-to-one, one-to-many, and many-to-one relations, we add a foreign key column.
   if (isRelation<S>(definition)) {
     const foreignKey = getRelationForeignKey(schema, tableName, definition)
@@ -107,7 +108,7 @@ function createColumn<S extends Schema, T extends TableNames<S>>(knex: Knex, sch
     const foreignKeyDef = schema[definition.table][foreignKey as keyof TableDefinition] as ColumnDefinition | undefined
     if (!foreignKeyDef || isRelation(foreignKeyDef)) throw new Error(`Foreign key definition not found or invalid for relation: ${name}.${name}`)
 
-    const column = getDataTypeCreator(foreignKeyDef.type)(table, name, foreignKeyDef, true)
+    const column = getDataTypeCreator(foreignKeyDef.type)(table, name, foreignKeyDef, knex, true)
     if (!definition.nullable) column.notNullable()
     if (definition.unique) column.unique()
     setColumnDefault(knex, column, definition)
@@ -115,10 +116,15 @@ function createColumn<S extends Schema, T extends TableNames<S>>(knex: Knex, sch
     table.foreign(name).references(foreignKey).inTable(definition.table).onDelete(definition.onDelete || 'CASCADE').onUpdate(definition.onUpdate || 'CASCADE')
   }
   else if (isColumn<S>(definition)) {
-    const column = getDataTypeCreator(definition.type)(table, name, definition)
+    const column = getDataTypeCreator(definition.type)(table, name, definition, knex, false)
     if (!definition.nullable) column.notNullable()
     if (definition.unique) column.unique()
-    if (definition.primary) column.primary()
+    if (definition.primary) {
+      column.primary()
+      if (definition.type === 'uuid' && definition.default === undefined) {
+        column.defaultTo(knex.fn.uuid())
+      }
+    }
     setColumnDefault(knex, column, definition)
   }
 }
@@ -139,6 +145,10 @@ function setColumnDefault(knex: Knex, column: Knex.ColumnBuilder, def: FieldDefi
  */
 function columnHasChanged(oldDef: FieldDefinition | undefined, newDef: FieldDefinition) {
   if (!oldDef) return true
+
+  if (shouldSkipColumnComparison(newDef)) {
+    return false
+  }
 
   if (isRelation(oldDef) && isRelation(newDef)) {
     return oldDef.table !== newDef.table
@@ -164,9 +174,18 @@ function columnHasChanged(oldDef: FieldDefinition | undefined, newDef: FieldDefi
       || oldDef.length !== newDef.length
       || oldDef.precision !== newDef.precision
       || oldDef.scale !== newDef.scale
+      || oldDef.options?.toString() !== newDef.options?.toString()
   }
 
   return true
+}
+
+/**
+ * Determine if column comparison should be skipped.
+ */
+export function shouldSkipColumnComparison(def: FieldDefinition) {
+  const skipTypes = ['enum-array', 'one-to-many', 'many-to-many']
+  return skipTypes.includes(def.type)
 }
 
 /**
@@ -181,6 +200,7 @@ export async function getCurrentSchema(knex: Knex) {
     const columnsInfo = await inspector.columnInfo(table)
     const relations = await inspector.foreignKeys(table)
     const fields: Record<string, FieldDefinition> = {}
+    const info = await inspector.tableInfo(table)
 
     for (const column of columnsInfo) {
       if (column.foreign_key_column) {
@@ -189,25 +209,26 @@ export async function getCurrentSchema(knex: Knex) {
         fields[column.name] = {
           table: column.foreign_key_table!,
           foreignKey: column.foreign_key_column!,
-          type: 'one-to-many',
+          type: 'many-to-one',
           onDelete: relation.on_delete,
           onUpdate: relation.on_update,
           nullable: column.is_nullable,
-          unique: column.is_unique,
-          default: column.default_value ?? (!column.default_value && column.is_nullable ? null : undefined)
+          unique: isUnique(knex, info, column),
+          default: getDefaultValue(knex, info, column)
         }
       }
       else {
         fields[column.name] = {
-          type: column.data_type as DataTypes,
+          type: getDataType(knex, info, column),
           nullable: column.is_nullable,
-          unique: column.is_unique,
-          default: column.default_value ?? (!column.default_value && column.is_nullable ? null : undefined),
+          unique: isUnique(knex, info, column),
+          default: getDefaultValue(knex, info, column),
           length: column.max_length || undefined,
           precision: column.numeric_precision || undefined,
           scale: column.numeric_scale || undefined,
           primary: column.is_primary_key ?? false,
-          autoIncrement: column.has_auto_increment ?? false
+          autoIncrement: column.has_auto_increment ?? false,
+          options: getEnumOptions(knex, info, column)
         }
       }
     }
@@ -216,4 +237,78 @@ export async function getCurrentSchema(knex: Knex) {
   }
 
   return schema
+}
+
+/**
+ * Get data type from database column type.
+ */
+function getDataType(knex: Knex, table: TableInfo, column: Column) {
+  if (isUuid(knex, table, column)) {
+    return 'uuid'
+  }
+
+  if (isEnum(knex, table, column)) {
+    return 'enum'
+  }
+
+  return column.data_type.toLowerCase() as DataTypes
+}
+
+/**
+ * Get enum options from database column.
+ */
+function getEnumOptions(_knex: Knex, table: TableInfo, column: Column) {
+  const regexp = new RegExp(`check \\(\`${column.name}\` in \\(([^)]+)\\)\\)`)
+  const match = table.sql?.match(regexp)
+  if (!match) return undefined
+
+  return match[1]!.split(',').map(opt => opt.trim().replace(/^'/, '').replace(/'$/, ''))
+}
+
+/**
+ * Get default value from database column.
+ */
+function getDefaultValue(knex: Knex, table: TableInfo, column: Column) {
+  if (isUuid(knex, table, column) || column.default_value === null || column.default_value === undefined) {
+    return undefined
+  }
+
+  if (column.default_value === knex.fn.now().toQuery()) {
+    return `{${column.default_value}}`
+  }
+
+  if (column.default_value === '0') {
+    return false
+  }
+
+  if (column.default_value === '1') {
+    return true
+  }
+
+  return column.default_value
+}
+
+/**
+ * Check if a column is of enum type.
+ */
+function isEnum(knex: Knex, table: TableInfo, column: Column) {
+  return column.data_type.toLowerCase() === 'enum' || getEnumOptions(knex, table, column)?.length
+}
+
+/**
+ * Get data uniqueness from database column.
+ */
+function isUnique(knex: Knex, table: TableInfo, column: Column) {
+  if (isUuid(knex, table, column)) {
+    return true
+  }
+
+  return column.is_unique || false
+}
+
+/**
+ * Check if a column is of UUID type.
+ */
+function isUuid(knex: Knex, _table: TableInfo, column: Column) {
+  return column.data_type.toLowerCase() === 'uuid' || column.default_value === knex.fn.uuid().toQuery().replace(/^\(/, '').replace(/\)$/, '')
 }

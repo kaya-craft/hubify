@@ -2,7 +2,7 @@ import knex, { type Knex } from 'knex'
 import { SchemaInspector } from 'knex-schema-inspector'
 import type { Column } from 'knex-schema-inspector/dist/types/column'
 import type { Schema, TableNames, QueryParams, TablePrimaryKeyValue, TableItem } from './types'
-import { normalizeOrderBy, normalizeFields, buildWhereQuery, addJoinQueries, getPrimaryKeyColumn, wrapSingleResult } from './helpers'
+import { normalizeOrderBy, normalizeFields, buildWhereQuery, addJoinQueries, getPrimaryKeyColumn, wrapSingleResult, wrapReturning } from './helpers'
 import { isArray, isNumber } from '@hubify/api/utils/types'
 
 /**
@@ -10,6 +10,7 @@ import { isArray, isNumber } from '@hubify/api/utils/types'
  */
 export function createDatabaseInstance<S extends Schema>(config: Knex.Config, schema: S) {
   const db = knex(config)
+
   const inspector = SchemaInspector(db)
 
   /**
@@ -104,13 +105,14 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
   /**
    * Update an item in a table.
    */
-  function updateOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, data: Partial<TableItem<S, T, false>>) {
+  function updateOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, data: Partial<TableItem<S, T, false>>, where?: QueryParams<S, T>['where']) {
     const key = getPrimaryKeyColumn(schema, table)
 
     const builder = db(table)
       .update(data)
-      .where(key, '=', pk)
-      .returning(key)
+      .where(buildWhereQuery(schema, table, where))
+      .andWhere(key, '=', pk)
+      .returning([key])
 
     return wrapSingleResult(builder) as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>>
   }
@@ -122,9 +124,9 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
     const key = getPrimaryKeyColumn(schema, table)
 
     const builder = db(table)
-      .where(buildWhereQuery(schema, table, where))
       .update(data)
-      .returning(key)
+      .where(buildWhereQuery(schema, table, where))
+      .returning([key])
 
     return builder as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>[]>
   }
@@ -132,13 +134,14 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
   /**
    * Delete an item in a table.
    */
-  function removeOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>) {
+  function removeOne<T extends TableNames<S>>(table: T, pk: TablePrimaryKeyValue<S, T>, where?: QueryParams<S, T>['where']) {
     const key = getPrimaryKeyColumn(schema, table)
 
     const builder = db(table)
       .delete()
-      .where(key, '=', pk)
-      .returning(key)
+      .where(buildWhereQuery(schema, table, where))
+      .andWhere(key, '=', pk)
+      .returning([key])
 
     return wrapSingleResult(builder) as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>>
   }
@@ -149,12 +152,13 @@ export function createDatabaseInstance<S extends Schema>(config: Knex.Config, sc
   function remove<T extends TableNames<S>>(table: T, where: QueryParams<S, T>['where']) {
     const key = getPrimaryKeyColumn(schema, table)
 
-    const builder = db(table)
-      .where(buildWhereQuery(schema, table, where))
-      .delete()
-      .returning(key)
+    const returning = find(table, { where, fields: [key] })
 
-    return builder as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>[]>
+    const builder = db(table)
+      .delete()
+      .where(buildWhereQuery(schema, table, where))
+
+    return wrapReturning(builder, returning) as unknown as knex.Knex.QueryBuilder<{}, TablePrimaryKeyValue<S, T>[]>
   }
 
   return {

@@ -3,6 +3,10 @@ import { withDefaults } from '@hubify/api/collections'
 export default defineCollection(withDefaults({
   name: {
     type: 'varchar'
+  },
+  countries: {
+    type: 'one-to-many',
+    table: 'countries'
   }
 }))
 

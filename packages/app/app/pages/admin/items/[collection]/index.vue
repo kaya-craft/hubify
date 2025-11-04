@@ -1,7 +1,6 @@
-<script setup lang="ts" generic="T extends TableNames, I extends TablePrimaryKeyValue<T>">
+<script setup lang="ts" generic="T extends TableNames">
 interface Props {
   collection: T
-  id?: I
 }
 
 const { collection } = defineProps<Props>()
@@ -12,4 +11,5 @@ const { collection } = defineProps<Props>()
     :collection
     :selectable="true"
   />
+  <NuxtPage :collection />
 </template>

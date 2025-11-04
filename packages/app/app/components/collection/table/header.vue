@@ -27,11 +27,6 @@ const { limit, where } = useQueryRouter(collection, baseQueryRouter)
 const { getPrimaryKeyValue } = useTable(collection)
 
 /**
- * Handle delete items
- */
-const { remove } = useCollection(collection)
-
-/**
  * Locale route helper.
  */
 const localeRoute = useLocaleRoute()
@@ -76,7 +71,6 @@ const tableColumnsItems = computed(() => {
     }) satisfies DropdownMenuItem)
 })
 
-const deleteModalOpen = ref(false)
 /**
  * Selected items
  */
@@ -97,14 +91,6 @@ const selectedItemsPks = computed(() => {
 const disableDeleteButton = computed(() => {
   return selectedItems.value.length === 0
 })
-
-/**
- * Handle delete items
- */
-async function handleDeleteItems() {
-  await remove(selectedItemsPks)
-  deleteModalOpen.value = false
-}
 </script>
 
 <template>
@@ -148,41 +134,19 @@ async function handleDeleteItems() {
     </div>
 
     <div class="flex gap-4 overflow-x-scroll">
-      <!-- Delete -->
-      <UModal
-        v-model:open="deleteModalOpen"
-        :title="t('app.admin.confirm-delete-items')"
-      >
-        <UButton
-          data-testid="table-delete-button"
-          :disabled="disableDeleteButton"
-          color="error"
-          v-bind="{ size, variant }"
-          :label="t('app.form.actions.delete')"
-          icon="heroicons:trash"
-        />
-
-        <template #body>
-          <div class="flex justify-between">
-            <UButton
-              color="error"
-              v-bind="{ size, variant }"
-              icon="heroicons:trash"
-              :label="t('app.admin.confirm-action')"
-              @click="handleDeleteItems"
-            />
-
-            <UButton
-              v-bind="{ size, variant, color }"
-              :label="t('app.admin.form.cancel')"
-            />
-          </div>
-        </template>
-      </UModal>
-
-      <!-- Create -->
       <UButton
-        :to="localeRoute({ name: 'admin-items-collection-create', params: { collection } })"
+        color="error"
+        :disabled="disableDeleteButton"
+        v-bind="{ size, variant }"
+        icon="heroicons:trash"
+        :label="t('app.form.actions.delete')"
+        data-testid="table-delete-button"
+        :to="localeRoute(`/admin/items/${collection}/remove?items=${selectedItemsPks}`)"
+      />
+
+      <UButton
+        :to="localeRoute(`/admin/items/${collection}/create`)"
+        data-testid="table-create-button"
         color="secondary"
         v-bind="{ size, variant }"
         leading-icon="heroicons:plus"

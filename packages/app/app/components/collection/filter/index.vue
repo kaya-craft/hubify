@@ -90,29 +90,26 @@ const open = ref(false)
  * Filter count
  */
 function countConditions(root: ConditionTree<T>): number {
-  if (root == null || typeof root !== 'object') return 0
-
-  let count = 0
-  const stack: ConditionTree<T>[] = [root]
-
-  while (stack.length) {
-    const node: ConditionTree<T> = stack.pop()!
-    if (node == null || typeof node !== 'object') continue
-    const group = node.$and ?? node.$or
-
-    if (Array.isArray(group)) {
-      for (let i = group.length - 1; i >= 0; i--) {
-        stack.push(group[i]!)
-      }
+  return [root].reduce((count, node) => {
+    if (node.$and) {
+      count += node.$and.reduce((subCount, child) => subCount + countConditions(child), 0)
     }
-    else {
-      count++
+    if (node.$or) {
+      count += node.$or.reduce((subCount, child) => subCount + countConditions(child), 0)
     }
-  }
 
-  return count
+    count += Object.keys(node).filter(key => key !== '$and' && key !== '$or').length
+
+    return count
+  }, 0)
 }
-const filterCount = computed(() => filter.value ? countConditions(filter.value) : 0)
+
+/**
+ * Computed filter count.
+ */
+const filterCount = computed(() => {
+  return filter.value ? countConditions(filter.value) : 0
+})
 </script>
 
 <template>
@@ -125,7 +122,7 @@ const filterCount = computed(() => filter.value ? countConditions(filter.value) 
     :open="open"
   >
     <UButton
-      :label="t('app.admin.filters.label') + ` (${filterCount})`"
+      :label="`${t('app.admin.filters.label')} (${filterCount})`"
       v-bind="{ variant, color, size }"
       leading-icon="heroicons:funnel"
       @click.prevent="open = !open"
@@ -136,6 +133,11 @@ const filterCount = computed(() => filter.value ? countConditions(filter.value) 
         ref="modal"
         v-model="filter"
         v-model:fullscreen="fullscreen"
+        can-expand
+        show-dropdown
+        class="p-4"
+        :title="t('app.admin.filters.title') "
+        :description="t('app.admin.filters.description') "
         :collection
       />
     </template>

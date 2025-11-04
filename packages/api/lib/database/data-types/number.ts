@@ -8,7 +8,7 @@ export default {
   operators: ['$eq', '$neq', '$in', '$nin', '$lt', '$lte', '$gt', '$gte', '$nbetween', '$between', '$null', '$nnull'],
   types: {
     integer: {
-      create: (knex, name, def, isRelational) => !isRelational && 'autoIncrement' in def && def.autoIncrement ? knex.increments(name, { primaryKey: false }) : knex.integer(name),
+      create: (knex, name, def, _, isRelational) => !isRelational && 'autoIncrement' in def && def.autoIncrement ? knex.increments(name, { primaryKey: false }) : knex.integer(name),
       validate: () => z.coerce.number().int()
     },
     bigInteger: {

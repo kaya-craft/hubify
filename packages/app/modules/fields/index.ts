@@ -1,6 +1,6 @@
 import { excludeTsFolderForLayers, getDirectories, getFilesFromDir } from '@hubify/api/modules/schema/index'
 import { join, resolve } from 'node:path'
-import { addTemplate, defineNuxtModule, useLogger, updateTemplates, resolveModule } from 'nuxt/kit'
+import { addTemplate, defineNuxtModule, useLogger, updateTemplates, resolveModule, addServerImports } from 'nuxt/kit'
 import { scanFilesFromDir } from 'unimport'
 
 export interface FieldsModuleOptions {
@@ -53,6 +53,11 @@ export default defineNuxtModule<FieldsModuleOptions>({
       filename: 'hubify/fields.ts',
       getContents: () => generateFieldsContent(fieldsDirs),
       write: true
+    })
+
+    addServerImports({
+      from: resolve(__dirname, '../../app/utils/fields.ts'),
+      name: 'defineCollectionFields'
     })
 
     nuxt.hook('builder:watch', async (_, path) => {
@@ -120,10 +125,10 @@ async function generateFieldsContent(dirs: string[]) {
 
   return [
     includeDefu ? 'import { defu } from \'defu\'' : '',
-    'import type { TableFieldOptions } from \'@hubify/app/types/fields\'',
+    'import { normalizeFields } from \'@hubify/app/fields\'',
     ...imports,
     '',
-    'const hubifyFields: { [K in TableNames]?: TableFieldOptions<K> } = {\n' + items.join(',\n') + '\n}',
+    `const hubifyFields = normalizeFields({\n${items.join(',\n')}\n})`,
     '',
     ...collections.map(name => `export const ${name} = hubifyFields.${name}`),
     '',

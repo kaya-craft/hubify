@@ -1,4 +1,9 @@
 <script setup lang="ts" generic="T extends TableNames">
+definePageMeta({
+  validate: to => isString(to.params.id) || isNumber(to.params.id),
+  props: to => to.params
+})
+
 interface Props {
   collection: T
   id: TablePrimaryKeyValue<T>
@@ -9,7 +14,7 @@ const { id, collection } = defineProps<Props>()
 /**
  * Fetch the item to edit.
  */
-const { data: item } = await useFetch('/api/items/' + collection + '/' + id)
+const { data: item } = await useFetch(`/api/items/${collection}/${id}`)
 
 /**
  * If the item does not exist, throw a 404 error.
@@ -20,11 +25,6 @@ if (!toValue(item)) {
     statusMessage: 'Item not found'
   })
 }
-
-/**
- * Translation.
- */
-const { t } = useI18n()
 
 /**
  * Locale path instance.
@@ -50,25 +50,11 @@ async function onSuccess(_event: TableFormSubmitEvent<T>, stay: boolean) {
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <div class="flex items-center gap-4">
-        <UButton
-          :to="backRoute"
-          variant="ghost"
-          color="secondary"
-          icon="heroicons:arrow-left"
-          :aria-label="t('app.back')"
-        />
-        <CollectionTitle :collection />
-      </div>
-    </template>
-
-    <CollectionForm
-      v-if="item"
-      :collection
-      :initial-state="item"
-      @success="onSuccess"
-    />
-  </UCard>
+  <CollectionForm
+    v-if="item"
+    :collection
+    class="p-8"
+    :initial-state="item"
+    @success="onSuccess"
+  />
 </template>

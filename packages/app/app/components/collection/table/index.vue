@@ -65,6 +65,7 @@ const collectionColumns = computed(() => {
     cell: ({ row }) => {
       const value = row.original[name as keyof typeof row.original]
       const component = getDisplayComponent(name)
+      if (!component) return
       return h(component, { value })
     }
   }) satisfies TableColumn<TableItem<T>>)
@@ -118,7 +119,7 @@ const { refresh, data } = useItems(collection, { query, paginate: true })
  * Refresh the collection when the collection is updated.
  */
 onHubifyHook('items', ({ collection: name }) => {
-  if (String(name) !== String(collection)) return
+  if (![collection, 'hubify_permissions'].includes(name)) return
   refresh()
   table.value?.tableApi.resetRowSelection()
 })

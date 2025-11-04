@@ -16,7 +16,7 @@ const clause = defineModel<Clause<T>>({
 /**
  * Tabloe information.
  */
-const { columnNames, getColumn } = useTable(collection)
+const { columnNames, getColumn } = useTable(() => collection)
 
 /**
  * List of items for the dropdown menu to select a column.

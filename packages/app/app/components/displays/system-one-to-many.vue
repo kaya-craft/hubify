@@ -3,14 +3,15 @@ type RelatedTable = TableRelation<T, R>['table']
 
 type Props = {
   collection: T
-  relation: R
+  column: R
+  relatedTable?: RelatedTable
   displayColumn?: TableColumnNames<RelatedTable>
   value?: TablePrimaryKeyValue<RelatedTable>
 }
 
 defineFieldDataTypes('one-to-many')
 
-const { collection, value, relation, displayColumn: _displayColumn } = defineProps<Props>()
+const { collection, value, column, relatedTable, displayColumn: _displayColumn } = defineProps<Props>()
 
 /**
  * Use table composable
@@ -20,7 +21,7 @@ const { getRelation } = useTable(collection)
 /**
  * Get related table info
  */
-const { primaryKey, name } = useTable(getRelation(relation).table)
+const { primaryKey, name } = useTable(relatedTable ?? getRelation(column).table)
 
 /**
  * Use collections composable
@@ -48,7 +49,7 @@ const { data: label } = useFetch(`/api/items/${toValue(name)}/${value}`, {
   query: {
     columns: toValue(displayColumns)
   },
-  transform: (item: TableItem<TableNames>) => getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn)])
+  transform: (item: TableItem<RelatedTable>) => getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn)])
 })
 </script>
 

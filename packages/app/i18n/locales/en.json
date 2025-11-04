@@ -106,5 +106,19 @@
   "app.form.actions.duplicate": "Duplicate",
   "app.toast.duplicate-item.title": "Duplicate item",
   "app.toast.duplicate-item.success": "The item was successfully duplicated",
-  "app.toast.duplicate-item.error": "The item could not be duplicated"
+  "app.toast.duplicate-item.error": "The item could not be duplicated",
+  "app.select.placeholder": "Select an option",
+  "app.view-json": "View JSON",
+  "app.admin.settings.security.roles.title": "Roles",
+  "app.admin.settings.security.policies.title": "Policies",
+  "app.admin.settings.security.roles.create.title": "Create a new role",
+  "app.admin.settings.security.roles.create.description": "Create a role with specific permissions",
+  "app.admin.settings.security.policies.create.title": "Create a policy",
+  "app.admin.settings.security.policies.create.description": "Create a new policy and set its permissions",
+  "app.admin.settings.security.permissions.title": "Permissions",
+  "app.admin.settings.security.permissions.create.title": "Create a permission",
+  "app.admin.settings.security.permissions.create.description": "Create a new permission",
+  "app.items.remove.confirmation": "Are you sure you want to remove this item? | Are you sure you want to remove these {count} items?",
+  "app.admin.test-permissions.select-collection": "Select a collection",
+  "app.admin.test-permissions.primary-key-placeholder": ":id"
 }

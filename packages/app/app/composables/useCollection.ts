@@ -6,7 +6,7 @@ import type z from 'zod'
 export function useCollection<T extends TableNames>(collection: T) {
   const { alert, success } = useCustomToast()
   const { t } = useI18n()
-  const { getRelation, columnNames, getColumn } = useTable(collection)
+  const { getRelation, columnNames, primaryKey, getColumn } = useTable(collection)
   const loading = ref(false)
 
   /**
@@ -34,26 +34,28 @@ export function useCollection<T extends TableNames>(collection: T) {
   /**
    * Remove a list of item ids
    */
-  async function remove(ids: MaybeRef<(string | number)[]>) {
-    if (!toValue(ids).length) return
+  async function remove(ids: TablePrimaryKeyValue<T>[]) {
+    if (!ids.length) return
+
     try {
       loading.value = true
-      const response = await $fetch(`/api/items/${collection}` as `/api/items/:collection`, {
+
+      const response = await $fetch(`/api/items/${String(collection)}`, {
         method: 'delete',
         query: {
           where: {
-            id: {
-              $in: toValue(ids)
-            }
+            [toValue(primaryKey)]: { $in: ids }
           }
         }
       })
+
       success(t('app.toast.delete-item.title'), t('app.toast.delete-item.success'))
+
       return response
     }
     catch (e) {
       console.error(e)
-      alert(t('app.toast.create-item.title'), t('app.toast.create-item.error') + ' ' + String(e))
+      alert(t('app.toast.create-item.title'), `${t('app.toast.create-item.error')} ${String(e)}`)
     }
     finally {
       loading.value = false
@@ -76,7 +78,7 @@ export function useCollection<T extends TableNames>(collection: T) {
     }
     catch (e) {
       console.error(e)
-      alert(t('app.toast.update-item.title'), t('app.toast.update-item.error') + ' ' + String(e))
+      alert(t('app.toast.update-item.title'), `${t('app.toast.update-item.error')} ${String(e)}`)
     }
     finally {
       loading.value = false
@@ -90,7 +92,7 @@ export function useCollection<T extends TableNames>(collection: T) {
     try {
       loading.value = true
 
-      const columnsToRemove = toValue(columnNames).filter(col => getColumn(col)?.primary || getColumn(col)?.default === 'CURRENT_TIMESTAMP')
+      const columnsToRemove = toValue(columnNames).filter(col => getColumn(col)?.primary || getColumn(col)?.default === '{CURRENT_TIMESTAMP}')
 
       const copy = Object.fromEntries(
         Object.entries(item).filter(([key]) => !columnsToRemove.includes(key as TableColumnNames<T>))
@@ -105,7 +107,7 @@ export function useCollection<T extends TableNames>(collection: T) {
     }
     catch (e) {
       console.error(e)
-      alert(t('app.toast.duplicate-item.title'), t('app.toast.duplicate-item.error') + ' ' + String(e))
+      alert(t('app.toast.duplicate-item.title'), `${t('app.toast.duplicate-item.error')} ${String(e)}`)
     }
     finally {
       loading.value = false
@@ -144,7 +146,7 @@ export function useCollection<T extends TableNames>(collection: T) {
 
       const [primaryKey, ids] = _extractPrimaryKeyValues(relation.table, idOrItems)
 
-      await $fetch('/api/items/' + relation.table as `/api/items/:collection`, {
+      await $fetch(`/api/items/${relation.table}` as `/api/items/:collection`, {
         method: 'put',
         query: { where: { [primaryKey]: { $in: ids } } },
         body: { [relation.foreignKey]: id }
@@ -175,7 +177,7 @@ export function useCollection<T extends TableNames>(collection: T) {
 
       const [primaryKey, ids] = _extractPrimaryKeyValues(relation.table, idOrItems)
 
-      await $fetch('/api/items/' + relation.table, {
+      await $fetch(`/api/items/${relation.table}`, {
         method: 'put',
         query: { where: { [primaryKey]: { $in: ids } } },
         body: { [relation.foreignKey]: null }

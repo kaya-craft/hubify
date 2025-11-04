@@ -1,5 +1,5 @@
 import type { ColumnDefinition, FieldDefinition, Prettify, RelationDefinition, Schema, TableDefinition, TableFieldNames, TableNames } from '@hubify/api/database/types.d'
-import { getRelationForeignKey, isColumn } from '@hubify/api/database/helpers'
+import { getRelationForeignKey, isColumn, isManyToManyRelation } from '@hubify/api/database/helpers'
 
 /**
  * Normalize a schema by ensuring all optional properties are set to their default values.
@@ -31,11 +31,12 @@ function normalizeFieldDefinition<S extends Schema, T extends TableNames<S>, F e
       primary: fieldDef.primary ?? false,
       autoIncrement: fieldDef.autoIncrement ?? false,
       nullable: fieldDef.nullable ?? false,
-      unique: fieldDef.unique ?? false,
-      default: fieldDef.default,
-      length: fieldDef.length ?? (fieldDef.type === 'varchar' ? 255 : undefined),
+      length: getLength(fieldDef),
       precision: fieldDef.precision,
-      scale: fieldDef.scale
+      scale: fieldDef.scale,
+      options: fieldDef.options,
+      unique: getUnique(fieldDef),
+      default: getDefault(fieldDef)
     }
   }
 
@@ -44,24 +45,57 @@ function normalizeFieldDefinition<S extends Schema, T extends TableNames<S>, F e
     onDelete: fieldDef.onDelete || 'NO ACTION',
     onUpdate: fieldDef.onUpdate || 'NO ACTION',
     nullable: fieldDef.nullable ?? false,
-    unique: fieldDef.unique ?? false,
-    default: fieldDef.default
+    unique: getUnique(fieldDef),
+    default: getDefault(fieldDef)
   }
 
-  if (fieldDef.type === 'one-to-many') {
+  if (isManyToManyRelation(fieldDef)) {
     return {
       ...baseRelation,
       type: fieldDef.type,
-      foreignKey: getRelationForeignKey(schema, tableName, fieldDef)
+      through: fieldDef.through,
+      throughKey: fieldDef.throughKey
     }
   }
 
   return {
     ...baseRelation,
     type: fieldDef.type,
-    through: fieldDef.through,
-    throughKey: fieldDef.throughKey
+    foreignKey: getRelationForeignKey(schema, tableName, fieldDef)
   }
+}
+
+/**
+ * Get uniquess of field.
+ */
+function getUnique(def: FieldDefinition) {
+  if (def.type === 'uuid') return true
+
+  return def.unique ?? false
+}
+
+/**
+ * Get default value of field.
+ */
+function getDefault(def: FieldDefinition) {
+  if (def.type === 'enum-array') return '[]'
+
+  return def.default
+}
+
+/**
+ * Get length of field.
+ */
+function getLength(def: FieldDefinition) {
+  if (def.type === 'varchar' || def.type === 'char') {
+    return def.length || 255
+  }
+
+  if (def.type === 'uuid') {
+    return 36
+  }
+
+  return def.length
 }
 
 export type NormalizedSchema<T extends Schema> = Prettify<{

@@ -12,12 +12,12 @@ type CollectionHooks = {
   collection: <T extends TableNames> (payload: { collection: T, type: HookEventType }) => void
 }
 
-type ItemPayload<K extends keyof ItemsHooks, T extends TableNames> = K extends 'deleted' ? {
-  collection: T
-  id: TablePrimaryKeyValue<T>
-} : {
+type ItemPayload<K extends keyof ItemsHooks, T extends TableNames> = K extends 'created' ? {
   collection: T
   item: TableItem<T>
+} : {
+  collection: T
+  item: Record<TablePrimaryKey<T>, TablePrimaryKeyValue<T>>
 }
 
 type TableHooks = {

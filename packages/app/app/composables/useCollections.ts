@@ -1,7 +1,15 @@
+import { getPrimaryKeyColumn } from '@hubify/api/database/helpers'
+import tables from '#hubify/schema'
+
 /**
  * Use collections composable.
  */
 export function useCollections() {
+  /**
+   * Get primary key column for hubify_collections table.
+   */
+  const primaryKey = getPrimaryKeyColumn(tables, 'hubify_collections')
+
   /**
    * List of collections.
    **/
@@ -40,11 +48,6 @@ export function useCollections() {
     }).trim()
   }
 
-  onHubifyHook('items', ({ collection }) => {
-    if (collection !== 'hubify_collections') return
-    refresh()
-  })
-
   /**
    * Get collection meta by name.
    */
@@ -52,11 +55,33 @@ export function useCollections() {
     return toValue(collections)?.find(collection => collection.name === name)
   }
 
+  /**
+   * Find a collection by its primary key.
+   */
+  function getCollectionByPk(pk: unknown) {
+    return toValue(collections)?.find(collection => collection[primaryKey as keyof typeof collection] === pk)
+  }
+
+  /**
+   * Find a collection name by its primary key.
+   */
+  function getCollectionNameByPk(pk: unknown) {
+    const collection = getCollectionByPk(pk)
+    return collection?.name
+  }
+
+  onHubifyHook('items', ({ collection }) => {
+    if (!['hubify_collections', 'hubify_permissions'].includes(collection)) return
+    refresh()
+  })
+
   return {
     collections,
     extractDisplayColumns,
     getDisplay,
-    getCollectionMeta
+    getCollectionMeta,
+    getCollectionByPk,
+    getCollectionNameByPk
   }
 }
 

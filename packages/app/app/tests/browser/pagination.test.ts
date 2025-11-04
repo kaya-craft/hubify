@@ -35,7 +35,7 @@ describe('Pagination ', () => {
     await lastPageButton?.click()
 
     const selectedButton = paginationButtons.find(b => b.element().getAttribute('data-selected') === 'true')
-    expect(selectedButton?.element().ariaLabel).toEqual('Page ' + 10) // 100 items / 10 pageSize
+    expect(selectedButton?.element().ariaLabel).toEqual(`Page ${10}`) // 100 items / 10 pageSize
   })
 
   it('Update offset query correctly', async () => {

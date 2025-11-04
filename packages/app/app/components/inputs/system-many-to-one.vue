@@ -3,15 +3,16 @@ type RelatedTable = TableRelation<T, R>['table']
 
 type Props = {
   collection: T
-  relation: R
+  column: R
+  relatedTable?: RelatedTable
   displayColumn?: TableColumnNames<RelatedTable>
 }
 
-defineFieldDataTypes('one-to-many')
+defineFieldDataTypes('many-to-one')
 
 const value = defineModel<TablePrimaryKeyValue<RelatedTable>>()
 
-const { collection, relation, displayColumn: _displayColumn } = defineProps<Props>()
+const { collection, column, relatedTable, displayColumn: _displayColumn } = defineProps<Props>()
 
 /**
  * Use table composable
@@ -21,7 +22,7 @@ const { getRelation } = useTable(collection)
 /**
  * Get related table info
  */
-const { primaryKey, name } = useTable(getRelation(relation).table)
+const { primaryKey, name } = useTable(relatedTable ?? getRelation(column).table as RelatedTable)
 
 /**
  * Use collections composable
@@ -49,9 +50,9 @@ const { data: items } = useFetch(`/api/items/${toValue(name)}`, {
   query: {
     columns: [toValue(primaryKey), ...toValue(displayColumns)]
   },
-  transform: (items: TableItem<TableNames>[]) => items.map(item => ({
+  transform: (items: TableItem<RelatedTable>[]) => items.map(item => ({
     label: getDisplay(toValue(name), item) ?? String(item[toValue(fallbackColumn) as keyof typeof item]),
-    value: item[toValue(primaryKey) as keyof typeof item] as string | number
+    value: item[toValue(primaryKey) as keyof typeof item] as unknown as string | number
   }))
 })
 </script>

@@ -39,7 +39,5 @@ export const fields = defineCollectionFields('hubify_users', {
     input: {
       class: 'col-span-6'
     }
-  },
-  createdAt: false,
-  updatedAt: false
+  }
 })

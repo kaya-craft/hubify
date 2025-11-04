@@ -100,7 +100,7 @@ export function normalizeField<S extends Schema, T extends TableNames<S>>(schema
     if (isRelation(field) && index < array.length - 1) {
       table = field.table as T
     }
-    return table + '.' + part
+    return `${table}.${part}`
   }, '')
 }
 
@@ -179,7 +179,12 @@ export function addJoinQueries<S extends Schema, T extends TableNames<S>>(schema
       builder.leftJoin(relation.through, `${throughRelation2.table}.${relationLocalKey}`, '=', `${relation.through}.${relation.throughKey}`)
       builder.leftJoin(relation.table, `${relation.through}.${throughForeignKey}`, '=', `${throughRelation.table}.${throughLocalKey}`)
     }
-    else if (isOneToManyRelation<S>(relation)) {
+    else if (isOneToManyRelation(relation)) {
+      const foreignKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, relation.table)
+      const primaryKey = getPrimaryKeyColumn(schema, table)
+      builder.leftJoin(relation.table, `${relation.table}.${foreignKey}`, '=', `${table}.${primaryKey}`)
+    }
+    else if (isRelation(relation)) {
       const foreignKey = 'foreignKey' in relation ? relation.foreignKey : getPrimaryKeyColumn(schema, relation.table)
       builder.leftJoin(relation.table, `${table}.${fromKey}`, '=', `${relation.table}.${foreignKey}`)
     }
@@ -223,6 +228,21 @@ export function wrapSingleResult<B extends knex.Knex.QueryBuilder>(builder: B) {
 }
 
 /**
+ * Wrap returning for sqlite to support returning clause.
+ */
+export function wrapReturning<B extends knex.Knex.QueryBuilder>(builder: B, returning: knex.Knex.QueryBuilder) {
+  const then = builder.then.bind(builder)
+
+  // oxlint-disable-next-line no-thenable
+  builder.then = function (resolve, reject) {
+    if (!resolve) return then(resolve, reject)
+    return returning.then(results => then(() => resolve(results), reject))
+  }
+
+  return builder
+}
+
+/**
  * Check if a field definition is a relation.
  */
 export function isRelation<S extends Schema = Schema>(field: unknown): field is RelationDefinition & { table: TableNames<S> } {
@@ -248,4 +268,32 @@ export function isManyToManyRelation<S extends Schema = Schema>(field: unknown):
  */
 export function isOneToManyRelation<S extends Schema = Schema>(field: unknown): field is RelationDefinition & { type: 'one-to-many', table: TableNames<S> } {
   return isRelation(field) && field.type === 'one-to-many'
+}
+
+/**
+ * Check if a field definition is a many-to-one relation.
+ */
+export function isManyToOneRelation(field: unknown): field is RelationDefinition & { type: 'many-to-one' } {
+  return isRelation(field) && field.type === 'many-to-one'
+}
+
+/**
+ * Check if a field definition is a one-to-one relation.
+ */
+export function isOneToOneRelation(field: unknown): field is RelationDefinition & { type: 'one-to-one' } {
+  return isRelation(field) && field.type === 'one-to-one'
+}
+
+/**
+ * Check if a field definition is a primary column.
+ */
+export function isPrimaryColumn(field: unknown): field is ColumnDefinition & { primary: true } {
+  return typeof field === 'object' && field !== null && 'primary' in field && field.primary === true
+}
+
+/**
+ * CHeck if a field is a timestamp default field.
+ */
+export function isTimestampField(field: unknown): field is ColumnDefinition & { default: '{CURRENT_TIMESTAMP}' } {
+  return typeof field === 'object' && field !== null && 'default' in field && field.default === '{CURRENT_TIMESTAMP}'
 }

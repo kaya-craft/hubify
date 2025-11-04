@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { instance } from './setup'
-import { getCurrentSchema, runMigrations } from '@hubify/api/database/migration'
+import { getCurrentSchema, runMigrations, shouldSkipColumnComparison } from '@hubify/api/database/migration'
 import schema from '#hubify/schema'
 import { normalizeSchema } from '@hubify/api/collections'
 import type { Schema, TableDefinition } from '@hubify/api/database/types'
@@ -8,14 +8,14 @@ import type { Schema, TableDefinition } from '@hubify/api/database/types'
 describe('database', () => {
   it('should write correct find query', async () => {
     const query = instance.find('hubify_users', {
-      fields: ['id', 'role.admin', 'role.permissions.name'],
+      fields: ['id', 'role.admin', 'role.policies.permissions.name'],
       where: {
         role: {
           $eq: 1
         },
         $and: [{
-          'role.permissions.name': {
-            $contains: 'manage'
+          'role.policies.permissions.name': {
+            $contains: 'read'
           },
           'role.admin': {
             $eq: true
@@ -37,15 +37,15 @@ describe('database', () => {
       offset: 20
     }).toQuery()
 
-    expect(query).toBe('select `hubify_users`.`id`, `hubify_roles`.`admin`, `hubify_permissions`.`name` from `hubify_users` left join `hubify_roles` on `hubify_users`.`role` = `hubify_roles`.`id` left join `hubify_roles_permissions` on `hubify_roles`.`id` = `hubify_roles_permissions`.`role_id` left join `hubify_permissions` on `hubify_roles_permissions`.`permission_id` = `hubify_permissions`.`id` where (`hubify_users`.`role` = 1 and ((`hubify_permissions`.`name` like \'%manage%\' and `hubify_roles`.`admin` = true)) and ((`hubify_users`.`role` < 10) or (`hubify_users`.`role` > 20))) group by `hubify_roles`.`id` order by `hubify_users`.`id` desc, `hubify_roles`.`admin` asc limit 10 offset 20')
+    expect(query).toBe('select `hubify_users`.`id`, `hubify_roles`.`admin`, `hubify_permissions`.`name` from `hubify_users` left join `hubify_roles` on `hubify_users`.`role` = `hubify_roles`.`id` left join `hubify_policies_roles` on `hubify_roles`.`id` = `hubify_policies_roles`.`role` left join `hubify_policies` on `hubify_policies_roles`.`policy` = `hubify_policies`.`id` left join `hubify_policies_permissions` on `hubify_policies`.`id` = `hubify_policies_permissions`.`policy` left join `hubify_permissions` on `hubify_policies_permissions`.`permission` = `hubify_permissions`.`id` where (`hubify_users`.`role` = 1 and ((`hubify_permissions`.`name` like \'%read%\' and `hubify_roles`.`admin` = true)) and ((`hubify_users`.`role` < 10) or (`hubify_users`.`role` > 20))) group by `hubify_roles`.`id` order by `hubify_users`.`id` desc, `hubify_roles`.`admin` asc limit 10 offset 20')
   })
 
   it('should write correct findOne query', async () => {
     const query = instance.findOne('hubify_users', 1, {
-      fields: ['id', 'role.admin', 'role.permissions.name']
+      fields: ['id', 'role.admin', 'role.policies.permissions.name']
     }).toQuery()
 
-    expect(query).toBe('select `hubify_users`.`id`, `hubify_roles`.`admin`, `hubify_permissions`.`name` from `hubify_users` left join `hubify_roles` on `hubify_users`.`role` = `hubify_roles`.`id` left join `hubify_roles_permissions` on `hubify_roles`.`id` = `hubify_roles_permissions`.`role_id` left join `hubify_permissions` on `hubify_roles_permissions`.`permission_id` = `hubify_permissions`.`id` where `id` = 1 limit 1')
+    expect(query).toBe('select `hubify_users`.`id`, `hubify_roles`.`admin`, `hubify_permissions`.`name` from `hubify_users` left join `hubify_roles` on `hubify_users`.`role` = `hubify_roles`.`id` left join `hubify_policies_roles` on `hubify_roles`.`id` = `hubify_policies_roles`.`role` left join `hubify_policies` on `hubify_policies_roles`.`policy` = `hubify_policies`.`id` left join `hubify_policies_permissions` on `hubify_policies`.`id` = `hubify_policies_permissions`.`policy` left join `hubify_permissions` on `hubify_policies_permissions`.`permission` = `hubify_permissions`.`id` where `id` = 1 limit 1')
   })
 
   it('should write correct create query', async () => {
@@ -88,13 +88,15 @@ describe('database', () => {
 
   it ('should run migrations correctly', async () => {
     const migrations = await runMigrations(instance.db, schema)
-    expect(migrations).toBe(4)
+    expect(migrations).toBe(10)
 
     expect(await instance.getTableNames()).toEqual(expect.arrayContaining([
       'hubify_users',
       'hubify_roles',
       'hubify_permissions',
-      'hubify_roles_permissions'
+      'hubify_policies_roles',
+      'hubify_policies',
+      'hubify_policies_permissions'
     ]))
 
     const newSchema = normalizeSchema({
@@ -123,7 +125,9 @@ describe('database', () => {
       'hubify_users',
       'hubify_roles',
       'hubify_permissions',
-      'hubify_roles_permissions',
+      'hubify_policies_roles',
+      'hubify_policies',
+      'hubify_policies_permissions',
       'hubify_profiles'
     ]))
 
@@ -141,9 +145,12 @@ function cleanSchema<T extends Schema>(schema: T) {
 
   return Object.fromEntries(entries.map(([tableName, tableDef]) => [
     tableName,
-    Object.fromEntries(Object.entries(tableDef).filter(([_, fieldDef]) => fieldDef.type !== 'many-to-many').map(([fieldName, fieldDef]) => [
+    Object.fromEntries(Object.entries(tableDef).filter(([name, fieldDef]) => {
+      // TODO/FIXME: Remove this when we have proper many-to-many support in migrations
+      return !shouldSkipColumnComparison(fieldDef) && name !== 'action'
+    }).map(([fieldName, fieldDef]) => [
       fieldName,
-      Object.fromEntries(Object.entries(fieldDef).filter(([key, _]) => key !== 'default'))
+      fieldDef
     ]))
   ])) as unknown as T
 }

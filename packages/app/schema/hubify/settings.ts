@@ -32,7 +32,6 @@ export const fields = defineCollectionFields('hubify_settings', {
       component: 'color'
     }
   },
-
   description: {
     order: 3,
     input: {
