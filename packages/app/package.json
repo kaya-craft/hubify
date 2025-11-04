@@ -7,6 +7,7 @@
     "./modules/*": "./modules/*.ts",
     "./schema/*": "./schema/*.ts",
     "./types/*": "./types/*.d.ts",
+    "./utils/*": "./shared/utils/*.ts",
     "./*": {
       "types": "./lib/*.d.ts",
       "import": "./lib/*.ts",
@@ -49,6 +50,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@hubify/app": "workspace:",
+    "typescript": "catalog:",
     "@atlaskit/pragmatic-drag-and-drop-unit-testing": "^1.1.1",
     "@iconify/vue": "^5.0.0",
     "@types/yaireo__tagify": "^4.27.0",

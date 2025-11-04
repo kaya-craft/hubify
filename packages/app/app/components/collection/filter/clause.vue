@@ -24,7 +24,7 @@ const { columnNames, getColumn } = useTable(collection)
 const columnItems = computed(() => {
   return toValue(columnNames).map(name => ({
     label: name,
-    value: name as TableColumnNames<T>
+    value: name
   }) satisfies DropdownMenuItem)
 })
 
@@ -258,7 +258,7 @@ watch(clause, ensureProperValueType, { immediate: true })
 
       <template v-else-if="isClauseNumberBetween(clause)">
         <UInputNumber
-          v-model.number="clause.value[0]"
+          v-model="clause.value[0]"
           size="xs"
           class="flex-1"
           data-testid="filter-value-min"
@@ -266,7 +266,7 @@ watch(clause, ensureProperValueType, { immediate: true })
         />
         <span class="text-sm text-gray-500">-</span>
         <UInputNumber
-          v-model.number="clause.value[1]"
+          v-model="clause.value[1]"
           size="xs"
           class="flex-1"
           data-testid="filter-value-max"
@@ -276,7 +276,7 @@ watch(clause, ensureProperValueType, { immediate: true })
 
       <template v-else-if="isClauseNumber(clause)">
         <UInputNumber
-          v-model.number="clause.value"
+          v-model="clause.value"
           size="xs"
           class="flex-1"
           data-testid="filter-value"

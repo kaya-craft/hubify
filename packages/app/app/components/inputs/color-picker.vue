@@ -4,6 +4,11 @@ import type { ColorPickerProps } from '@nuxt/ui'
 interface Props extends /* @vue-ignore */ ColorPickerProps {}
 
 /**
+ * Props for the color picker component.
+ */
+defineProps<Props>()
+
+/**
  * Selected color model.
  */
 const color = defineModel<string>()
@@ -12,11 +17,6 @@ const color = defineModel<string>()
  * Expose the data types supported by this color picker.
  */
 defineFieldDataTypes('text', 'varchar')
-
-/**
- * Props for the color picker component.
- */
-defineProps<Props>()
 
 /**
  * Computed style for the color chip.

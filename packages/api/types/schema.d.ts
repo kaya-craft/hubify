@@ -1,19 +1,16 @@
-import type { TableNames as _TableNames, TableColumns as _TableColumns, TableColumnNames as _TableColumnNames, TableColumn as _TableColumn, TableRelations as _TableRelations, TableRelationNames as _TableRelationNames, TableRelation as _TableRelation, TableItem as _TableItem, QueryParams as _QueryParams, TableColumnType as _TableColumnType, TablePrimaryKeyValue as _TablePrimaryKeyValue, PrimaryKeyColumn, ConditionTree as _ConditionTree, ColumnDefinition, Prettify } from '@hubify/api/database/types.d'
-import type { defineCollection as _defineCollection } from '#imports'
+import type { TableNames as _TableNames, TableColumns as _TableColumns, TableColumnNames as _TableColumnNames, TableColumn as _TableColumn, TableRelations as _TableRelations, TableRelationNames as _TableRelationNames, TableRelation as _TableRelation, TableItem as _TableItem, QueryParams as _QueryParams, TableColumnType as _TableColumnType, TablePrimaryKeyValue as _TablePrimaryKeyValue, PrimaryKeyColumn, ConditionTree as _ConditionTree, ColumnDefinition, Prettify, Schema as _Schema, TableFieldNames as _TableFieldNames, TableFields as _TableFields, RelationDefinition } from '@hubify/api/database/types.d'
 
-declare global {
-  const defineCollection: typeof _defineCollection
-}
-
-export type Schema = import('#hubify/schema').HubifySchema
+export type Schema = import('#hubify/schema').HubifySchema extends infer S extends _Schema ? S : never
 export type Table<T extends TableNames> = Schema[T]
-export type TableNames = _TableNames<Schema> & string
+export type TableNames = _TableNames<Schema>
 export type TableColumns<T extends TableNames> = _TableColumns<Schema, T>
-export type TableColumnNames<T extends TableNames> = _TableColumnNames<Schema, T>
+export type TableColumnNames<T extends TableNames> = _TableColumnNames<Schema, T> & string
 export type TableColumn<T extends TableNames, C extends TableColumnNames<T>> = TableColumns<T>[C] extends infer U extends ColumnDefinition ? U : never
+export type TableFieldNames<T extends TableNames> = _TableFieldNames<Schema, T>
+export type TableFields<T extends TableNames> = _TableFields<Schema, T>
 export type TableRelations<T extends TableNames> = _TableRelations<Schema, T>
-export type TableRelationNames<T extends TableNames> = _TableRelationNames<Schema, T> & string
-export type TableRelation<T extends TableNames, R extends TableRelationNames<T>> = Omit<_TableRelation<Schema, T, R>, 'table'> & { table: TableNames }
+export type TableRelationNames<T extends TableNames> = _TableRelationNames<Schema, T>
+export type TableRelation<T extends TableNames, R extends TableRelationNames<T>> = _TableRelation<Schema, T, R> extends infer U extends RelationDefinition ? Omit<U, 'table'> & { table: TableNames } : never
 export type TableItem<T extends TableNames> = Prettify<_TableItem<Schema, T>>
 export type QueryParams<T extends TableNames> = _QueryParams<T>
 export type TableColumnType<T extends TableNames, C extends TableColumnNames<T>> = _TableColumnType<Schema, T, C>

@@ -1,7 +1,4 @@
-export const fields = defineCollectionFields({
-  id: false,
-  createdAt: false,
-  updatedAt: false,
+export const fields = defineCollectionFields('hubify_environment', {
   key: {
     input: {
       component: 'text',

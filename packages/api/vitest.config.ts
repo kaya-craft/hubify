@@ -3,6 +3,6 @@ import { resolve } from 'path'
 
 export default defineConfig({
   test: {
-    setupFiles: [resolve('./test/setup.ts')]
+    setupFiles: [resolve('./tests/setup.ts')]
   }
 })

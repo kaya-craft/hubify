@@ -1,8 +1,8 @@
 import z from 'zod'
 import tables from '#hubify/schema'
 import { getDataTypeOperators, getDataTypeValidator } from './database/data-types'
-import type { ColumnDefinition, Operator } from './database/types'
-import { isRelation } from './database/helpers'
+import type { ColumnDefinition, FieldDefinition, Operator } from './database/types'
+import { isColumn, isRelation } from './database/helpers'
 
 /**
  * Special validation for the `where` clause in query parameters.
@@ -105,26 +105,26 @@ export function asNonEmptyArray(value: unknown[]) {
 /**
  * Column validation type.
  */
-function columnValidation(column: ColumnDefinition, operator: Operator) {
-  if (isRelation(column)) {
-    const table = column.type === 'one-to-many' ? column.table : column.through
-    const relatedColumn = column.type === 'one-to-many' ? column.foreignKey : column.throughKey
-    const relatedTable = tables[table as keyof typeof tables]
-    const relatedColumnDef = relatedTable[relatedColumn as keyof typeof relatedTable] as ColumnDefinition
-    return columnValidation(relatedColumnDef, operator)
+function columnValidation(column: FieldDefinition, operator: Operator) {
+  if (isColumn(column)) {
+    if (expectsBooleanValue(operator)) {
+      return z.boolean()
+    }
+
+    const validator = getDataTypeValidator(column.type)
+
+    if (expectsArrayValue(operator)) {
+      return z.array(validator(column))
+    }
+
+    return validator(column)
   }
 
-  if (expectsBooleanValue(operator)) {
-    return z.boolean()
-  }
-
-  const validator = getDataTypeValidator(column.type)
-
-  if (expectsArrayValue(operator)) {
-    return z.array(validator(column))
-  }
-
-  return validator(column)
+  const table = column.type === 'one-to-many' ? column.table : column.through
+  const relatedColumn = column.type === 'one-to-many' ? column.foreignKey : column.throughKey
+  const relatedTable = tables[table as keyof typeof tables]
+  const relatedColumnDef = relatedTable[relatedColumn as keyof typeof relatedTable] as FieldDefinition
+  return columnValidation(relatedColumnDef, operator)
 }
 
 /**

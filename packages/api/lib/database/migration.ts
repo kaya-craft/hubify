@@ -1,7 +1,7 @@
 import type { Knex } from 'knex'
-import type { FieldDefinition, Schema, TableDefinition } from './types'
+import type { TableNames, FieldDefinition, Schema, TableDefinition, ColumnDefinition } from './types'
 import { getDataTypeCreator, type DataTypes } from './data-types'
-import { getRelationForeignKey, isManyToManyRelation, isRelation } from './helpers'
+import { getRelationForeignKey, isColumn, isManyToManyRelation, isRelation } from './helpers'
 import { SchemaInspector } from 'knex-schema-inspector'
 
 /**
@@ -20,17 +20,19 @@ export async function runMigrations(knex: Knex, toSchema: Schema) {
 /**
  * Create migration steps to transform the database schema from one version to another.
  */
-export function createMigrations(knex: Knex, fromSchema: Schema | null, toSchema: Schema) {
+export function createMigrations<S extends Schema>(knex: Knex, fromSchema: Schema | null, toSchema: S) {
   const migrations: (() => Knex.SchemaBuilder)[] = []
 
+  const entries = Object.entries(toSchema) as [TableNames<S>, TableDefinition][]
+
   if (!fromSchema) {
-    Object.entries(toSchema).forEach(([tableName, tableDef]) => {
+    entries.forEach(([tableName, tableDef]) => {
       migrations.push(() => createTable(knex, toSchema, tableName, tableDef))
     })
   }
   else {
     // Identify new tables to create
-    Object.entries(toSchema).forEach(([tableName, tableDef]) => {
+    entries.forEach(([tableName, tableDef]) => {
       if (!(tableName in fromSchema)) {
         migrations.push(() => createTable(knex, toSchema, tableName, tableDef))
       }
@@ -44,11 +46,11 @@ export function createMigrations(knex: Knex, fromSchema: Schema | null, toSchema
     })
 
     // Identify modified tables (add/remove columns)
-    Object.entries(toSchema).forEach(([tableName, toTableDef]) => {
-      const fromTableDef = fromSchema[tableName]
+    entries.forEach(([tableName, toTableDef]) => {
+      const fromTableDef = fromSchema[tableName as TableNames<typeof fromSchema>]
       if (!fromTableDef) return
 
-      const columns = Object.entries(fromTableDef).filter(([_, def]) => !isManyToManyRelation(def))
+      const columns = Object.entries(fromTableDef).filter(([_, def]) => !isManyToManyRelation(def)) as [string, FieldDefinition][]
 
       // Identify new columns to add
       columns.forEach(([fieldName, fieldDef]) => {
@@ -82,7 +84,7 @@ export function createMigrations(knex: Knex, fromSchema: Schema | null, toSchema
 /**
  * Create a table based on its definition.
  */
-function createTable(knex: Knex, schema: Schema, name: string, definition: TableDefinition) {
+function createTable<S extends Schema, T extends TableNames<S>>(knex: Knex, schema: S, name: T, definition: TableDefinition) {
   return knex.schema.createTable(name, (table) => {
     Object.entries(definition).forEach(([fieldName, fieldDef]) => {
       createColumn(knex, schema, table, name, fieldName, fieldDef)
@@ -93,17 +95,17 @@ function createTable(knex: Knex, schema: Schema, name: string, definition: Table
 /**
  * Create a column.
  */
-function createColumn(knex: Knex, schema: Schema, table: Knex.CreateTableBuilder, tableName: string, name: string, definition: FieldDefinition) {
+function createColumn<S extends Schema, T extends TableNames<S>>(knex: Knex, schema: S, table: Knex.CreateTableBuilder, tableName: T, name: string, definition: FieldDefinition) {
   // Many-to-many relations are handled via join tables, so we skip them here.
   if (isManyToManyRelation(definition)) return
 
   // For one-to-one, one-to-many, and many-to-one relations, we add a foreign key column.
-  if (isRelation(definition)) {
+  if (isRelation<S>(definition)) {
     const foreignKey = getRelationForeignKey(schema, tableName, definition)
     if (!foreignKey) throw new Error(`Foreign key not found for relation: ${tableName}.${name}`)
 
-    const foreignKeyDef = schema[definition.table]?.[foreignKey]
-    if (!foreignKeyDef || 'table' in foreignKeyDef) throw new Error(`Foreign key definition not found or invalid for relation: ${name}.${name}`)
+    const foreignKeyDef = schema[definition.table][foreignKey as keyof TableDefinition] as ColumnDefinition | undefined
+    if (!foreignKeyDef || isRelation(foreignKeyDef)) throw new Error(`Foreign key definition not found or invalid for relation: ${name}.${name}`)
 
     const column = getDataTypeCreator(foreignKeyDef.type)(table, name, foreignKeyDef, true)
     if (!definition.nullable) column.notNullable()
@@ -112,7 +114,7 @@ function createColumn(knex: Knex, schema: Schema, table: Knex.CreateTableBuilder
 
     table.foreign(name).references(foreignKey).inTable(definition.table).onDelete(definition.onDelete || 'CASCADE').onUpdate(definition.onUpdate || 'CASCADE')
   }
-  else {
+  else if (isColumn<S>(definition)) {
     const column = getDataTypeCreator(definition.type)(table, name, definition)
     if (!definition.nullable) column.notNullable()
     if (definition.unique) column.unique()
@@ -210,7 +212,7 @@ export async function getCurrentSchema(knex: Knex) {
       }
     }
 
-    schema[table] = fields
+    Object.assign(schema, { [table]: fields })
   }
 
   return schema

@@ -1,5 +1,6 @@
 declare module '#auth-utils' {
   interface User {
+    id: number | string
     webauthn?: string
     email?: string
     firstname?: string
@@ -21,10 +22,9 @@ declare module '#auth-utils' {
       refreshToken: string
     }
     loggedInAt: number
+    user: Pick<User, 'id' | 'email' | 'firstname' | 'lastname'>
   }
 
   interface SecureSessionData {
   }
 }
-
-export { }

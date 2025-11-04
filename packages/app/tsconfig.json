@@ -1,5 +1,4 @@
 {
-  // https://nuxt.com/docs/guide/concepts/typescript
   "files": [],
   "references": [
     {
@@ -14,8 +13,5 @@
     {
       "path": "./.nuxt/tsconfig.node.json"
     }
-  ],
-  "typeAcquisition": {
-    "include": ["@nuxt/ui"]
-  }
+  ]
 }

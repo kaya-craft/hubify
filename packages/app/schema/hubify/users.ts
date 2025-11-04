@@ -1,4 +1,4 @@
-export const fields = defineCollectionFields({
+export const fields = defineCollectionFields('hubify_users', {
   id: false,
   password: false,
   email: {

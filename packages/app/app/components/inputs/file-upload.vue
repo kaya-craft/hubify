@@ -6,7 +6,7 @@ interface Props extends /* @vue-ignore */ FileUploadProps {}
 /**
  * File path
  */
-const file = defineModel<string>()
+const file = defineModel<File>()
 
 /**
  * Expose the data types supported.

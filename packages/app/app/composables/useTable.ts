@@ -5,7 +5,7 @@ import tables from '#hubify/schema'
 
 import type { AsyncComponentLoader } from 'vue'
 import { getPrimaryKeyColumn, isOneToManyRelation, isRelation } from '@hubify/api/database/helpers'
-import type { TableFieldOption } from '@@/types/fields'
+import type { TableFieldOption } from '@hubify/app/types/fields'
 
 const defaultInputs = {
   'text': defineAsyncComponent(registeredInputs.text),
@@ -217,7 +217,8 @@ export function useTable<T extends TableNames>(_tableName: MaybeRefOrGetter<T>) 
   function getRelation<R extends TableRelationNames<T>>(name: R) {
     const rels = toValue(relations)
     if (!rels || !isObject(rels) || !(name in rels)) throw new Error(`Relation "${String(name)}" does not exist in table "${toValue(tableName)}".`)
-    const relation = rels[name] as TableRelation<T, R>
+    const relation = rels[name] as TableRelation<T, R> | undefined
+    if (!relation) throw new Error(`Relation "${String(name)}" does not exist in table "${toValue(tableName)}".`)
     return relation
   }
 

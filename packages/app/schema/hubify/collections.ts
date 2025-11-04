@@ -1,7 +1,4 @@
-export const fields = defineCollectionFields({
-  id: {
-    input: false
-  },
+export const fields = defineCollectionFields('hubify_collections', {
   createdAt: {
     input: false,
     display: {
@@ -9,7 +6,6 @@ export const fields = defineCollectionFields({
     }
   },
   updatedAt: {
-    input: false,
     display: {
       component: 'date'
     }

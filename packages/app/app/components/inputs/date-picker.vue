@@ -5,9 +5,9 @@ import type { ButtonProps, CalendarProps, InputProps, PopoverProps } from '@nuxt
 interface Props {
   calendar?: CalendarProps<Range, true>
   popover?: PopoverProps
-  size?: InputProps['size'] & ButtonProps['size']
-  variant?: InputProps['variant'] & ButtonProps['variant']
-  color?: InputProps['color'] & ButtonProps['color']
+  size?: InputProps['size'] & ButtonProps['size'] & CalendarProps['size']
+  variant?: InputProps['variant'] & ButtonProps['variant'] & CalendarProps['variant']
+  color?: InputProps['color'] & ButtonProps['color'] & CalendarProps['color']
 }
 
 const { calendar, popover, size, variant, color } = defineProps<Props>()
