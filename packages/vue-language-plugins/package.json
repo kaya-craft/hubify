@@ -7,7 +7,7 @@
         "**/*.d.ts"
     ],
     "dependencies": {
-        "@vue-macros/common": "3.1.1",
+        "@vue-macros/common": "3.1.4",
         "@vue/language-core": "^3.0.6",
         "jiti": "^2.5.1",
         "muggle-string": "^0.4.1",
