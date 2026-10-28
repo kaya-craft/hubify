@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.7.5",
-    "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.1.0",
+    "@atlaskit/pragmatic-drag-and-drop-hitbox": "^3.0.0",
     "@hubify/api": "workspace:*",
     "@hubify/vue-language-plugins": "workspace:*",
     "@iconify-json/heroicons": "^1.2.2",
